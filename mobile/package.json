@@ -1,7 +1,0 @@
-{
-  "name": "mobile",
-  "private": true,
-  "scripts": {
-    "start": "expo start"
-  }
-}
