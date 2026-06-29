@@ -1,7 +1,0 @@
-{
-  "name": "admin-dashboard",
-  "private": true,
-  "scripts": {
-    "dev": "vite"
-  }
-}
