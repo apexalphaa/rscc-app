@@ -1,14 +1,4 @@
 {
   "name": "rscc-app",
-  "private": true,
-  "workspaces": [
-    "backend",
-    "mobile",
-    "admin-dashboard"
-  ],
-  "scripts": {
-    "dev": "echo Configure apps individually",
-    "lint": "echo lint",
-    "format": "echo format"
-  }
+  "private": true
 }
