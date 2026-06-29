@@ -1,26 +1,19 @@
 import { Routes, Route } from "react-router-dom";
 
-function Home() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        fontSize: "2rem",
-        fontWeight: "bold",
-      }}
-    >
-      🏏 Welcome to RSCC
-    </div>
-  );
-}
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
 
-export default function App() {
+function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
+
+export default App;
