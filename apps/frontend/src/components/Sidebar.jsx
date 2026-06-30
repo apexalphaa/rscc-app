@@ -4,8 +4,10 @@ const menuItems = [
   { name: "Dashboard", icon: "🏠", path: "/dashboard" },
   { name: "Players", icon: "👤", path: "/players" },
   { name: "Attendance", icon: "📅", path: "/attendance" },
+  { name: "Practice", icon: "🏃", path: "/practice" },
   { name: "Matches", icon: "🏏", path: "/matches" },
   { name: "Tournament", icon: "🏆", path: "/tournament" },
+  { name: "Equipment", icon: "🎒", path: "/equipment" },
   { name: "Settings", icon: "⚙️", path: "/settings" },
 ];
 
