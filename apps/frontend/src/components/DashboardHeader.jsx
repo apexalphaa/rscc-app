@@ -3,11 +3,11 @@ export default function DashboardHeader() {
     <header className="bg-white shadow-sm rounded-2xl p-6 flex justify-between items-center">
       <div>
         <h2 className="text-3xl font-bold">
-          Welcome Back 👋
+         Welcome back, Admin 👋
         </h2>
 
         <p className="text-slate-500 mt-2">
-          Manage your academy efficiently.
+          Manage players, attendance, matches and academy operations.
         </p>
       </div>
 
