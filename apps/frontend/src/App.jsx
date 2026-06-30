@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import Players from "./pages/Players";
+<Route path="/players" element={<Players />} />
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
