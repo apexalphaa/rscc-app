@@ -4,20 +4,53 @@ export default function About() {
       id="about"
       className="py-24 bg-white"
     >
-      <div className="max-w-5xl mx-auto px-6 text-center">
+      <div className="max-w-6xl mx-auto px-6">
 
-        <h2 className="text-4xl font-bold">
-          About Rising Star Cricket Club
-        </h2>
+        <div className="grid md:grid-cols-2 gap-14 items-center">
 
-        <p className="mt-8 text-lg text-slate-600 leading-9">
+          <div>
 
-          Rising Star Cricket Club is committed to developing disciplined,
-          technically sound, and confident cricketers. Through structured
-          coaching, competitive practice, fitness programs, and tournament
-          exposure, we help every player unlock their full potential.
+            <h2 className="text-5xl font-bold">
+              Why Choose RSCC?
+            </h2>
 
-        </p>
+            <p className="mt-8 text-slate-600 leading-8">
+
+              Rising Star Cricket Club provides structured coaching,
+              fitness training, match exposure, and player development
+              for aspiring cricketers of every age group.
+
+            </p>
+
+            <div className="grid grid-cols-2 gap-5 mt-10">
+
+              <div className="rounded-xl bg-slate-100 p-5">
+                🏏 Professional Coaching
+              </div>
+
+              <div className="rounded-xl bg-slate-100 p-5">
+                💪 Fitness Training
+              </div>
+
+              <div className="rounded-xl bg-slate-100 p-5">
+                🏆 Tournament Exposure
+              </div>
+
+              <div className="rounded-xl bg-slate-100 p-5">
+                📊 Performance Analysis
+              </div>
+
+            </div>
+
+          </div>
+
+          <img
+            src="https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=900"
+            alt="Academy"
+            className="rounded-3xl shadow-xl"
+          />
+
+        </div>
 
       </div>
     </section>
