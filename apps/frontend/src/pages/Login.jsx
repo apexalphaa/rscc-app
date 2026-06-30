@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Input from "../components/common/Input";
 
 export default function Login() {
   return (
