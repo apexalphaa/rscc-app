@@ -41,9 +41,9 @@ export default function Navbar() {
           </div>
 
           <Link to="/login">
-            <Button>
-              Member Login
-            </Button>
+            <Button className="px-8">
+    Member Login
+</Button>
           </Link>
 
         </div>
