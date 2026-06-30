@@ -1,19 +1,80 @@
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-white py-10">
+    <footer
+      id="contact"
+      className="bg-slate-900 text-white py-16"
+    >
+      <div className="max-w-7xl mx-auto px-6">
 
-      <div className="max-w-7xl mx-auto px-6 text-center">
+        <div className="grid md:grid-cols-3 gap-12">
 
-        <h2 className="text-2xl font-bold">
-          Rising Star Cricket Club
-        </h2>
+          <div>
 
-        <p className="mt-3 text-slate-400">
-          © 2026 RSCC. All rights reserved.
+            <h2 className="text-3xl font-bold">
+              RSCC
+            </h2>
+
+            <p className="mt-5 text-slate-400 leading-8">
+
+              Rising Star Cricket Club is dedicated to nurturing
+              talented cricketers through discipline, hard work,
+              and modern coaching methods.
+
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3 className="font-bold text-xl">
+              Quick Links
+            </h3>
+
+            <ul className="space-y-3 mt-5 text-slate-400">
+
+              <li>About</li>
+
+              <li>Gallery</li>
+
+              <li>Matches</li>
+
+              <li>Contact</li>
+
+            </ul>
+
+          </div>
+
+          <div>
+
+            <h3 className="font-bold text-xl">
+              Contact
+            </h3>
+
+            <p className="mt-5 text-slate-400">
+              📍 Rising Star Cricket Club
+            </p>
+
+            <p className="text-slate-400">
+              📞 +91 XXXXX XXXXX
+            </p>
+
+            <p className="text-slate-400">
+              ✉ info@rscc.com
+            </p>
+
+          </div>
+
+        </div>
+
+        <hr className="my-10 border-slate-700"/>
+
+        <p className="text-center text-slate-500">
+
+          © 2026 Rising Star Cricket Club. All Rights Reserved.
+
         </p>
 
       </div>
-
     </footer>
   );
 }
