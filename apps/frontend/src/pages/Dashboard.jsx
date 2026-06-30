@@ -1,46 +1,46 @@
+import Sidebar from "../components/Sidebar";
+import DashboardHeader from "../components/DashboardHeader";
+import StatCard from "../components/StatCard";
+
 export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="flex bg-slate-100 min-h-screen">
 
-      <div className="flex">
+      <Sidebar />
 
-        <aside className="w-72 bg-slate-900 text-white min-h-screen p-8">
+      <main className="flex-1 p-8">
 
-          <h1 className="text-3xl font-bold">
-            RSCC
-          </h1>
+        <DashboardHeader />
 
-          <ul className="space-y-5 mt-12">
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
 
-            <li>🏠 Dashboard</li>
+          <StatCard
+            title="Players"
+            value="0"
+            icon="👤"
+          />
 
-            <li>👤 Players</li>
+          <StatCard
+            title="Attendance"
+            value="0%"
+            icon="📅"
+          />
 
-            <li>🏏 Matches</li>
+          <StatCard
+            title="Matches"
+            value="0"
+            icon="🏏"
+          />
 
-            <li>📅 Attendance</li>
+          <StatCard
+            title="Tournaments"
+            value="0"
+            icon="🏆"
+          />
 
-            <li>🏆 Tournament</li>
+        </div>
 
-            <li>⚙ Settings</li>
-
-          </ul>
-
-        </aside>
-
-        <main className="flex-1 p-12">
-
-          <h2 className="text-4xl font-bold">
-            Welcome Back 👋
-          </h2>
-
-          <p className="text-slate-500 mt-4">
-            Rising Star Cricket Club Dashboard
-          </p>
-
-        </main>
-
-      </div>
+      </main>
 
     </div>
   );
