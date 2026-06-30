@@ -70,7 +70,7 @@ export default function Footer() {
 
         <p className="text-center text-slate-500">
 
-          © 2026 Rising Star Cricket Club. All Rights Reserved.
+         © {new Date().getFullYear()} Rising Star Cricket Club.
 
         </p>
 
