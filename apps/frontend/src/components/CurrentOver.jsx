@@ -1,41 +1,44 @@
-export default function CurrentOver({
+export default function CurrentOver({ balls }) {
 
-    balls
+  return (
 
-}){
+    <div className="bg-white rounded-3xl shadow-sm p-8">
 
-    return(
+      <h2 className="text-2xl font-bold">
 
-        <div className="bg-white rounded-3xl shadow-sm p-8">
+        Current Over
 
-            <h2 className="text-2xl font-bold">
+      </h2>
 
-                Current Over
+      <div className="flex gap-3 flex-wrap mt-6">
 
-            </h2>
+        {balls.length === 0 && (
 
-            <div className="flex flex-wrap gap-3 mt-6">
+          <p className="text-slate-500">
 
-                {balls.map((ball,index)=>(
+            No deliveries yet.
 
-                    <div
+          </p>
 
-                        key={index}
+        )}
 
-                        className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-bold"
+        {balls.map((ball, index) => (
 
-                    >
+          <div
+            key={index}
+            className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-bold"
+          >
 
-                        {ball}
+            {ball}
 
-                    </div>
+          </div>
 
-                ))}
+        ))}
 
-            </div>
+      </div>
 
-        </div>
+    </div>
 
-    )
+  );
 
 }
