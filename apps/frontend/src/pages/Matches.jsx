@@ -1,23 +1,28 @@
+import DashboardLayout from "../layouts/DashboardLayout";
+import EmptyState from "../components/EmptyState";
+import PageHeader from "../components/PageHeader";
+import Button from "../components/common/Button";
+
 export default function Matches() {
   return (
-    <div className="p-10">
+    <DashboardLayout>
 
-      <h1 className="text-4xl font-bold">
-        Match Scoring
-      </h1>
+      <PageHeader
+        title="Match Center"
+        subtitle="Manage live and completed matches."
+        action={<Button>New Match</Button>}
+      />
 
-      <p className="text-slate-500 mt-4">
-        Score live matches ball-by-ball and generate scorecards.
-      </p>
+      <div className="mt-8">
 
-      <div className="mt-10 rounded-3xl border-2 border-dashed border-slate-300 h-96 flex items-center justify-center">
-
-        <p className="text-slate-400 text-xl">
-          Match scoring module coming soon.
-        </p>
+        <EmptyState
+          title="No Matches Available"
+          description="Create a match to begin scoring."
+          button={<Button>Create Match</Button>}
+        />
 
       </div>
 
-    </div>
+    </DashboardLayout>
   );
 }
