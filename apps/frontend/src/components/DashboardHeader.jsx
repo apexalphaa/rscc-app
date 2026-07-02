@@ -1,22 +1,32 @@
 export default function DashboardHeader() {
   return (
-    <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between">
+    <header className="bg-white border-b h-20 flex items-center justify-between px-8">
 
       <div>
 
         <h2 className="text-2xl font-bold">
-          Rising Star Cricket Club
+
+          Academy Portal
+
         </h2>
 
         <p className="text-slate-500">
-          Academy Management System
+
+          Rising Star Cricket Club
+
         </p>
 
       </div>
 
       <div className="flex items-center gap-4">
 
-        <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
+        <button className="w-10 h-10 rounded-full bg-slate-100">
+
+          🔔
+
+        </button>
+
+        <div className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center">
 
           A
 
