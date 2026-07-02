@@ -9,13 +9,18 @@ import WhyChoose from "../components/WhyChoose";
 import Coaches from "../components/Coaches";
 import UpcomingEvents from "../components/UpcomingEvents";
 import CTA from "../components/CTA";
+import Announcement from "../components/Announcement";
+import QuickLinks from "../components/QuickLinks";
 
 export default function Home() {
   return (
     <>
+  <>
   <Navbar />
+  <Announcement />
   <Hero />
   <Stats />
+  <QuickLinks />
   <WhyChoose />
   <Features />
   <About />
@@ -24,6 +29,7 @@ export default function Home() {
   <Gallery />
   <CTA />
   <Footer />
+</>
 </>
   );
 }
