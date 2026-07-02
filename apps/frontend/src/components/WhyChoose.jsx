@@ -1,3 +1,5 @@
+import SectionTitle from "./SectionTitle";
+
 const reasons = [
   {
     title: "Professional Coaching",
@@ -22,26 +24,23 @@ export default function WhyChoose() {
     <section className="py-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6">
 
-        <h2 className="text-5xl font-bold text-center">
-          Why Choose RSCC?
-        </h2>
-
-        <p className="text-center text-slate-500 mt-4 max-w-3xl mx-auto">
-          We focus on long-term player development with modern coaching methods.
-        </p>
+        <SectionTitle
+          title="Why Choose RSCC?"
+          subtitle="Our structured coaching and player development programs help every cricketer reach their full potential."
+        />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-16">
 
           {reasons.map((item) => (
             <div
               key={item.title}
-              className="bg-white rounded-2xl shadow-md p-8"
+              className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition"
             >
               <h3 className="text-xl font-bold">
                 {item.title}
               </h3>
 
-              <p className="mt-4 text-slate-600">
+              <p className="mt-4 text-slate-600 leading-7">
                 {item.desc}
               </p>
             </div>
