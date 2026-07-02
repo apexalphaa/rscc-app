@@ -1,25 +1,38 @@
-export default function AttendanceSummary() {
+export default function AttendanceSummary({
+  attendance,
+}) {
+
+  const present = Object.values(attendance).filter(
+    (x) => x === "Present"
+  ).length;
+
+  const absent = Object.values(attendance).filter(
+    (x) => x === "Absent"
+  ).length;
+
+  const late = Object.values(attendance).filter(
+    (x) => x === "Late"
+  ).length;
 
   const cards = [
     {
       title: "Present",
-      value: 0,
+      value: present,
       color: "bg-green-100",
     },
     {
       title: "Absent",
-      value: 0,
+      value: absent,
       color: "bg-red-100",
     },
     {
       title: "Late",
-      value: 0,
+      value: late,
       color: "bg-yellow-100",
     },
   ];
 
   return (
-
     <div className="grid md:grid-cols-3 gap-6">
 
       {cards.map((card) => (
@@ -29,11 +42,7 @@ export default function AttendanceSummary() {
           className={`${card.color} rounded-2xl p-6`}
         >
 
-          <p className="text-slate-600">
-
-            {card.title}
-
-          </p>
+          <p>{card.title}</p>
 
           <h2 className="text-4xl font-bold mt-3">
 
@@ -46,7 +55,6 @@ export default function AttendanceSummary() {
       ))}
 
     </div>
-
   );
 
 }
