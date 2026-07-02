@@ -2,44 +2,51 @@ import Button from "./common/Button";
 
 export default function Hero() {
   return (
-    <section className="relative bg-slate-900 text-white overflow-hidden">
+    <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-green-900">
 
-      {/* Background Overlay */}
-      <div className="absolute inset-0 bg-black/60"></div>
+      <div className="absolute inset-0 bg-black/40"></div>
 
-      {/* Background Image */}
-      <img
-        src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1600"
-        alt="Cricket"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      <div className="relative max-w-7xl mx-auto px-6 py-36">
 
-      <div className="relative max-w-7xl mx-auto px-6 py-36 text-center">
+        <div className="max-w-3xl">
 
-        <p className="uppercase tracking-[8px] text-green-400 font-semibold">
-          Welcome To
-        </p>
+          <p className="uppercase tracking-[6px] text-green-400 font-semibold">
+            Rising Star Cricket Club
+          </p>
 
-        <h1 className="mt-5 text-6xl md:text-7xl font-black leading-tight">
-          Rising Star Cricket Club
-        </h1>
+          <h1 className="text-6xl lg:text-7xl font-black text-white mt-6 leading-tight">
 
-        <p className="mt-8 max-w-3xl mx-auto text-xl text-slate-200 leading-8">
-          Developing the next generation of disciplined, skilled and confident
-          cricketers through professional coaching and competitive cricket.
-        </p>
+            Train Hard.
+            <br />
+            Play Smart.
+            <br />
+            Rise Together.
 
-        <div className="flex justify-center gap-5 mt-12">
+          </h1>
 
-          <Button>Join Academy</Button>
+          <p className="text-slate-300 text-xl mt-8 leading-8">
 
-          <Button className="bg-white text-slate-900 hover:bg-slate-200">
-            Live Scores
-          </Button>
+            Building disciplined cricketers through structured coaching,
+            competitive matches and performance-driven development.
+
+          </p>
+
+          <div className="flex gap-5 mt-12">
+
+            <Button>
+              Join Academy
+            </Button>
+
+            <Button className="bg-white text-slate-900 hover:bg-slate-100">
+              View Programs
+            </Button>
+
+          </div>
 
         </div>
 
       </div>
+
     </section>
   );
 }
