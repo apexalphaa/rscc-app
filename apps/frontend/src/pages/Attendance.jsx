@@ -1,25 +1,28 @@
+import { useState } from "react";
+
 import DashboardLayout from "../layouts/DashboardLayout";
 
 import PageHeader from "../components/PageHeader";
 
 import CreateAttendanceSession from "../components/CreateAttendanceSession";
-
 import AttendanceSummary from "../components/AttendanceSummary";
-
 import AttendanceToolbar from "../components/AttendanceToolbar";
+import AttendanceActions from "../components/AttendanceActions";
+import AttendanceTable from "../components/AttendanceTable";
+
+import attendanceDummyPlayers from "../data/attendanceDummyPlayers";
 
 export default function Attendance() {
+
+  const [attendance, setAttendance] = useState({});
 
   return (
 
     <DashboardLayout>
 
       <PageHeader
-
         title="Attendance"
-
         subtitle="Track player attendance."
-
       />
 
       <div className="mt-8">
@@ -30,7 +33,9 @@ export default function Attendance() {
 
       <div className="mt-8">
 
-        <AttendanceSummary />
+        <AttendanceSummary
+          attendance={attendance}
+        />
 
       </div>
 
@@ -40,9 +45,22 @@ export default function Attendance() {
 
       </div>
 
-      <div className="mt-8 bg-white rounded-3xl border-2 border-dashed border-slate-300 h-96 flex items-center justify-center">
+      <div className="mt-8">
 
-        Attendance table will be added in Pack 2.
+        <AttendanceActions
+          players={attendanceDummyPlayers}
+          setAttendance={setAttendance}
+        />
+
+      </div>
+
+      <div className="mt-8">
+
+        <AttendanceTable
+          players={attendanceDummyPlayers}
+          attendance={attendance}
+          setAttendance={setAttendance}
+        />
 
       </div>
 
