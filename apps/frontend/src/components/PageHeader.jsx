@@ -4,7 +4,7 @@ export default function PageHeader({
   action,
 }) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
       <div>
 
@@ -12,7 +12,7 @@ export default function PageHeader({
           {title}
         </h1>
 
-        <p className="text-slate-500 mt-2">
+        <p className="mt-2 text-slate-500">
           {subtitle}
         </p>
 
