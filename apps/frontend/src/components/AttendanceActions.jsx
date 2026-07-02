@@ -32,7 +32,18 @@ export default function AttendanceActions({
       >
         Mark All Present
       </Button>
-
+      <Button
+  className="bg-red-600"
+  onClick={() => {
+    const obj = {};
+    players.forEach(player => {
+      obj[player.id] = "Absent";
+    });
+    setAttendance(obj);
+  }}
+>
+  Mark All Absent
+</Button>
       <Button
         className="bg-slate-600"
         onClick={clearAttendance}
