@@ -1,19 +1,20 @@
 import DashboardLayout from "../layouts/DashboardLayout";
-import StatCard from "../components/StatCard";
+
+import DashboardWelcome from "../components/DashboardWelcome";
+import DashboardSummary from "../components/DashboardSummary";
+import QuickActions from "../components/QuickActions";
 
 export default function Dashboard() {
   return (
     <DashboardLayout>
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="space-y-8">
 
-        <StatCard title="Players" value="0" icon="👤" />
+        <DashboardWelcome />
 
-        <StatCard title="Attendance" value="0%" icon="📅" />
+        <DashboardSummary />
 
-        <StatCard title="Matches" value="0" icon="🏏" />
-
-        <StatCard title="Tournaments" value="0" icon="🏆" />
+        <QuickActions />
 
       </div>
 
