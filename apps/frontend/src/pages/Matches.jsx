@@ -1,28 +1,47 @@
 import DashboardLayout from "../layouts/DashboardLayout";
-import EmptyState from "../components/EmptyState";
+
 import PageHeader from "../components/PageHeader";
-import Button from "../components/common/Button";
 
-export default function Matches() {
-  return (
-    <DashboardLayout>
+import CreateMatchForm from "../components/CreateMatchForm";
 
-      <PageHeader
-        title="Match Center"
-        subtitle="Manage live and completed matches."
-        action={<Button>New Match</Button>}
-      />
+import UpcomingMatches from "../components/UpcomingMatches";
 
-      <div className="mt-8">
+import LiveMatchCard from "../components/LiveMatchCard";
 
-        <EmptyState
-          title="No Matches Available"
-          description="Create a match to begin scoring."
-          button={<Button>Create Match</Button>}
-        />
+export default function Matches(){
 
-      </div>
+    return(
 
-    </DashboardLayout>
-  );
+        <DashboardLayout>
+
+            <PageHeader
+
+                title="Match Center"
+
+                subtitle="Create and manage cricket matches."
+
+            />
+
+            <div className="mt-8">
+
+                <LiveMatchCard/>
+
+            </div>
+
+            <div className="mt-8">
+
+                <CreateMatchForm/>
+
+            </div>
+
+            <div className="mt-8">
+
+                <UpcomingMatches/>
+
+            </div>
+
+        </DashboardLayout>
+
+    )
+
 }
