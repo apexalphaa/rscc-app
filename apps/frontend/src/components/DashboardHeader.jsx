@@ -1,19 +1,29 @@
 export default function DashboardHeader() {
   return (
-    <header className="bg-white shadow-sm rounded-2xl p-6 flex justify-between items-center">
+    <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between">
+
       <div>
-        <h2 className="text-3xl font-bold">
-         Welcome back, Admin 👋
+
+        <h2 className="text-2xl font-bold">
+          Rising Star Cricket Club
         </h2>
 
-        <p className="text-slate-500 mt-2">
-          Manage players, attendance, matches and academy operations.
+        <p className="text-slate-500">
+          Academy Management System
         </p>
+
       </div>
 
-      <div className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">
-        A
+      <div className="flex items-center gap-4">
+
+        <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
+
+          A
+
+        </div>
+
       </div>
+
     </header>
   );
 }
