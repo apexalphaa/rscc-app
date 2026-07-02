@@ -1,53 +1,45 @@
-import SectionTitle from "./SectionTitle";
+import { Link } from "react-router-dom";
+import Button from "./common/Button";
 
-const events = [
-  {
-    title: "Summer Cricket Camp",
-    date: "15 June 2026",
-  },
-  {
-    title: "Inter Academy Tournament",
-    date: "28 June 2026",
-  },
-  {
-    title: "Fitness Assessment",
-    date: "5 July 2026",
-  },
-];
-
-export default function UpcomingEvents() {
+export default function Navbar() {
   return (
-    <section className="py-24 bg-slate-100">
+    <>
+      <div className="bg-green-700 text-white text-center py-2 text-sm font-medium">
+        Admissions Open • New Batches Starting Soon
+      </div>
 
-      <div className="max-w-6xl mx-auto px-6">
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-slate-200">
 
-        <SectionTitle
-          title="Upcoming Events"
-          subtitle="Stay updated with training camps, tournaments and academy activities."
-        />
+        <div className="max-w-7xl mx-auto h-20 px-6 flex items-center justify-between">
 
-        <div className="space-y-6 mt-16">
+          <Link
+            to="/"
+            className="text-3xl font-black text-green-700 tracking-wide"
+          >
+            RSCC
+          </Link>
 
-          {events.map((event) => (
-            <div
-              key={event.title}
-              className="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition flex justify-between items-center"
-            >
-              <h3 className="font-semibold text-lg">
-                {event.title}
-              </h3>
+          <div className="hidden lg:flex gap-10 text-slate-700">
 
-              <span className="text-green-700 font-medium">
-                {event.date}
-              </span>
+            <a href="#about" className="hover:text-green-700">About</a>
 
-            </div>
-          ))}
+            <a href="#features" className="hover:text-green-700">Features</a>
+
+            <a href="#gallery" className="hover:text-green-700">Gallery</a>
+
+            <a href="#contact" className="hover:text-green-700">Contact</a>
+
+          </div>
+
+          <Link to="/login">
+            <Button>
+              Member Login
+            </Button>
+          </Link>
 
         </div>
 
-      </div>
-
-    </section>
+      </nav>
+    </>
   );
 }
