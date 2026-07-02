@@ -6,7 +6,7 @@ export default function Input({
     <input
       type={type}
       placeholder={placeholder}
-      className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-green-600"
+      className="w-full rounded-xl border border-slate-300 p-3 focus:border-green-600 focus:outline-none"
     />
   );
 }
