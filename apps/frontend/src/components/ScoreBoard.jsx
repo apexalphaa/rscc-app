@@ -1,37 +1,31 @@
-export default function ScoreBoard({
+import { formatOvers } from "../utils/cricket";
 
-    score,
+export default function ScoreBoard({ match }) {
 
-    wickets,
+  return (
 
-    overs
+    <div className="bg-gradient-to-r from-green-700 to-green-500 rounded-3xl p-8 text-white">
 
-}){
+      <p className="uppercase tracking-widest">
 
-    return(
+        LIVE SCORE
 
-        <div className="bg-gradient-to-r from-green-700 to-green-500 text-white rounded-3xl p-8">
+      </p>
 
-            <p className="uppercase tracking-widest">
+      <h1 className="text-6xl font-black mt-5">
 
-                LIVE SCORE
+        {match.score}/{match.wickets}
 
-            </p>
+      </h1>
 
-            <h1 className="text-6xl font-black mt-4">
+      <p className="text-2xl mt-5">
 
-                {score}/{wickets}
+        Overs : {formatOvers(match.legalBalls)}
 
-            </h1>
+      </p>
 
-            <p className="text-2xl mt-4">
+    </div>
 
-                {overs.toFixed(1)} Overs
-
-            </p>
-
-        </div>
-
-    )
+  );
 
 }
