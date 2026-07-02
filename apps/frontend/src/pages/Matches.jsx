@@ -1,137 +1,70 @@
-import {useState} from "react";
-
 import DashboardLayout from "../layouts/DashboardLayout";
-
 import PageHeader from "../components/PageHeader";
 
 import ScoreBoard from "../components/ScoreBoard";
-
 import RunButtons from "../components/RunButtons";
-
 import ExtraButtons from "../components/ExtraButtons";
-
 import CurrentOver from "../components/CurrentOver";
 
-export default function Matches(){
+import useMatchScoring from "../hooks/useMatchScoring";
 
-    const [score,setScore]=useState(0);
+export default function Matches() {
 
-    const [wickets,setWickets]=useState(0);
+  const {
 
-    const [balls,setBalls]=useState([]);
+    match,
 
-    const [overs,setOvers]=useState(0);
+    addRuns,
 
-    function legalBall(value){
+    wicket,
 
-        setBalls(prev=>{
+    wide,
 
-            const updated=[...prev,value];
+    noBall,
 
-            if(updated.length===6){
+  } = useMatchScoring();
 
-                setOvers(prev=>prev+1);
+  return (
 
-                return [];
+    <DashboardLayout>
 
-            }
+      <PageHeader
+        title="Live Match"
+        subtitle="Professional scoring system"
+      />
 
-            return updated;
+      <div className="mt-8">
 
-        });
+        <ScoreBoard
+          match={match}
+        />
 
-    }
+      </div>
 
-    function addRun(run){
+      <div className="grid lg:grid-cols-2 gap-8 mt-8">
 
-        setScore(prev=>prev+run);
+        <RunButtons
+          addRun={addRuns}
+        />
 
-        legalBall(run);
+        <ExtraButtons
+          wicket={wicket}
+          wide={wide}
+          noBall={noBall}
+        />
 
-    }
+      </div>
 
-    function wicket(){
+      <div className="mt-8">
 
-        setWickets(prev=>prev+1);
+        <CurrentOver
+          balls={match.currentOver}
+        />
 
-        legalBall("W");
+      </div>
 
-    }
+    </DashboardLayout>
 
-    function wide(){
-
-        setScore(prev=>prev+1);
-
-        setBalls(prev=>[...prev,"WD"]);
-
-    }
-
-    function noBall(){
-
-        setScore(prev=>prev+1);
-
-        setBalls(prev=>[...prev,"NB"]);
-
-    }
-
-    return(
-
-        <DashboardLayout>
-
-            <PageHeader
-
-                title="Live Match"
-
-                subtitle="Ball by ball scoring"
-
-            />
-
-            <div className="mt-8">
-
-                <ScoreBoard
-
-                    score={score}
-
-                    wickets={wickets}
-
-                    overs={overs+balls.length/10}
-
-                />
-
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8 mt-8">
-
-                <RunButtons
-
-                    addRun={addRun}
-
-                />
-
-                <ExtraButtons
-
-                    wicket={wicket}
-
-                    wide={wide}
-
-                    noBall={noBall}
-
-                />
-
-            </div>
-
-            <div className="mt-8">
-
-                <CurrentOver
-
-                    balls={balls}
-
-                />
-
-            </div>
-
-        </DashboardLayout>
-
-    )
+  );
 
 }
