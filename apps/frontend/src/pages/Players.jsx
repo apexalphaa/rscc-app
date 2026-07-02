@@ -1,6 +1,7 @@
 import DashboardLayout from "../layouts/DashboardLayout";
 import PageHeader from "../components/PageHeader";
 import SearchBar from "../components/SearchBar";
+import EmptyState from "../components/EmptyState";
 import Button from "../components/common/Button";
 
 export default function Players() {
@@ -9,21 +10,23 @@ export default function Players() {
 
       <PageHeader
         title="Players"
-        subtitle="Manage academy players."
+        subtitle="Manage all registered academy players."
         action={<Button>Add Player</Button>}
       />
 
-      <SearchBar
-        placeholder="Search players..."
-      />
+      <div className="mt-8 mb-8">
 
-      <div className="mt-10 bg-white rounded-3xl border-2 border-dashed border-slate-300 h-96 flex items-center justify-center">
-
-        <p className="text-slate-400 text-xl">
-          Player Management module will be built in Sprint 13.
-        </p>
+        <SearchBar
+          placeholder="Search players..."
+        />
 
       </div>
+
+      <EmptyState
+        title="No Players Found"
+        description="Your academy doesn't have any registered players yet."
+        button={<Button>Add First Player</Button>}
+      />
 
     </DashboardLayout>
   );
