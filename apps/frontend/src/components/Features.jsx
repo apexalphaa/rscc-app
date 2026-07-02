@@ -1,58 +1,52 @@
 const features = [
   {
-    title: "Match Scoring",
-    icon: "🏏",
-    desc: "Live scoring with ball-by-ball updates."
+    title: "Digital Attendance",
+    desc: "Track every training session digitally."
   },
   {
-    title: "Attendance",
-    icon: "📅",
-    desc: "Track player attendance digitally."
+    title: "Live Match Scoring",
+    desc: "Professional scoring for academy matches."
   },
   {
-    title: "Player Analytics",
-    icon: "📈",
-    desc: "Performance statistics and trends."
+    title: "Performance Analytics",
+    desc: "Detailed statistics for every player."
   },
   {
-    title: "Tournament",
-    icon: "🏆",
-    desc: "Fixtures, points table and results."
+    title: "Tournament Management",
+    desc: "Fixtures, points table and schedules."
   }
 ];
 
 export default function Features() {
   return (
-   <section
-  id="features"
-  className="py-24 bg-white"
->
-
+    <section
+      id="features"
+      className="py-28 bg-white"
+    >
       <div className="max-w-7xl mx-auto px-6">
 
-        <h2 className="text-4xl font-bold text-center">
-          Features
+        <h2 className="text-5xl font-bold text-center">
+          Everything Your Academy Needs
         </h2>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-14">
+        <p className="text-center mt-5 text-slate-500 max-w-2xl mx-auto">
+          A complete platform to manage players, coaches, tournaments and training.
+        </p>
 
-          {features.map((feature) => (
+        <div className="grid lg:grid-cols-2 gap-8 mt-16">
+
+          {features.map((item) => (
 
             <div
-              key={feature.title}
-              className="rounded-2xl border p-8 hover:shadow-xl transition"
+              key={item.title}
+              className="border rounded-3xl p-10 hover:shadow-2xl hover:border-green-600 transition-all"
             >
-
-              <div className="text-5xl">
-                {feature.icon}
-              </div>
-
-              <h3 className="mt-6 text-2xl font-semibold">
-                {feature.title}
+              <h3 className="text-2xl font-bold">
+                {item.title}
               </h3>
 
-              <p className="mt-4 text-slate-600">
-                {feature.desc}
+              <p className="mt-5 text-slate-600 leading-8">
+                {item.desc}
               </p>
 
             </div>
@@ -62,7 +56,6 @@ export default function Features() {
         </div>
 
       </div>
-
     </section>
   );
 }
