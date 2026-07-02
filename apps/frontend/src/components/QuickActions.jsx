@@ -1,37 +1,62 @@
 import Button from "./common/Button";
 
-const actions = [
-  "Register Player",
-  "Mark Attendance",
-  "Start Match",
-  "Create Tournament",
-];
+import {
+    UserPlus,
+    ClipboardCheck,
+    Trophy,
+    Cricket
+} from "lucide-react";
 
-export default function QuickActions() {
-  return (
-    <section className="bg-white rounded-3xl p-8 shadow-sm">
+export default function QuickActions(){
 
-      <h2 className="text-2xl font-bold">
+    return(
 
-        Quick Actions
+        <div className="bg-white rounded-3xl p-8 shadow-sm">
 
-      </h2>
+            <h2 className="text-2xl font-bold">
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5 mt-8">
+                Quick Actions
 
-        {actions.map((action) => (
+            </h2>
 
-          <Button
-            key={action}
-            className="w-full"
-          >
-            {action}
-          </Button>
+            <div className="grid lg:grid-cols-4 gap-5 mt-8">
 
-        ))}
+                <Button>
 
-      </div>
+                    <UserPlus size={18}/>
 
-    </section>
-  );
+                    Register Player
+
+                </Button>
+
+                <Button>
+
+                    <ClipboardCheck size={18}/>
+
+                    Attendance
+
+                </Button>
+
+                <Button>
+
+                    <Cricket size={18}/>
+
+                    Start Match
+
+                </Button>
+
+                <Button>
+
+                    <Trophy size={18}/>
+
+                    Tournament
+
+                </Button>
+
+            </div>
+
+        </div>
+
+    )
+
 }
