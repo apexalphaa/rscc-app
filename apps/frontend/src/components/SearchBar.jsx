@@ -4,7 +4,7 @@ export default function SearchBar({
   return (
     <input
       placeholder={placeholder}
-      className="w-full md:w-96 border rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-green-600"
+      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-green-600"
     />
   );
 }
