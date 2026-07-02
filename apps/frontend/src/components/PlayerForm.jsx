@@ -1,103 +1,176 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { playerSchema } from "../schema/playerSchema";
+
 import Input from "./common/Input";
 import Button from "./common/Button";
-import FormField from "./FormField";
-import Select from "./Select";
-import TextArea from "./TextArea";
+import ImageUpload from "./ImageUpload";
 
-export default function PlayerForm({ onCancel }) {
+export default function PlayerForm() {
+
+  const {
+
+    register,
+
+    handleSubmit,
+
+    formState: { errors }
+
+  } = useForm({
+
+    resolver: zodResolver(playerSchema)
+
+  });
+
+  function onSubmit(data) {
+
+    console.log(data);
+
+  }
+
   return (
-    <form className="grid md:grid-cols-2 gap-6">
 
-      <FormField label="Player Name" required>
-        <Input placeholder="Enter player name" />
-      </FormField>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="grid md:grid-cols-2 gap-6"
+    >
 
-      <FormField label="Date of Birth" required>
-        <Input type="date" />
-      </FormField>
+      <div>
 
-      <FormField label="Phone Number">
-        <Input placeholder="9876543210" />
-      </FormField>
+        <label>Full Name</label>
 
-      <FormField label="Parent / Guardian">
-        <Input placeholder="Guardian Name" />
-      </FormField>
-
-      <FormField label="Role">
-        <Select
-          options={[
-            "Batsman",
-            "Bowler",
-            "All Rounder",
-            "Wicket Keeper",
-          ]}
+        <Input
+          {...register("fullName")}
         />
-      </FormField>
 
-      <FormField label="Batting Style">
-        <Select
-          options={[
-            "Right Hand",
-            "Left Hand",
-          ]}
+        <p className="text-red-500">
+
+          {errors.fullName?.message}
+
+        </p>
+
+      </div>
+
+      <div>
+
+        <label>Phone</label>
+
+        <Input
+          {...register("phone")}
         />
-      </FormField>
 
-      <FormField label="Bowling Style">
-        <Select
-          options={[
-            "Right Arm Fast",
-            "Right Arm Medium",
-            "Left Arm Fast",
-            "Left Arm Spin",
-            "Off Spin",
-            "Leg Spin",
-          ]}
+        <p className="text-red-500">
+
+          {errors.phone?.message}
+
+        </p>
+
+      </div>
+
+      <div>
+
+        <label>Father Name</label>
+
+        <Input
+          {...register("fatherName")}
         />
-      </FormField>
 
-      <FormField label="Jersey Number">
-        <Input placeholder="7" />
-      </FormField>
+      </div>
 
-      <div className="md:col-span-2">
+      <div>
 
-        <FormField label="Address">
-          <TextArea
-            placeholder="Enter complete address"
-          />
-        </FormField>
+        <label>Date Of Birth</label>
+
+        <Input
+          type="date"
+          {...register("dob")}
+        />
+
+      </div>
+
+      <div>
+
+        <label>Role</label>
+
+        <Input
+          {...register("role")}
+        />
+
+      </div>
+
+      <div>
+
+        <label>Batch</label>
+
+        <Input
+          {...register("batch")}
+        />
+
+      </div>
+
+      <div>
+
+        <label>Batting Style</label>
+
+        <Input
+          {...register("battingStyle")}
+        />
+
+      </div>
+
+      <div>
+
+        <label>Bowling Style</label>
+
+        <Input
+          {...register("bowlingStyle")}
+        />
+
+      </div>
+
+      <div>
+
+        <label>Jersey Number</label>
+
+        <Input
+          {...register("jerseyNumber")}
+        />
 
       </div>
 
       <div className="md:col-span-2">
 
-        <FormField label="Profile Photo">
-          <input
-            type="file"
-            className="w-full border rounded-xl p-3"
-          />
-        </FormField>
+        <label>Address</label>
+
+        <textarea
+
+          {...register("address")}
+
+          className="w-full border rounded-xl p-3"
+
+        />
 
       </div>
 
-      <div className="md:col-span-2 flex justify-end gap-4">
+      <div className="md:col-span-2">
 
-        <Button
-          type="button"
-          className="bg-slate-500 hover:bg-slate-600"
-          onClick={onCancel}
-        >
-          Cancel
-        </Button>
+        <ImageUpload />
 
-        <Button type="submit">
-          Save Player
+      </div>
+
+      <div className="md:col-span-2 flex justify-end">
+
+        <Button>
+
+          Register Player
+
         </Button>
 
       </div>
 
     </form>
+
   );
+
 }
