@@ -1,47 +1,22 @@
-import Sidebar from "../components/Sidebar";
-import DashboardHeader from "../components/DashboardHeader";
+import DashboardLayout from "../layouts/DashboardLayout";
 import StatCard from "../components/StatCard";
 
 export default function Dashboard() {
   return (
-    <div className="flex bg-slate-100 min-h-screen">
+    <DashboardLayout>
 
-      <Sidebar />
+      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
 
-      <main className="flex-1 p-8">
+        <StatCard title="Players" value="0" icon="👤" />
 
-        <DashboardHeader />
+        <StatCard title="Attendance" value="0%" icon="📅" />
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+        <StatCard title="Matches" value="0" icon="🏏" />
 
-          <StatCard
-            title="Players"
-            value="0"
-            icon="👤"
-          />
+        <StatCard title="Tournaments" value="0" icon="🏆" />
 
-          <StatCard
-            title="Attendance"
-            value="0%"
-            icon="📅"
-          />
+      </div>
 
-          <StatCard
-            title="Matches"
-            value="0"
-            icon="🏏"
-          />
-
-          <StatCard
-            title="Tournaments"
-            value="0"
-            icon="🏆"
-          />
-
-        </div>
-
-      </main>
-
-    </div>
+    </DashboardLayout>
   );
 }
