@@ -1,3 +1,5 @@
+import SectionTitle from "./SectionTitle";
+
 const events = [
   {
     title: "Summer Cricket Camp",
@@ -19,33 +21,33 @@ export default function UpcomingEvents() {
 
       <div className="max-w-6xl mx-auto px-6">
 
-        <h2 className="text-5xl font-bold text-center">
-          Upcoming Events
-        </h2>
+        <SectionTitle
+          title="Upcoming Events"
+          subtitle="Stay updated with training camps, tournaments and academy activities."
+        />
 
-        <div className="space-y-6 mt-14">
+        <div className="space-y-6 mt-16">
 
           {events.map((event) => (
-
             <div
               key={event.title}
-              className="bg-white rounded-2xl p-6 shadow flex justify-between"
+              className="bg-white rounded-2xl p-6 shadow hover:shadow-lg transition flex justify-between items-center"
             >
-              <h3 className="font-semibold">
+              <h3 className="font-semibold text-lg">
                 {event.title}
               </h3>
 
-              <span className="text-green-700">
+              <span className="text-green-700 font-medium">
                 {event.date}
               </span>
 
             </div>
-
           ))}
 
         </div>
 
       </div>
+
     </section>
   );
 }
