@@ -1,71 +1,26 @@
-import { useState } from "react";
+<div className="mt-8">
 
-import DashboardLayout from "../layouts/DashboardLayout";
+  <AttendanceSessionInfo />
 
-import PageHeader from "../components/PageHeader";
+</div>
 
-import CreateAttendanceSession from "../components/CreateAttendanceSession";
-import AttendanceSummary from "../components/AttendanceSummary";
-import AttendanceToolbar from "../components/AttendanceToolbar";
-import AttendanceActions from "../components/AttendanceActions";
-import AttendanceTable from "../components/AttendanceTable";
+<div className="mt-8">
 
-import attendanceDummyPlayers from "../data/attendanceDummyPlayers";
+  <AttendanceProgress
+    attendance={attendance}
+    totalPlayers={attendanceDummyPlayers.length}
+  />
 
-export default function Attendance() {
+</div>
 
-  const [attendance, setAttendance] = useState({});
+<div className="mt-8">
 
-  return (
+  <AttendanceNotes />
 
-    <DashboardLayout>
+</div>
 
-      <PageHeader
-        title="Attendance"
-        subtitle="Track player attendance."
-      />
+<div className="mt-8">
 
-      <div className="mt-8">
+  <AttendanceFooter />
 
-        <CreateAttendanceSession />
-
-      </div>
-
-      <div className="mt-8">
-
-        <AttendanceSummary
-          attendance={attendance}
-        />
-
-      </div>
-
-      <div className="mt-8">
-
-        <AttendanceToolbar />
-
-      </div>
-
-      <div className="mt-8">
-
-        <AttendanceActions
-          players={attendanceDummyPlayers}
-          setAttendance={setAttendance}
-        />
-
-      </div>
-
-      <div className="mt-8">
-
-        <AttendanceTable
-          players={attendanceDummyPlayers}
-          attendance={attendance}
-          setAttendance={setAttendance}
-        />
-
-      </div>
-
-    </DashboardLayout>
-
-  );
-
-}
+</div>
