@@ -1,38 +1,88 @@
 import Input from "./common/Input";
 import Button from "./common/Button";
+import FormField from "./FormField";
+import Select from "./Select";
+import TextArea from "./TextArea";
 
 export default function PlayerForm({ onCancel }) {
   return (
-    <form className="space-y-5">
+    <form className="grid md:grid-cols-2 gap-6">
 
-      <Input placeholder="Player Name" />
+      <FormField label="Player Name" required>
+        <Input placeholder="Enter player name" />
+      </FormField>
 
-      <Input type="date" />
+      <FormField label="Date of Birth" required>
+        <Input type="date" />
+      </FormField>
 
-      <Input placeholder="Phone Number" />
+      <FormField label="Phone Number">
+        <Input placeholder="9876543210" />
+      </FormField>
 
-      <Input placeholder="Parent/Guardian Name" />
+      <FormField label="Parent / Guardian">
+        <Input placeholder="Guardian Name" />
+      </FormField>
 
-      <Input placeholder="Role (Batsman / Bowler / All-rounder / WK)" />
-
-      <Input placeholder="Batting Style" />
-
-      <Input placeholder="Bowling Style" />
-
-      <Input placeholder="Jersey Number" />
-
-      <div>
-        <label className="block mb-2 font-medium">
-          Profile Photo
-        </label>
-
-        <input
-          type="file"
-          className="w-full border rounded-xl p-3"
+      <FormField label="Role">
+        <Select
+          options={[
+            "Batsman",
+            "Bowler",
+            "All Rounder",
+            "Wicket Keeper",
+          ]}
         />
+      </FormField>
+
+      <FormField label="Batting Style">
+        <Select
+          options={[
+            "Right Hand",
+            "Left Hand",
+          ]}
+        />
+      </FormField>
+
+      <FormField label="Bowling Style">
+        <Select
+          options={[
+            "Right Arm Fast",
+            "Right Arm Medium",
+            "Left Arm Fast",
+            "Left Arm Spin",
+            "Off Spin",
+            "Leg Spin",
+          ]}
+        />
+      </FormField>
+
+      <FormField label="Jersey Number">
+        <Input placeholder="7" />
+      </FormField>
+
+      <div className="md:col-span-2">
+
+        <FormField label="Address">
+          <TextArea
+            placeholder="Enter complete address"
+          />
+        </FormField>
+
       </div>
 
-      <div className="flex justify-end gap-4 pt-4">
+      <div className="md:col-span-2">
+
+        <FormField label="Profile Photo">
+          <input
+            type="file"
+            className="w-full border rounded-xl p-3"
+          />
+        </FormField>
+
+      </div>
+
+      <div className="md:col-span-2 flex justify-end gap-4">
 
         <Button
           type="button"
