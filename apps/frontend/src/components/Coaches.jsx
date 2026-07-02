@@ -1,3 +1,5 @@
+import SectionTitle from "./SectionTitle";
+
 const coaches = [
   {
     name: "Coach Name",
@@ -19,19 +21,18 @@ export default function Coaches() {
 
       <div className="max-w-7xl mx-auto px-6">
 
-        <h2 className="text-5xl font-bold text-center">
-          Meet Our Coaches
-        </h2>
+        <SectionTitle
+          title="Meet Our Coaches"
+          subtitle="Experienced mentors dedicated to developing the next generation of cricketers."
+        />
 
         <div className="grid md:grid-cols-3 gap-10 mt-16">
 
           {coaches.map((coach) => (
-
             <div
               key={coach.role}
-              className="rounded-3xl shadow-lg overflow-hidden bg-white"
+              className="rounded-3xl overflow-hidden shadow-lg bg-white hover:shadow-2xl transition"
             >
-
               <div className="h-72 bg-slate-200"></div>
 
               <div className="p-6">
@@ -47,12 +48,12 @@ export default function Coaches() {
               </div>
 
             </div>
-
           ))}
 
         </div>
 
       </div>
+
     </section>
   );
 }
