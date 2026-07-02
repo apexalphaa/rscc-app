@@ -1,20 +1,25 @@
 import DashboardLayout from "../layouts/DashboardLayout";
+import EmptyState from "../components/EmptyState";
+import PageHeader from "../components/PageHeader";
+import Button from "../components/common/Button";
 
 export default function Attendance() {
   return (
     <DashboardLayout>
 
-      <h1 className="text-4xl font-bold">
-        Attendance
-      </h1>
+      <PageHeader
+        title="Attendance"
+        subtitle="Track daily attendance."
+        action={<Button>Create Session</Button>}
+      />
 
-      <p className="mt-4 text-slate-500">
-        Attendance management will be available here.
-      </p>
+      <div className="mt-8">
 
-      <div className="mt-10 bg-white rounded-3xl border-2 border-dashed border-slate-300 h-96 flex items-center justify-center">
-
-        Coming Soon
+        <EmptyState
+          title="No Attendance Sessions"
+          description="Create your first attendance session to start tracking players."
+          button={<Button>Create Session</Button>}
+        />
 
       </div>
 
