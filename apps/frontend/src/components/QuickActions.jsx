@@ -6,7 +6,7 @@ import {
   UserPlus,
   ClipboardCheck,
   Trophy,
-  Cricket,
+  Dumbbell,
   Wallet,
   Package,
 } from "lucide-react";
