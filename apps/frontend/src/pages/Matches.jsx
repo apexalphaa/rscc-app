@@ -8,6 +8,10 @@ import ScoreBoard from "../components/ScoreBoard";
 import RunButtons from "../components/RunButtons";
 import ExtraButtons from "../components/ExtraButtons";
 import CurrentOver from "../components/CurrentOver";
+import WicketCard from "../components/WicketCard";
+import NewBatterCard from "../components/NewBatterCard";
+import ChangeBowlerCard from "../components/ChangeBowlerCard";
+import MatchStatusCard from "../components/MatchStatusCard";
 
 import BattersCard from "../components/BattersCard";
 import BowlerCard from "../components/BowlerCard";
@@ -144,6 +148,38 @@ Start Match
     />
 
 </div>
+      <div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+  <WicketCard
+    onWicket={(type)=>
+      dispatchBall({
+        type:"WICKET",
+        wicketType:type,
+      })
+    }
+  />
+
+  <NewBatterCard
+    players={match.playingXI}
+    onSelect={setStriker}
+  />
+
+</div>
+
+<div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+  <ChangeBowlerCard
+    bowlers={match.playingXI}
+    onChange={setBowler}
+  />
+
+  <MatchStatusCard
+    match={match}
+  />
+
+</div>
+
+
       <div className="grid lg:grid-cols-2 gap-8 mt-8">
 
         <RunButtons
