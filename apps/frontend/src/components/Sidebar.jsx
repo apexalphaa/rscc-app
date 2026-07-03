@@ -6,17 +6,19 @@ const menu = [
   { name: "Attendance", path: "/attendance" },
   { name: "Matches", path: "/matches" },
   { name: "Tournaments", path: "/tournaments" },
+  { name: "Fees", path: "/fees" },
+  { name: "Equipment", path: "/equipment" },
+  { name: "Notice Board", path: "/notice-board" },
+  { name: "Calendar", path: "/calendar" },
   { name: "Statistics", path: "/statistics" },
   { name: "Settings", path: "/settings" },
 ];
 
 export default function Sidebar() {
-
   const location = useLocation();
 
   return (
-
-    <aside className="w-72 bg-slate-900 text-white min-h-screen">
+    <aside className="w-72 min-h-screen bg-slate-900 text-white">
 
       <div className="p-8">
 
@@ -39,11 +41,13 @@ export default function Sidebar() {
             to={item.path}
             className={`block px-8 py-4 transition ${
               location.pathname === item.path
-                ? "bg-green-600 text-white font-semibold"
+                ? "bg-green-600 font-semibold"
                 : "hover:bg-slate-800"
             }`}
           >
+
             {item.name}
+
           </Link>
 
         ))}
@@ -51,7 +55,5 @@ export default function Sidebar() {
       </nav>
 
     </aside>
-
   );
-
 }
