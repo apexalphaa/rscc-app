@@ -1,7 +1,5 @@
 export default function PartnershipCard({ match }) {
 
-  const { partnership } = match;
-
   return (
 
     <div className="bg-white rounded-3xl shadow-sm p-6">
@@ -14,21 +12,21 @@ export default function PartnershipCard({ match }) {
 
       <div className="text-center">
 
-        <h1 className="text-6xl font-black text-green-600">
+        <h1 className="text-5xl font-black text-green-600">
 
-          {partnership.runs}
+          {match.partnership.runs}
 
         </h1>
 
-        <p className="text-slate-500 mt-3">
+        <p className="mt-3 text-slate-500">
 
           Runs
 
         </p>
 
-        <p className="mt-4 text-xl">
+        <p className="mt-2">
 
-          {partnership.balls} Balls
+          Balls : {match.partnership.balls}
 
         </p>
 
