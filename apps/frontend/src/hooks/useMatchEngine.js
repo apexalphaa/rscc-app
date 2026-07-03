@@ -236,7 +236,29 @@ export default function useMatchEngine() {
           next.bowler.runs++;
 
           break;
+        case "BYE":
 
+    next.innings.score += event.runs;
+
+    next.extras.bye += event.runs;
+
+    next.innings.legalBalls++;
+
+    next.currentOver.push(`B${event.runs}`);
+
+    break;
+
+case "LEGBYE":
+
+    next.innings.score += event.runs;
+
+    next.extras.legBye += event.runs;
+
+    next.innings.legalBalls++;
+
+    next.currentOver.push(`LB${event.runs}`);
+
+    break;
         case "NOBALL":
 
           next.innings.score++;
