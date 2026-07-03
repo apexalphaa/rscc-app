@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react";
+
 import DashboardLayout from "../layouts/DashboardLayout";
 import PageHeader from "../components/PageHeader";
 
@@ -9,57 +11,104 @@ import PlayerStatsCard from "../components/PlayerStatsCard";
 import PlayerPerformanceCard from "../components/PlayerPerformanceCard";
 import RecentMatchesCard from "../components/RecentMatchesCard";
 
-import players from "../data/players";
+import playersData from "../data/players";
 
-export default function Players(){
+export default function Players() {
 
-    const player=players[0];
+  const [search,setSearch]=useState("");
 
-    return(
+  const [batch,setBatch]=useState("");
 
-        <DashboardLayout>
+  const [role,setRole]=useState("");
 
-            <PageHeader
-                title="Players"
-                subtitle="Academy Players"
+  const filteredPlayers=useMemo(()=>{
+
+    return playersData.filter(player=>{
+
+      const matchesSearch=player.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      const matchesBatch=
+        batch==="" || player.batch===batch;
+
+      const matchesRole=
+        role==="" || player.role===role;
+
+      return matchesSearch && matchesBatch && matchesRole;
+
+    });
+
+  },[search,batch,role]);
+
+  const selectedPlayer=filteredPlayers[0];
+
+  return(
+
+    <DashboardLayout>
+
+      <PageHeader
+        title="Players"
+        subtitle="Manage Academy Players"
+      />
+
+      <div className="mt-8">
+
+        <PlayersToolbar
+
+          search={search}
+          setSearch={setSearch}
+
+          batch={batch}
+          setBatch={setBatch}
+
+          role={role}
+          setRole={setRole}
+
+        />
+
+      </div>
+
+      <div className="mt-8">
+
+        <PlayersGrid
+          players={filteredPlayers}
+        />
+
+      </div>
+
+      {selectedPlayer && (
+
+        <>
+
+          <div className="mt-10">
+
+            <PlayerProfileCard
+              player={selectedPlayer}
             />
 
-            <div className="mt-8">
+          </div>
 
-                <PlayersToolbar/>
+          <div className="mt-8">
 
-            </div>
+            <PlayerStatsCard/>
 
-            <div className="mt-8">
+          </div>
 
-                <PlayersGrid/>
+          <div className="grid lg:grid-cols-2 gap-8 mt-8">
 
-            </div>
+            <PlayerPerformanceCard/>
 
-            <div className="mt-10">
+            <RecentMatchesCard/>
 
-                <PlayerProfileCard
-                    player={player}
-                />
+          </div>
 
-            </div>
+        </>
 
-            <div className="mt-8">
+      )}
 
-                <PlayerStatsCard/>
+    </DashboardLayout>
 
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8 mt-8">
-
-                <PlayerPerformanceCard/>
-
-                <RecentMatchesCard/>
-
-            </div>
-
-        </DashboardLayout>
-
-    )
+  );
 
 }
