@@ -12,6 +12,7 @@ const menu = [
   { name: "Notice Board", path: "/notice-board" },
   { name: "Calendar", path: "/calendar" },
   { name: "Statistics", path: "/statistics" },
+  
   { name: "Settings", path: "/settings" },
 ];
 
