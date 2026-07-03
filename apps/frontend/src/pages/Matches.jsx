@@ -6,31 +6,57 @@ import RunButtons from "../components/RunButtons";
 import ExtraButtons from "../components/ExtraButtons";
 import CurrentOver from "../components/CurrentOver";
 
-import useMatchScoring from "../hooks/useMatchScoring";
+import BattersCard from "../components/BattersCard";
+import BowlerCard from "../components/BowlerCard";
+import PartnershipCard from "../components/PartnershipCard";
+
+import useMatchEngine from "../hooks/useMatchEngine";
 
 export default function Matches() {
 
   const {
-
     match,
+    dispatchBall,
+    resetMatch,
+  } = useMatchEngine();
 
-    addRuns,
+  function run(value) {
+    dispatchBall({
+      type: "RUN",
+      runs: value,
+    });
+  }
 
-    wicket,
+  function dotBall() {
+    dispatchBall({
+      type: "DOT",
+    });
+  }
 
-    wide,
+  function wicket() {
+    dispatchBall({
+      type: "WICKET",
+    });
+  }
 
-    noBall,
+  function wide() {
+    dispatchBall({
+      type: "WIDE",
+    });
+  }
 
-  } = useMatchScoring();
+  function noBall() {
+    dispatchBall({
+      type: "NOBALL",
+    });
+  }
 
   return (
-
     <DashboardLayout>
 
       <PageHeader
         title="Live Match"
-        subtitle="Professional scoring system"
+        subtitle="Professional Cricket Scoring Engine"
       />
 
       <div className="mt-8">
@@ -44,13 +70,14 @@ export default function Matches() {
       <div className="grid lg:grid-cols-2 gap-8 mt-8">
 
         <RunButtons
-          addRun={addRuns}
+          addRun={run}
         />
 
         <ExtraButtons
           wicket={wicket}
           wide={wide}
           noBall={noBall}
+          dotBall={dotBall}
         />
 
       </div>
@@ -63,8 +90,36 @@ export default function Matches() {
 
       </div>
 
-    </DashboardLayout>
+      <div className="grid lg:grid-cols-3 gap-8 mt-8">
 
+        <BattersCard
+          match={match}
+        />
+
+        <BowlerCard
+          match={match}
+        />
+
+        <PartnershipCard
+          match={match}
+        />
+
+      </div>
+
+      <div className="flex justify-end mt-10">
+
+        <button
+          onClick={resetMatch}
+          className="px-6 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition"
+        >
+
+          Reset Match
+
+        </button>
+
+      </div>
+
+    </DashboardLayout>
   );
 
 }
