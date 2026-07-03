@@ -89,6 +89,11 @@ export default function useMatchEngine() {
           match.bowler.runs += event.runs;
           match.bowler.balls++;
 
+          match.timeline.push({
+  type: "RUN",
+  runs: event.runs,
+});
+          
           if (event.runs % 2 === 1) {
             [match.batters.striker, match.batters.nonStriker] = [
               match.batters.nonStriker,
