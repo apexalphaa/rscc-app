@@ -2,66 +2,59 @@ import Button from "./common/Button";
 
 export default function ExtraButtons({
 
-    wicket,
+  wicket,
 
-    wide,
+  wide,
 
-    noBall
+  noBall,
 
-}){
+  dotBall,
 
-    return(
+}) {
 
-        <div className="bg-white rounded-3xl shadow-sm p-8">
+  return (
 
-            <h2 className="text-2xl font-bold mb-6">
+    <div className="bg-white rounded-3xl shadow-sm p-8">
 
-                Extras
+      <h2 className="text-2xl font-bold mb-6">
 
-            </h2>
+        Ball Events
 
-            <div className="grid grid-cols-3 gap-4">
+      </h2>
 
-                <Button
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    className="bg-red-600"
+        <Button
+          onClick={dotBall}
+        >
+          Dot Ball
+        </Button>
 
-                    onClick={wicket}
+        <Button
+          className="bg-red-600"
+          onClick={wicket}
+        >
+          Wicket
+        </Button>
 
-                >
+        <Button
+          className="bg-yellow-500"
+          onClick={wide}
+        >
+          Wide
+        </Button>
 
-                    Wicket
+        <Button
+          className="bg-blue-600"
+          onClick={noBall}
+        >
+          No Ball
+        </Button>
 
-                </Button>
+      </div>
 
-                <Button
+    </div>
 
-                    className="bg-yellow-500"
-
-                    onClick={wide}
-
-                >
-
-                    Wide
-
-                </Button>
-
-                <Button
-
-                    className="bg-blue-600"
-
-                    onClick={noBall}
-
-                >
-
-                    No Ball
-
-                </Button>
-
-            </div>
-
-        </div>
-
-    )
+  );
 
 }
