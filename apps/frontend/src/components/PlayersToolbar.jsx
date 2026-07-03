@@ -1,45 +1,33 @@
-import SearchBar from "./SearchBar";
-import FilterSelect from "./FilterSelect";
 import Button from "./common/Button";
 
-import playerRoles from "../data/playerRoles";
-import playerBatches from "../data/playerBatches";
+export default function PlayersToolbar() {
 
-export default function PlayersToolbar({
-  onAdd,
-}) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6">
 
-      <div className="grid lg:grid-cols-4 gap-4">
+    <div className="bg-white rounded-3xl shadow-sm p-6 flex flex-col lg:flex-row gap-4">
 
-        <SearchBar
-          placeholder="Search by name, phone or player ID..."
-        />
+      <input
+        placeholder="Search Player..."
+        className="border rounded-xl p-3 flex-1"
+      />
 
-        <FilterSelect
-          label="Role"
-          options={playerRoles}
-        />
+      <select className="border rounded-xl p-3">
 
-        <FilterSelect
-          label="Batch"
-          options={playerBatches}
-        />
+        <option>All Batches</option>
+        <option>U14</option>
+        <option>U16</option>
+        <option>U19</option>
 
-        <div className="flex items-end">
+      </select>
 
-          <Button
-            className="w-full"
-            onClick={onAdd}
-          >
-            Register Player
-          </Button>
+      <Button>
 
-        </div>
+        Add Player
 
-      </div>
+      </Button>
 
     </div>
+
   );
+
 }
