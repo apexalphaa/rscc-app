@@ -14,7 +14,7 @@ import QuickLinks from "../components/QuickLinks";
 import PortalExplorer from "../components/PortalExplorer";
 export default function Home() {
   return (
-    <>
+    
   <>
   <Navbar />
   <Announcement />
@@ -31,6 +31,6 @@ export default function Home() {
   <PortalExplorer />
   <Footer />
 </>
-</>
+
   );
 }
