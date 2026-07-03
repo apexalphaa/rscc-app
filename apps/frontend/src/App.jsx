@@ -12,6 +12,7 @@ import Fees from "./pages/Fees";
 import Equipment from "./pages/Equipment";
 import NoticeBoard from "./pages/NoticeBoard";
 import Calendar from "./pages/Calendar";
+import PlayerDetails from "./pages/PlayerDetails";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -36,11 +37,13 @@ function App() {
 
       <Route path="/fees" element={<Fees />} />
 
-<Route path="/equipment" element={<Equipment />} />
+      <Route path="/equipment" element={<Equipment />} />
 
-<Route path="/notice-board" element={<NoticeBoard />} />
+     <Route path="/notice-board" element={<NoticeBoard />} />
 
-<Route path="/calendar" element={<Calendar />} />
+      <Route path="/calendar" element={<Calendar />} /> 
+      
+      <Route path="/players/:id" element={<PlayerDetails/>} />
 
       <Route path="/settings" element={<Settings />} />
 
