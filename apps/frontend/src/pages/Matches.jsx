@@ -12,6 +12,10 @@ import WicketCard from "../components/WicketCard";
 import NewBatterCard from "../components/NewBatterCard";
 import ChangeBowlerCard from "../components/ChangeBowlerCard";
 import MatchStatusCard from "../components/MatchStatusCard";
+import InningsCard from "../components/InningsCard";
+import TargetCard from "../components/TargetCard";
+import RunRateCardAdvanced from "../components/RunRateCardAdvanced";
+import MatchResultCard from "../components/MatchResultCard";
 
 import BattersCard from "../components/BattersCard";
 import BowlerCard from "../components/BowlerCard";
@@ -39,7 +43,21 @@ import OverHistory from "../components/OverHistory";
 import MatchSetup from "../components/MatchSetup";
 
 export default function Matches() {
+const {
 
+match,
+
+innings,
+
+target,
+
+finishFirstInnings,
+
+currentRunRate,
+
+requiredRunRate,
+
+}=useMatchEngine();
   const {
     match,
     dispatchBall,
@@ -288,6 +306,55 @@ Start Match
 <div className="mt-8">
 
     <WagonWheelCard />
+
+</div>
+      <div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+    <InningsCard
+
+        innings={innings}
+
+    />
+
+    <TargetCard
+
+        target={target}
+
+    />
+
+</div>
+
+<div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+    <RunRateCardAdvanced
+
+        current={currentRunRate()}
+
+        required={requiredRunRate()}
+
+    />
+
+    <MatchResultCard
+
+        result="Match In Progress"
+
+    />
+
+</div>
+
+<div className="flex justify-end mt-8">
+
+    <button
+
+        onClick={finishFirstInnings}
+
+        className="bg-green-600 text-white px-8 py-3 rounded-xl"
+
+    >
+
+        End First Innings
+
+    </button>
 
 </div>
       <div className="flex gap-4 justify-end mt-10">
