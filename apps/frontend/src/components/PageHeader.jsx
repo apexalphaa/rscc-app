@@ -1,25 +1,33 @@
+import Breadcrumb from "./Breadcrumb";
+
 export default function PageHeader({
+
   title,
+
   subtitle,
-  action,
+
 }) {
+
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-      <div>
+    <div>
 
-        <h1 className="text-4xl font-bold">
-          {title}
-        </h1>
+      <Breadcrumb/>
 
-        <p className="mt-2 text-slate-500">
-          {subtitle}
-        </p>
+      <h1 className="text-4xl font-black">
 
-      </div>
+        {title}
 
-      {action}
+      </h1>
+
+      <p className="text-slate-500 mt-3">
+
+        {subtitle}
+
+      </p>
 
     </div>
+
   );
+
 }
