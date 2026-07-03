@@ -1,10 +1,12 @@
 import DashboardLayout from "../layouts/DashboardLayout";
 import PageHeader from "../components/PageHeader";
+import Button from "../components/common/Button";
 
 import TournamentStats from "../components/TournamentStats";
 import TournamentGrid from "../components/TournamentGrid";
-
-import Button from "../components/common/Button";
+import PointsTable from "../components/PointsTable";
+import FixturesCard from "../components/FixturesCard";
+import BracketCard from "../components/BracketCard";
 
 export default function Tournaments() {
 
@@ -29,13 +31,27 @@ export default function Tournaments() {
 
       <div className="mt-8">
 
-        <TournamentStats/>
+        <TournamentStats />
 
       </div>
 
       <div className="mt-8">
 
-        <TournamentGrid/>
+        <TournamentGrid />
+
+      </div>
+
+      <div className="mt-8">
+
+        <PointsTable />
+
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+        <FixturesCard />
+
+        <BracketCard />
 
       </div>
 
