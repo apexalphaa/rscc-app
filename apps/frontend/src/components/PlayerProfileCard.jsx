@@ -1,40 +1,62 @@
 export default function PlayerProfileCard({ player }) {
 
-  if (!player) return null;
-
   return (
 
-    <div className="bg-white rounded-3xl shadow-sm p-6">
+    <div className="bg-white rounded-3xl shadow-sm p-8">
 
-      <div className="flex items-center gap-6">
+      <div className="flex flex-col lg:flex-row gap-8">
 
-        <div className="w-28 h-28 rounded-full bg-slate-200"></div>
+        <div className="w-40 h-40 rounded-full bg-slate-200"></div>
 
-        <div>
+        <div className="flex-1">
 
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-4xl font-black">
 
             {player.name}
 
           </h1>
 
-          <p className="text-slate-500 mt-2">
+          <p className="text-xl text-slate-500 mt-3">
 
             {player.role}
 
           </p>
 
-          <p className="mt-1">
+          <div className="grid md:grid-cols-2 gap-5 mt-8">
 
-            Age : {player.age}
+            <div>
 
-          </p>
+              <strong>Age</strong>
 
-          <p>
+              <p>{player.age}</p>
 
-            Batch : {player.batch}
+            </div>
 
-          </p>
+            <div>
+
+              <strong>Batch</strong>
+
+              <p>{player.batch}</p>
+
+            </div>
+
+            <div>
+
+              <strong>Batting Style</strong>
+
+              <p>Right Handed</p>
+
+            </div>
+
+            <div>
+
+              <strong>Bowling Style</strong>
+
+              <p>Right Arm Medium</p>
+
+            </div>
+
+          </div>
 
         </div>
 
