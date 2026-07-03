@@ -18,6 +18,7 @@ import BattingScorecard from "../components/BattingScorecard";
 import BowlingScorecard from "../components/BowlingScorecard";
 import MatchSummary from "../components/MatchSummary";
 import OverHistory from "../components/OverHistory";
+import MatchSetup from "../components/MatchSetup";
 
 export default function Matches() {
 
@@ -104,7 +105,11 @@ export default function Matches() {
   />
 
 </div>
+<div className="mt-8">
 
+    <MatchSetup/>
+
+</div>
 <div className="grid lg:grid-cols-2 gap-8 mt-8">
 
   <BattingScorecard
