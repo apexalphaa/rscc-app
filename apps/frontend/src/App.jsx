@@ -13,6 +13,7 @@ import Equipment from "./pages/Equipment";
 import NoticeBoard from "./pages/NoticeBoard";
 import Calendar from "./pages/Calendar";
 import PlayerDetails from "./pages/PlayerDetails";
+import Coaches from "./pages/Coaches";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +43,8 @@ function App() {
      <Route path="/notice-board" element={<NoticeBoard />} />
 
       <Route path="/calendar" element={<Calendar />} /> 
+
+      <Route path="/coaches" element={<Coaches />} />
       
       <Route path="/players/:id" element={<PlayerDetails/>} />
 
