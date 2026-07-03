@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 const menu = [
   { name: "Dashboard", path: "/dashboard" },
   { name: "Players", path: "/players" },
+  { name: "Coaches", path: "/coaches" },
   { name: "Attendance", path: "/attendance" },
   { name: "Matches", path: "/matches" },
   { name: "Tournaments", path: "/tournaments" },
