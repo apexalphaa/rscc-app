@@ -27,6 +27,34 @@ const players = [
     role: "Wicket Keeper",
     batch: "U14",
   },
+  {
+  id: 5,
+  name: "Vivek Kumar",
+  age: 16,
+  role: "Bowler",
+  batch: "U16",
+},
+{
+  id: 6,
+  name: "Aman Gupta",
+  age: 17,
+  role: "Batsman",
+  batch: "U19",
+},
+{
+  id: 7,
+  name: "Karan Mishra",
+  age: 14,
+  role: "All Rounder",
+  batch: "U14",
+},
+{
+  id: 8,
+  name: "Rohit Singh",
+  age: 15,
+  role: "Bowler",
+  batch: "U16",
+},
 ];
 
 export default players;
