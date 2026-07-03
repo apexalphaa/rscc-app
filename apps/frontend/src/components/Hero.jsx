@@ -37,9 +37,15 @@ export default function Hero() {
               Join Academy
             </Button>
 
-            <Button className="bg-white text-slate-900 hover:bg-slate-100">
-              View Programs
-            </Button>
+            <a href="#portal">
+
+    <Button className="bg-white text-slate-900 hover:bg-slate-100">
+
+        Explore Portal
+
+    </Button>
+
+</a>
 
           </div>
 
