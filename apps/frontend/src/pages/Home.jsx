@@ -11,7 +11,7 @@ import UpcomingEvents from "../components/UpcomingEvents";
 import CTA from "../components/CTA";
 import Announcement from "../components/Announcement";
 import QuickLinks from "../components/QuickLinks";
-
+import PortalExplorer from "../components/PortalExplorer";
 export default function Home() {
   return (
     <>
@@ -28,6 +28,7 @@ export default function Home() {
   <UpcomingEvents />
   <Gallery />
   <CTA />
+  <PortalExplorer />
   <Footer />
 </>
 </>
