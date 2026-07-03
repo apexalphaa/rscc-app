@@ -44,26 +44,18 @@ import MatchSetup from "../components/MatchSetup";
 
 export default function Matches() {
 const {
-
-match,
-
-innings,
-
-target,
-
-finishFirstInnings,
-
-currentRunRate,
-
-requiredRunRate,
-
-}=useMatchEngine();
-  const {
-    match,
-    dispatchBall,
-    undoBall,
-    resetMatch,
-  } = useMatchEngine();
+  match,
+  innings,
+  target,
+  finishFirstInnings,
+  currentRunRate,
+  requiredRunRate,
+  dispatchBall,
+  undoBall,
+  resetMatch,
+  setStriker,
+  setBowler,
+} = useMatchEngine();
 
   function run(value) {
     dispatchBall({
