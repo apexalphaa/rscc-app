@@ -2,35 +2,38 @@ import PlayerCard from "./PlayerCard";
 
 export default function PlayersGrid({
 
-  players,
+players,
 
-}) {
+}){
 
-  return (
+return(
 
-    <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+<div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
 
-      {players.length===0 && (
+{players.length===0 &&(
 
-        <div className="col-span-full text-center py-16 text-slate-500">
+<div className="col-span-full text-center py-16 text-slate-500">
 
-          No Players Found
+No Players Found
 
-        </div>
+</div>
 
-      )}
+)}
 
-      {players.map(player=>(
+{players.map(player=>(
 
-        <PlayerCard
-          key={player.id}
-          player={player}
-        />
+<PlayerCard
 
-      ))}
+key={player.id}
 
-    </div>
+player={player}
 
-  );
+/>
+
+))}
+
+</div>
+
+)
 
 }
