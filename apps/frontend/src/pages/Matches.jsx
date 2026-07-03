@@ -13,6 +13,11 @@ import BattersCard from "../components/BattersCard";
 import BowlerCard from "../components/BowlerCard";
 import PartnershipCard from "../components/PartnershipCard";
 
+import DotBallButton from "../components/DotBallButton";
+import ByeButtons from "../components/ByeButtons";
+import LegByeButtons from "../components/LegByeButtons";
+import ExtraRuns from "../components/ExtraRuns";
+
 import useMatchEngine from "../hooks/useMatchEngine";
 import ExtrasCard from "../components/ExtrasCard";
 import RunRateCard from "../components/RunRateCard";
@@ -99,7 +104,46 @@ Start Match
         />
 
       </div>
+<div className="grid lg:grid-cols-2 gap-8 mt-8">
 
+    <DotBallButton
+        onDot={() =>
+            dispatchBall({ type: "DOT" })
+        }
+    />
+
+    <ExtraRuns
+        onWide={() =>
+            dispatchBall({ type: "WIDE" })
+        }
+        onNoBall={() =>
+            dispatchBall({ type: "NOBALL" })
+        }
+    />
+
+</div>
+
+<div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+    <ByeButtons
+        onBye={(runs)=>
+            dispatchBall({
+                type:"BYE",
+                runs,
+            })
+        }
+    />
+
+    <LegByeButtons
+        onLegBye={(runs)=>
+            dispatchBall({
+                type:"LEGBYE",
+                runs,
+            })
+        }
+    />
+
+</div>
       <div className="grid lg:grid-cols-2 gap-8 mt-8">
 
         <RunButtons
