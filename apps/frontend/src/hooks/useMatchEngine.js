@@ -7,6 +7,8 @@ const initialMatch = {
     totalOvers: 20,
   },
 
+  playingXI: [],
+
   innings: {
     score: 0,
     wickets: 0,
@@ -15,20 +17,20 @@ const initialMatch = {
 
   batters: {
     striker: {
-      name: "Batter 1",
+      name: "",
       runs: 0,
       balls: 0,
     },
 
     nonStriker: {
-      name: "Batter 2",
+      name: "",
       runs: 0,
       balls: 0,
     },
   },
 
   bowler: {
-    name: "Bowler",
+    name: "",
     overs: 0,
     balls: 0,
     runs: 0,
@@ -53,193 +55,278 @@ const initialMatch = {
 };
 
 export default function useMatchEngine() {
-  const [events, setEvents] = useState([]);
+
+  const [match, setMatch] = useState(initialMatch);
+
+  function setPlayingXI(player, checked) {
+
+    setMatch(prev => {
+
+      if (checked) {
+
+        if (prev.playingXI.includes(player))
+          return prev;
+
+        return {
+          ...prev,
+          playingXI: [...prev.playingXI, player],
+        };
+
+      }
+
+      return {
+        ...prev,
+        playingXI: prev.playingXI.filter(
+          p => p !== player
+        ),
+      };
+
+    });
+
+  }
+
+  function setStriker(name) {
+
+    setMatch(prev => ({
+      ...prev,
+
+      batters: {
+
+        ...prev.batters,
+
+        striker: {
+          ...prev.batters.striker,
+          name,
+        },
+
+      },
+
+    }));
+
+  }
+
+  function setNonStriker(name) {
+
+    setMatch(prev => ({
+      ...prev,
+
+      batters: {
+
+        ...prev.batters,
+
+        nonStriker: {
+          ...prev.batters.nonStriker,
+          name,
+        },
+
+      },
+
+    }));
+
+  }
+
+  function setBowler(name) {
+
+    setMatch(prev => ({
+      ...prev,
+
+      bowler: {
+
+        ...prev.bowler,
+
+        name,
+
+      },
+
+    }));
+
+  }
 
   function dispatchBall(event) {
-    setEvents((prev) => [...prev, event]);
-  }
 
-  function undoBall() {
-    setEvents((prev) => prev.slice(0, -1));
-  }
+    setMatch(prev => {
 
-  function resetMatch() {
-    setEvents([]);
-  }
+      const next = structuredClone(prev);
 
-  function buildMatch(events) {
-    const match = structuredClone(initialMatch);
-
-    events.forEach((event) => {
-      match.timeline.push(event);
+      next.timeline.push(event);
 
       switch (event.type) {
-        case "RUN": {
-          match.innings.score += event.runs;
-          match.innings.legalBalls++;
 
-          match.currentOver.push(String(event.runs));
+        case "RUN":
 
-          match.batters.striker.runs += event.runs;
-          match.batters.striker.balls++;
+          next.innings.score += event.runs;
 
-          match.partnership.runs += event.runs;
-          match.partnership.balls++;
+          next.innings.legalBalls++;
 
-          match.bowler.runs += event.runs;
-          match.bowler.balls++;
+          next.currentOver.push(String(event.runs));
 
-          match.timeline.push({
-  type: "RUN",
-  runs: event.runs,
-});
-          
+          next.batters.striker.runs += event.runs;
+
+          next.batters.striker.balls++;
+
+          next.partnership.runs += event.runs;
+
+          next.partnership.balls++;
+
+          next.bowler.runs += event.runs;
+
+          next.bowler.balls++;
+
           if (event.runs % 2 === 1) {
-            [match.batters.striker, match.batters.nonStriker] = [
-              match.batters.nonStriker,
-              match.batters.striker,
-            ];
+
+            const temp = next.batters.striker;
+
+            next.batters.striker = next.batters.nonStriker;
+
+            next.batters.nonStriker = temp;
+
           }
 
           break;
-        }
 
-        case "DOT": {
-          match.innings.legalBalls++;
+        case "DOT":
 
-          match.currentOver.push(".");
+          next.innings.legalBalls++;
 
-          match.batters.striker.balls++;
+          next.currentOver.push(".");
 
-          match.partnership.balls++;
+          next.batters.striker.balls++;
 
-          match.bowler.balls++;
+          next.partnership.balls++;
+
+          next.bowler.balls++;
 
           break;
-        }
 
-        case "WICKET": {
-          match.innings.wickets++;
+        case "WICKET":
 
-          match.innings.legalBalls++;
+          next.innings.wickets++;
 
-          match.currentOver.push("W");
+          next.innings.legalBalls++;
 
-          match.batters.striker.balls++;
+          next.currentOver.push("W");
 
-          match.partnership.balls++;
+          next.bowler.wickets++;
 
-          match.bowler.balls++;
+          next.bowler.balls++;
 
-          match.bowler.wickets++;
+          next.batters.striker.balls++;
 
-          match.batters.striker = {
-            name: `Batter ${match.innings.wickets + 2}`,
+          next.partnership = {
             runs: 0,
             balls: 0,
           };
 
-          match.partnership = {
+          next.batters.striker = {
+            name: "",
             runs: 0,
             balls: 0,
           };
 
           break;
-        }
 
-        case "WIDE": {
-          match.innings.score++;
+        case "WIDE":
 
-          match.extras.wide++;
+          next.innings.score++;
 
-          match.currentOver.push("WD");
+          next.extras.wide++;
 
-          match.bowler.runs++;
+          next.currentOver.push("WD");
 
-          break;
-        }
-
-        case "NOBALL": {
-          match.innings.score++;
-
-          match.extras.noBall++;
-
-          match.currentOver.push("NB");
-
-          match.bowler.runs++;
+          next.bowler.runs++;
 
           break;
-        }
 
-        case "BYE": {
-          match.innings.score += event.runs;
+        case "NOBALL":
 
-          match.extras.bye += event.runs;
+          next.innings.score++;
 
-          match.innings.legalBalls++;
+          next.extras.noBall++;
 
-          match.currentOver.push(`B${event.runs}`);
+          next.currentOver.push("NB");
 
-          match.partnership.balls++;
-
-          match.bowler.balls++;
+          next.bowler.runs++;
 
           break;
-        }
-
-        case "LEGBYE": {
-          match.innings.score += event.runs;
-
-          match.extras.legBye += event.runs;
-
-          match.innings.legalBalls++;
-
-          match.currentOver.push(`LB${event.runs}`);
-
-          match.partnership.balls++;
-
-          match.bowler.balls++;
-
-          break;
-        }
 
         default:
+
           break;
+
       }
 
-      if (match.currentOver.length > 6) {
-        match.currentOver.shift();
-      }
+      if (next.currentOver.length > 6)
+        next.currentOver.shift();
 
-      if (
-        match.innings.legalBalls > 0 &&
-        match.innings.legalBalls % 6 === 0
-      ) {
-        [match.batters.striker, match.batters.nonStriker] = [
-          match.batters.nonStriker,
-          match.batters.striker,
-        ];
-
-        match.currentOver = [];
-      }
-
-      match.bowler.overs = Math.floor(
-        match.innings.legalBalls / 6
+      next.bowler.overs = Math.floor(
+        next.innings.legalBalls / 6
       );
 
-      match.bowler.balls =
-        match.innings.legalBalls % 6;
+      next.bowler.balls =
+        next.innings.legalBalls % 6;
+
+      if (
+        next.innings.legalBalls > 0 &&
+        next.innings.legalBalls % 6 === 0
+      ) {
+
+        const temp = next.batters.striker;
+
+        next.batters.striker =
+          next.batters.nonStriker;
+
+        next.batters.nonStriker = temp;
+
+        next.currentOver = [];
+
+      }
+
+      return next;
+
     });
 
-    return match;
   }
 
-  const match = buildMatch(events);
+  function undoBall() {
+
+    setMatch(prev => {
+
+      if (prev.timeline.length === 0)
+        return prev;
+
+      // Temporary implementation.
+      // Full event replay engine will come in Sprint 20.
+
+      return prev;
+
+    });
+
+  }
+
+  function resetMatch() {
+
+    setMatch(initialMatch);
+
+  }
 
   return {
+
     match,
+
     dispatchBall,
+
     undoBall,
+
     resetMatch,
+
+    setPlayingXI,
+
+    setStriker,
+
+    setNonStriker,
+
+    setBowler,
+
   };
+
 }
