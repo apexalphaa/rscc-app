@@ -1,36 +1,65 @@
 import DashboardLayout from "../layouts/DashboardLayout";
-
 import PageHeader from "../components/PageHeader";
 
 import PlayersToolbar from "../components/PlayersToolbar";
-
 import PlayersGrid from "../components/PlayersGrid";
 
-export default function Players() {
+import PlayerProfileCard from "../components/PlayerProfileCard";
+import PlayerStatsCard from "../components/PlayerStatsCard";
+import PlayerPerformanceCard from "../components/PlayerPerformanceCard";
+import RecentMatchesCard from "../components/RecentMatchesCard";
 
-  return (
+import players from "../data/players";
 
-    <DashboardLayout>
+export default function Players(){
 
-      <PageHeader
-        title="Players"
-        subtitle="Manage academy players"
-      />
+    const player=players[0];
 
-      <div className="mt-8">
+    return(
 
-        <PlayersToolbar />
+        <DashboardLayout>
 
-      </div>
+            <PageHeader
+                title="Players"
+                subtitle="Academy Players"
+            />
 
-      <div className="mt-8">
+            <div className="mt-8">
 
-        <PlayersGrid />
+                <PlayersToolbar/>
 
-      </div>
+            </div>
 
-    </DashboardLayout>
+            <div className="mt-8">
 
-  );
+                <PlayersGrid/>
+
+            </div>
+
+            <div className="mt-10">
+
+                <PlayerProfileCard
+                    player={player}
+                />
+
+            </div>
+
+            <div className="mt-8">
+
+                <PlayerStatsCard/>
+
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+                <PlayerPerformanceCard/>
+
+                <RecentMatchesCard/>
+
+            </div>
+
+        </DashboardLayout>
+
+    )
 
 }
