@@ -1,5 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import DashboardHeader from "../components/DashboardHeader";
+import Topbar from "../components/Topbar";
 
 export default function DashboardLayout({ children }) {
   return (
@@ -7,15 +8,17 @@ export default function DashboardLayout({ children }) {
 
       <Sidebar />
 
-      <div className="flex-1 flex flex-col">
+     <div className="flex-1 bg-slate-100 min-h-screen">
 
-        <DashboardHeader />
+  <Topbar />
 
-        <main className="p-8">
-          {children}
-        </main>
+  <main className="p-8">
 
-      </div>
+    {children}
+
+  </main>
+
+</div>
 
     </div>
   );
