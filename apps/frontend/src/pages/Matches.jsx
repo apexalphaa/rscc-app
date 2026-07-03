@@ -1,6 +1,9 @@
 import DashboardLayout from "../layouts/DashboardLayout";
 import PageHeader from "../components/PageHeader";
-
+import MatchDetailsCard from "../components/MatchDetailsCard";
+import TossCard from "../components/TossCard";
+import PlayingXISetup from "../components/PlayingXISetup";
+import OpeningPlayersCard from "../components/OpeningPlayersCard";
 import ScoreBoard from "../components/ScoreBoard";
 import RunButtons from "../components/RunButtons";
 import ExtraButtons from "../components/ExtraButtons";
@@ -67,7 +70,17 @@ export default function Matches() {
         title="Live Match"
         subtitle="Professional Cricket Scoring Engine"
       />
+<div className="space-y-8 mt-8">
 
+    <MatchDetailsCard/>
+
+    <TossCard/>
+
+    <PlayingXISetup/>
+
+    <OpeningPlayersCard/>
+
+</div>
       <div className="mt-8">
 
         <ScoreBoard
