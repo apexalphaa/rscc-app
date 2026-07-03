@@ -22,6 +22,12 @@ import ByeButtons from "../components/ByeButtons";
 import LegByeButtons from "../components/LegByeButtons";
 import ExtraRuns from "../components/ExtraRuns";
 
+import CommentaryCard from "../components/CommentaryCard";
+import FallOfWickets from "../components/FallOfWickets";
+import WormGraphCard from "../components/WormGraphCard";
+import ManhattanGraphCard from "../components/ManhattanGraphCard";
+import WagonWheelCard from "../components/WagonWheelCard";
+
 import useMatchEngine from "../hooks/useMatchEngine";
 import ExtrasCard from "../components/ExtrasCard";
 import RunRateCard from "../components/RunRateCard";
@@ -263,7 +269,27 @@ Start Match
         />
 
       </div>
+<div className="grid lg:grid-cols-2 gap-8 mt-8">
 
+    <CommentaryCard />
+
+    <FallOfWickets />
+
+</div>
+
+<div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+    <WormGraphCard />
+
+    <ManhattanGraphCard />
+
+</div>
+
+<div className="mt-8">
+
+    <WagonWheelCard />
+
+</div>
       <div className="flex gap-4 justify-end mt-10">
 <button
 
