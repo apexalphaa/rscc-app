@@ -53,6 +53,9 @@ const initialMatch = {
 
   timeline: [],
 };
+const [innings,setInnings]=useState(1);
+
+const [target,setTarget]=useState(0);
 
 export default function useMatchEngine() {
 
@@ -324,7 +327,60 @@ case "LEGBYE":
     });
 
   }
+function finishFirstInnings(){
 
+    setTarget(match.innings.score+1);
+
+    setInnings(2);
+
+}
+
+function finishMatch(){
+
+    // backend later
+
+}
+
+function currentRunRate(){
+
+    if(match.innings.legalBalls===0)
+        return "0.00";
+
+    return (
+
+        match.innings.score/
+
+        (match.innings.legalBalls/6)
+
+    ).toFixed(2);
+
+}
+
+function requiredRunRate(){
+
+    if(innings===1)
+        return "-";
+
+    const runsNeeded=target-match.innings.score;
+
+    const ballsLeft=
+
+        match.info.totalOvers*6-
+
+        match.innings.legalBalls;
+
+    if(ballsLeft<=0)
+        return "-";
+
+    return (
+
+        runsNeeded/
+
+        (ballsLeft/6)
+
+    ).toFixed(2);
+
+}
   function resetMatch() {
 
     setMatch(initialMatch);
@@ -349,6 +405,19 @@ case "LEGBYE":
 
     setBowler,
 
+    innings,
+
+target,
+
+setInnings,
+
+finishFirstInnings,
+
+finishMatch,
+
+currentRunRate,
+
+requiredRunRate,
   };
 
 }
