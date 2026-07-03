@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import GlobalSearch from "./GlobalSearch";
 
 export default function Topbar() {
 
@@ -6,11 +7,7 @@ export default function Topbar() {
 
     <header className="h-20 bg-white shadow-sm flex items-center justify-between px-8">
 
-      <input
-        type="text"
-        placeholder="Search players, matches, tournaments..."
-        className="w-full max-w-md border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-green-500"
-      />
+      <GlobalSearch/>
 
       <div className="flex items-center gap-6">
 
