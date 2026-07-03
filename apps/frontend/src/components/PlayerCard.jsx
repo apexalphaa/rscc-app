@@ -1,26 +1,29 @@
-export default function PlayerCard({
-  player,
-}) {
+export default function PlayerCard({ player }) {
   return (
-    <div className="bg-white rounded-2xl shadow-md p-6">
+    <div className="bg-white rounded-3xl shadow-sm p-6 hover:shadow-lg transition">
 
-      <div className="w-20 h-20 rounded-full bg-slate-200 mx-auto"></div>
+      <div className="w-20 h-20 rounded-full bg-slate-200 mx-auto" />
 
-      <h2 className="text-center text-xl font-bold mt-5">
+      <h2 className="text-xl font-bold text-center mt-5">
         {player.name}
       </h2>
 
-      <p className="text-center text-slate-500 mt-1">
-        {player.role}
-      </p>
+      <div className="mt-6 space-y-2">
 
-      <div className="mt-6 text-sm">
+        <div className="flex justify-between">
+          <span>Age</span>
+          <span>{player.age}</span>
+        </div>
 
-        <p>Age : {player.age}</p>
+        <div className="flex justify-between">
+          <span>Role</span>
+          <span>{player.role}</span>
+        </div>
 
-        <p>Batting : {player.batting}</p>
-
-        <p>Bowling : {player.bowling}</p>
+        <div className="flex justify-between">
+          <span>Batch</span>
+          <span>{player.batch}</span>
+        </div>
 
       </div>
 
