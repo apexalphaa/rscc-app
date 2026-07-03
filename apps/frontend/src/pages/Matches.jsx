@@ -11,12 +11,16 @@ import BowlerCard from "../components/BowlerCard";
 import PartnershipCard from "../components/PartnershipCard";
 
 import useMatchEngine from "../hooks/useMatchEngine";
+import ExtrasCard from "../components/ExtrasCard";
+import RunRateCard from "../components/RunRateCard";
+import TimelineCard from "../components/TimelineCard";
 
 export default function Matches() {
 
   const {
     match,
     dispatchBall,
+    undoBall,
     resetMatch,
   } = useMatchEngine();
 
@@ -89,7 +93,21 @@ export default function Matches() {
         />
 
       </div>
+<div className="grid lg:grid-cols-3 gap-8 mt-8">
 
+    <ExtrasCard
+        match={match}
+    />
+
+    <RunRateCard
+        match={match}
+    />
+
+    <TimelineCard
+        match={match}
+    />
+
+</div>
       <div className="grid lg:grid-cols-3 gap-8 mt-8">
 
         <BattersCard
@@ -106,8 +124,18 @@ export default function Matches() {
 
       </div>
 
-      <div className="flex justify-end mt-10">
+      <div className="flex gap-4 justify-end mt-10">
+<button
 
+    onClick={undoBall}
+
+    className="px-6 py-3 rounded-xl bg-slate-700 text-white"
+
+>
+
+    Undo Last Ball
+
+</button>
         <button
           onClick={resetMatch}
           className="px-6 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition"
