@@ -70,6 +70,17 @@ export default function Matches() {
         title="Live Match"
         subtitle="Professional Cricket Scoring Engine"
       />
+      <div className="flex justify-end mt-8">
+
+<button
+className="bg-green-600 text-white px-8 py-3 rounded-xl hover:bg-green-700 transition"
+>
+
+Start Match
+
+</button>
+
+</div>
 <div className="space-y-8 mt-8">
 
     <MatchDetailsCard/>
