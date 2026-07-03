@@ -1,62 +1,84 @@
+import { useNavigate } from "react-router-dom";
+
 import Button from "./common/Button";
 
 import {
-    UserPlus,
-    ClipboardCheck,
-    Trophy,
-    Cricket
+  UserPlus,
+  ClipboardCheck,
+  Trophy,
+  Cricket,
+  Wallet,
+  Package,
 } from "lucide-react";
 
-export default function QuickActions(){
+export default function QuickActions() {
 
-    return(
+  const navigate = useNavigate();
 
-        <div className="bg-white rounded-3xl p-8 shadow-sm">
+  return (
 
-            <h2 className="text-2xl font-bold">
+    <div className="bg-white rounded-3xl p-8 shadow-sm">
 
-                Quick Actions
+      <h2 className="text-2xl font-bold">
 
-            </h2>
+        Quick Actions
 
-            <div className="grid lg:grid-cols-4 gap-5 mt-8">
+      </h2>
 
-                <Button>
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5 mt-8">
 
-                    <UserPlus size={18}/>
+        <Button onClick={() => navigate("/players")}>
 
-                    Register Player
+          <UserPlus size={18} />
 
-                </Button>
+          Register Player
 
-                <Button>
+        </Button>
 
-                    <ClipboardCheck size={18}/>
+        <Button onClick={() => navigate("/attendance")}>
 
-                    Attendance
+          <ClipboardCheck size={18} />
 
-                </Button>
+          Attendance
 
-                <Button>
+        </Button>
 
-                    <Cricket size={18}/>
+        <Button onClick={() => navigate("/matches")}>
 
-                    Start Match
+          <Cricket size={18} />
 
-                </Button>
+          Start Match
 
-                <Button>
+        </Button>
 
-                    <Trophy size={18}/>
+        <Button onClick={() => navigate("/tournaments")}>
 
-                    Tournament
+          <Trophy size={18} />
 
-                </Button>
+          Tournaments
 
-            </div>
+        </Button>
 
-        </div>
+        <Button onClick={() => navigate("/fees")}>
 
-    )
+          <Wallet size={18} />
+
+          Fees
+
+        </Button>
+
+        <Button onClick={() => navigate("/equipment")}>
+
+          <Package size={18} />
+
+          Equipment
+
+        </Button>
+
+      </div>
+
+    </div>
+
+  );
 
 }
