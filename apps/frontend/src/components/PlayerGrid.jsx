@@ -1,4 +1,5 @@
 import PlayerCard from "./PlayerCard";
+import EmptyState from "./EmptyState";
 
 export default function PlayersGrid({
 
@@ -12,11 +13,13 @@ return(
 
 {players.length===0 &&(
 
-<div className="col-span-full text-center py-16 text-slate-500">
+<EmptyState
 
-No Players Found
+  title="No Players Found"
 
-</div>
+  description="Try changing the filters."
+
+/>
 
 )}
 
