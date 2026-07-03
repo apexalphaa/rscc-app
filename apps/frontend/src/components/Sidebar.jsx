@@ -1,18 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const menu = [
   { name: "Dashboard", path: "/dashboard" },
   { name: "Players", path: "/players" },
   { name: "Attendance", path: "/attendance" },
   { name: "Matches", path: "/matches" },
-  { name: "Tournament", path: "/tournament" },
+  { name: "Tournaments", path: "/tournaments" },
   { name: "Statistics", path: "/statistics" },
   { name: "Settings", path: "/settings" },
 ];
 
 export default function Sidebar() {
+
+  const location = useLocation();
+
   return (
-    <aside className="w-72 bg-slate-900 text-white">
+
+    <aside className="w-72 bg-slate-900 text-white min-h-screen">
 
       <div className="p-8">
 
@@ -33,7 +37,11 @@ export default function Sidebar() {
           <Link
             key={item.name}
             to={item.path}
-            className="block px-8 py-4 hover:bg-slate-800 transition"
+            className={`block px-8 py-4 transition ${
+              location.pathname === item.path
+                ? "bg-green-600 text-white font-semibold"
+                : "hover:bg-slate-800"
+            }`}
           >
             {item.name}
           </Link>
@@ -43,5 +51,7 @@ export default function Sidebar() {
       </nav>
 
     </aside>
+
   );
+
 }
