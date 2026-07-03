@@ -53,76 +53,88 @@ const initialMatch = {
 };
 
 export default function useMatchEngine() {
-  const [match, setMatch] = useState(initialMatch);
+  const [events, setEvents] = useState([]);
 
   function dispatchBall(event) {
-    setMatch((prev) => {
-      const next = structuredClone(prev);
+    setEvents((prev) => [...prev, event]);
+  }
 
-      next.timeline.push(event);
+  function undoBall() {
+    setEvents((prev) => prev.slice(0, -1));
+  }
+
+  function resetMatch() {
+    setEvents([]);
+  }
+
+  function buildMatch(events) {
+    const match = structuredClone(initialMatch);
+
+    events.forEach((event) => {
+      match.timeline.push(event);
 
       switch (event.type) {
         case "RUN": {
-          next.innings.score += event.runs;
+          match.innings.score += event.runs;
+          match.innings.legalBalls++;
 
-          next.innings.legalBalls++;
+          match.currentOver.push(String(event.runs));
 
-          next.currentOver.push(String(event.runs));
+          match.batters.striker.runs += event.runs;
+          match.batters.striker.balls++;
 
-          next.batters.striker.runs += event.runs;
-          next.batters.striker.balls++;
+          match.partnership.runs += event.runs;
+          match.partnership.balls++;
 
-          next.partnership.runs += event.runs;
-          next.partnership.balls++;
-
-          next.bowler.runs += event.runs;
-          next.bowler.balls++;
+          match.bowler.runs += event.runs;
+          match.bowler.balls++;
 
           if (event.runs % 2 === 1) {
-            const temp = next.batters.striker;
-            next.batters.striker = next.batters.nonStriker;
-            next.batters.nonStriker = temp;
+            [match.batters.striker, match.batters.nonStriker] = [
+              match.batters.nonStriker,
+              match.batters.striker,
+            ];
           }
 
           break;
         }
 
         case "DOT": {
-          next.innings.legalBalls++;
+          match.innings.legalBalls++;
 
-          next.currentOver.push(".");
+          match.currentOver.push(".");
 
-          next.batters.striker.balls++;
+          match.batters.striker.balls++;
 
-          next.partnership.balls++;
+          match.partnership.balls++;
 
-          next.bowler.balls++;
+          match.bowler.balls++;
 
           break;
         }
 
         case "WICKET": {
-          next.innings.wickets++;
+          match.innings.wickets++;
 
-          next.innings.legalBalls++;
+          match.innings.legalBalls++;
 
-          next.currentOver.push("W");
+          match.currentOver.push("W");
 
-          next.batters.striker.balls++;
+          match.batters.striker.balls++;
 
-          next.partnership.balls++;
+          match.partnership.balls++;
 
-          next.bowler.wickets++;
+          match.bowler.balls++;
 
-          next.bowler.balls++;
+          match.bowler.wickets++;
 
-          next.batters.striker = {
-            name: "New Batter",
+          match.batters.striker = {
+            name: `Batter ${match.innings.wickets + 2}`,
             runs: 0,
             balls: 0,
           };
 
-          next.partnership = {
+          match.partnership = {
             runs: 0,
             balls: 0,
           };
@@ -131,57 +143,57 @@ export default function useMatchEngine() {
         }
 
         case "WIDE": {
-          next.innings.score++;
+          match.innings.score++;
 
-          next.extras.wide++;
+          match.extras.wide++;
 
-          next.currentOver.push("WD");
+          match.currentOver.push("WD");
 
-          next.bowler.runs++;
+          match.bowler.runs++;
 
           break;
         }
 
         case "NOBALL": {
-          next.innings.score++;
+          match.innings.score++;
 
-          next.extras.noBall++;
+          match.extras.noBall++;
 
-          next.currentOver.push("NB");
+          match.currentOver.push("NB");
 
-          next.bowler.runs++;
+          match.bowler.runs++;
 
           break;
         }
 
         case "BYE": {
-          next.innings.score += event.runs;
+          match.innings.score += event.runs;
 
-          next.extras.bye += event.runs;
+          match.extras.bye += event.runs;
 
-          next.innings.legalBalls++;
+          match.innings.legalBalls++;
 
-          next.currentOver.push(`B${event.runs}`);
+          match.currentOver.push(`B${event.runs}`);
 
-          next.partnership.balls++;
+          match.partnership.balls++;
 
-          next.bowler.balls++;
+          match.bowler.balls++;
 
           break;
         }
 
         case "LEGBYE": {
-          next.innings.score += event.runs;
+          match.innings.score += event.runs;
 
-          next.extras.legBye += event.runs;
+          match.extras.legBye += event.runs;
 
-          next.innings.legalBalls++;
+          match.innings.legalBalls++;
 
-          next.currentOver.push(`LB${event.runs}`);
+          match.currentOver.push(`LB${event.runs}`);
 
-          next.partnership.balls++;
+          match.partnership.balls++;
 
-          next.bowler.balls++;
+          match.bowler.balls++;
 
           break;
         }
@@ -190,39 +202,39 @@ export default function useMatchEngine() {
           break;
       }
 
-      if (next.currentOver.length > 6) {
-        next.currentOver.shift();
+      if (match.currentOver.length > 6) {
+        match.currentOver.shift();
       }
-
-      const completedOvers = Math.floor(next.innings.legalBalls / 6);
-
-      next.bowler.overs = completedOvers;
-      next.bowler.balls = next.innings.legalBalls % 6;
 
       if (
-        next.innings.legalBalls > 0 &&
-        next.innings.legalBalls % 6 === 0
+        match.innings.legalBalls > 0 &&
+        match.innings.legalBalls % 6 === 0
       ) {
-        const temp = next.batters.striker;
-        next.batters.striker = next.batters.nonStriker;
-        next.batters.nonStriker = temp;
+        [match.batters.striker, match.batters.nonStriker] = [
+          match.batters.nonStriker,
+          match.batters.striker,
+        ];
 
-        next.currentOver = [];
+        match.currentOver = [];
       }
 
-      return next;
+      match.bowler.overs = Math.floor(
+        match.innings.legalBalls / 6
+      );
+
+      match.bowler.balls =
+        match.innings.legalBalls % 6;
     });
+
+    return match;
   }
 
-  function resetMatch() {
-    setMatch(structuredClone(initialMatch));
-  }
+  const match = buildMatch(events);
 
   return {
     match,
-
     dispatchBall,
-
+    undoBall,
     resetMatch,
   };
 }
