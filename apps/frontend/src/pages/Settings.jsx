@@ -1,23 +1,44 @@
+import DashboardLayout from "../layouts/DashboardLayout";
+import PageHeader from "../components/PageHeader";
+
+import ProfileCard from "../components/ProfileCard";
+import AcademySettings from "../components/AcademySettings";
+import NotificationSettings from "../components/NotificationSettings";
+import SecuritySettings from "../components/SecuritySettings";
+
 export default function Settings() {
+
   return (
-    <div className="p-10">
 
-      <h1 className="text-4xl font-bold">
-        Settings
-      </h1>
+    <DashboardLayout>
 
-      <p className="text-slate-500 mt-4">
-        Configure academy preferences and application settings.
-      </p>
+      <PageHeader
+        title="Settings"
+        subtitle="Manage Academy Settings"
+      />
 
-      <div className="mt-10 rounded-3xl border-2 border-dashed border-slate-300 h-96 flex items-center justify-center">
+      <div className="mt-8">
 
-        <p className="text-slate-400 text-xl">
-          Settings module coming soon.
-        </p>
+        <ProfileCard />
 
       </div>
 
-    </div>
+      <div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+        <AcademySettings />
+
+        <NotificationSettings />
+
+      </div>
+
+      <div className="mt-8">
+
+        <SecuritySettings />
+
+      </div>
+
+    </DashboardLayout>
+
   );
+
 }
