@@ -1,31 +1,57 @@
+import DashboardLayout from "../layouts/DashboardLayout";
+import PageHeader from "../components/PageHeader";
+
 import AttendanceSessionInfo from "../components/AttendanceSessionInfo";
 import AttendanceProgress from "../components/AttendanceProgress";
 import AttendanceNotes from "../components/AttendanceNotes";
 import AttendanceFooter from "../components/AttendanceFooter";
 
-<div className="mt-8">
+import attendanceDummyPlayers from "../data/attendanceDummyPlayers";
 
-  <AttendanceSessionInfo />
+export default function Attendance() {
 
-</div>
+  const attendance = attendanceDummyPlayers.filter(
+    (player) => player.present
+  ).length;
 
-<div className="mt-8">
+  return (
 
-  <AttendanceProgress
-    attendance={attendance}
-    totalPlayers={attendanceDummyPlayers.length}
-  />
+    <DashboardLayout>
 
-</div>
+      <PageHeader
+        title="Attendance"
+        subtitle="Track daily attendance"
+      />
 
-<div className="mt-8">
+      <div className="mt-8">
 
-  <AttendanceNotes />
+        <AttendanceSessionInfo />
 
-</div>
+      </div>
 
-<div className="mt-8">
+      <div className="mt-8">
 
-  <AttendanceFooter />
+        <AttendanceProgress
+          attendance={attendance}
+          totalPlayers={attendanceDummyPlayers.length}
+        />
 
-</div>
+      </div>
+
+      <div className="mt-8">
+
+        <AttendanceNotes />
+
+      </div>
+
+      <div className="mt-8">
+
+        <AttendanceFooter />
+
+      </div>
+
+    </DashboardLayout>
+
+  );
+
+}
