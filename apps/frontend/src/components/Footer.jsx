@@ -32,13 +32,21 @@ export default function Footer() {
 
             <ul className="space-y-3 mt-5 text-slate-400">
 
-              <li>About</li>
+              <li>
+  <a href="#about">About</a>
+</li>
 
-              <li>Gallery</li>
+<li>
+  <a href="#gallery">Gallery</a>
+</li>
 
-              <li>Matches</li>
+<li>
+  <a href="#portal">Academy Portal</a>
+</li>
 
-              <li>Contact</li>
+<li>
+  <a href="#contact">Contact</a>
+</li>
 
             </ul>
 
