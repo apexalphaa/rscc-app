@@ -14,6 +14,10 @@ import useMatchEngine from "../hooks/useMatchEngine";
 import ExtrasCard from "../components/ExtrasCard";
 import RunRateCard from "../components/RunRateCard";
 import TimelineCard from "../components/TimelineCard";
+import BattingScorecard from "../components/BattingScorecard";
+import BowlingScorecard from "../components/BowlingScorecard";
+import MatchSummary from "../components/MatchSummary";
+import OverHistory from "../components/OverHistory";
 
 export default function Matches() {
 
@@ -93,6 +97,33 @@ export default function Matches() {
         />
 
       </div>
+      <div className="mt-8">
+
+  <MatchSummary
+    match={match}
+  />
+
+</div>
+
+<div className="grid lg:grid-cols-2 gap-8 mt-8">
+
+  <BattingScorecard
+    match={match}
+  />
+
+  <BowlingScorecard
+    match={match}
+  />
+
+</div>
+
+<div className="mt-8">
+
+  <OverHistory
+    match={match}
+  />
+
+</div>
 <div className="grid lg:grid-cols-3 gap-8 mt-8">
 
     <ExtrasCard
