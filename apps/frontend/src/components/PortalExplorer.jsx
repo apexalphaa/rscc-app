@@ -5,61 +5,73 @@ const pages = [
   {
     title: "Dashboard",
     path: "/dashboard",
+    description: "Academy Overview",
   },
 
   {
     title: "Players",
     path: "/players",
+    description: "Manage Players",
   },
 
   {
     title: "Coaches",
     path: "/coaches",
+    description: "Coaching Staff",
   },
 
   {
     title: "Attendance",
     path: "/attendance",
+    description: "Attendance Records",
   },
 
   {
     title: "Matches",
     path: "/matches",
+    description: "Live Scoring",
   },
 
   {
     title: "Tournaments",
     path: "/tournaments",
+    description: "Tournament Management",
   },
 
   {
     title: "Fees",
     path: "/fees",
+    description: "Fee Collection",
   },
 
   {
     title: "Equipment",
     path: "/equipment",
-  },
-
-  {
-    title: "Notice Board",
-    path: "/notice-board",
+    description: "Inventory",
   },
 
   {
     title: "Calendar",
     path: "/calendar",
+    description: "Training Schedule",
+  },
+
+  {
+    title: "Notice Board",
+    path: "/notice-board",
+    description: "Academy Notices",
   },
 
   {
     title: "Statistics",
     path: "/statistics",
+    description: "Academy Analytics",
   },
 
   {
     title: "Settings",
     path: "/settings",
+    description: "Portal Settings",
   },
 
 ];
@@ -68,25 +80,32 @@ export default function PortalExplorer() {
 
   return (
 
-    <section className="py-24 bg-slate-100">
+    <section
+      id="portal"
+      className="py-24 bg-slate-100"
+    >
 
       <div className="max-w-7xl mx-auto px-6">
 
-        <h2 className="text-5xl font-black text-center">
+        <div className="text-center">
 
-          Explore Academy Portal
+          <h2 className="text-5xl font-black">
 
-        </h2>
+            Explore Academy Portal
 
-        <p className="text-center text-slate-500 mt-4">
+          </h2>
 
-          Temporary developer navigation
+          <p className="text-slate-500 mt-4 text-lg">
 
-        </p>
+            Explore every module of the academy management system.
 
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mt-14">
+          </p>
 
-          {pages.map(page => (
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-16">
+
+          {pages.map((page)=>(
 
             <Link
 
@@ -94,7 +113,7 @@ export default function PortalExplorer() {
 
               to={page.path}
 
-              className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition"
+              className="bg-white rounded-3xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 p-8"
 
             >
 
@@ -106,7 +125,13 @@ export default function PortalExplorer() {
 
               <p className="text-slate-500 mt-3">
 
-                Open {page.title}
+                {page.description}
+
+              </p>
+
+              <p className="mt-8 text-green-600 font-semibold">
+
+                Open →
 
               </p>
 
