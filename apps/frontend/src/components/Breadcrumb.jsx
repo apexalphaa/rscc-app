@@ -4,46 +4,34 @@ export default function Breadcrumb() {
 
   const location = useLocation();
 
-  const paths = location.pathname
-    .split("/")
-    .filter(Boolean);
+  const page =
+    location.pathname
+      .split("/")
+      .filter(Boolean)
+      .pop() || "home";
 
   return (
 
-    <div className="mb-6 text-sm text-slate-500">
+    <div className="text-sm text-slate-500 mb-6">
 
       <Link
-        to="/dashboard"
+        to="/"
         className="hover:text-green-600"
       >
-        Dashboard
+        Home
       </Link>
 
-      {paths.map((item, index) => {
+      <span className="mx-2">
 
-        const url =
-          "/" + paths.slice(0, index + 1).join("/");
+        /
 
-        return (
+      </span>
 
-          <span key={url}>
+      <span className="capitalize">
 
-            {" / "}
+        {page.replace("-", " ")}
 
-            <Link
-              to={url}
-              className="hover:text-green-600 capitalize"
-            >
-
-              {item.replace("-", " ")}
-
-            </Link>
-
-          </span>
-
-        );
-
-      })}
+      </span>
 
     </div>
 
