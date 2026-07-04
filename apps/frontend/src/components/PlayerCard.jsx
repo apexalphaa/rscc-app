@@ -28,13 +28,43 @@ export default function PlayerCard({ player }) {
 
       </p>
 
-      <div className="mt-5 flex justify-between">
+      <div className="mt-5 space-y-2 text-sm">
 
-        <span>{player.batch}</span>
+  <div className="flex justify-between">
 
-        <span>{player.age} yrs</span>
+    <span>Batch</span>
 
-      </div>
+    <span>{player.batch}</span>
+
+  </div>
+
+  <div className="flex justify-between">
+
+    <span>Age</span>
+
+    <span>{player.age} yrs</span>
+
+  </div>
+
+  <div className="flex justify-between">
+
+    <span>Jersey</span>
+
+    <span>#{player.jersey}</span>
+
+  </div>
+
+</div>
+
+<div className="mt-5">
+
+  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+
+    {player.category}
+
+  </span>
+
+</div>
 
     </div>
 
