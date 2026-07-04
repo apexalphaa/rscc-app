@@ -91,13 +91,13 @@ export default function PortalExplorer() {
 
           <h2 className="text-5xl font-black">
 
-            Explore Academy Portal
+            Academy Management Portal
 
           </h2>
 
           <p className="text-slate-500 mt-4 text-lg">
 
-            Explore every module of the academy management system.
+            Access every module of the Rising Star Cricket Club Management System. During development, all modules are available for exploration.
 
           </p>
 
