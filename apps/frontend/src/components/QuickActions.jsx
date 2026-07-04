@@ -44,7 +44,7 @@ export default function QuickActions() {
 
         <Button onClick={() => navigate("/matches")}>
 
-          <Cricket size={18} />
+          <Dumbbell size={18} />
 
           Start Match
 
