@@ -10,7 +10,8 @@ import PlayerProfileCard from "../components/PlayerProfileCard";
 import PlayerStatsCard from "../components/PlayerStatsCard";
 import PlayerPerformanceCard from "../components/PlayerPerformanceCard";
 import RecentMatchesCard from "../components/RecentMatchesCard";
-
+import AcademyOverview from "../components/AcademyOverview";
+import PlayerSection from "../components/PlayerSection";
 import playersData from "../data/players";
 
 export default function Players() {
@@ -51,7 +52,11 @@ export default function Players() {
         title="Players"
         subtitle="Manage Academy Players"
       />
+<div className="mt-8">
 
+    <AcademyOverview/>
+
+</div>
       <div className="mt-8">
 
         <PlayersToolbar
@@ -71,9 +76,23 @@ export default function Players() {
 
       <div className="mt-8">
 
-        <PlayersGrid
-          players={filteredPlayers}
-        />
+       <PlayerSection
+    title="Senior Team"
+    players={
+        filteredPlayers.filter(
+            p=>p.category==="Senior"
+        )
+    }
+/>
+
+<PlayerSection
+    title="Junior Team"
+    players={
+        filteredPlayers.filter(
+            p=>p.category==="Junior"
+        )
+    }
+/>
 
       </div>
 
