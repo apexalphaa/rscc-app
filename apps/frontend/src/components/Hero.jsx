@@ -31,23 +31,25 @@ export default function Hero() {
 
           </p>
 
-          <div className="flex gap-5 mt-12">
+         <div className="flex flex-wrap gap-5 mt-12">
 
-            <Button>
-              Join Academy
-            </Button>
+  <Button>
 
-            <a href="#portal">
+    Join Academy
+
+  </Button>
+
+  <a href="#academy-portal">
 
     <Button className="bg-white text-slate-900 hover:bg-slate-100">
 
-        Explore Portal
+      Explore Portal
 
     </Button>
 
-</a>
+  </a>
 
-          </div>
+</div>
 
         </div>
 
