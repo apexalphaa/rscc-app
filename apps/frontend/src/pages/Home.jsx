@@ -12,6 +12,7 @@ import CTA from "../components/CTA";
 import Announcement from "../components/Announcement";
 import QuickLinks from "../components/QuickLinks";
 import PortalExplorer from "../components/PortalExplorer";
+import LatestNotice from "../components/LatestNotice";
 export default function Home() {
   return (
     
@@ -19,6 +20,7 @@ export default function Home() {
   <Navbar />
   <Announcement />
   <Hero />
+  <LatestNotice />
   <Stats />
   <QuickLinks />
   <WhyChoose />
