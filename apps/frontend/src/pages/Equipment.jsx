@@ -1,76 +1,51 @@
 import DashboardLayout from "../layouts/DashboardLayout";
 import PageHeader from "../components/PageHeader";
 
-const equipment = [
+import EquipmentOverview from "../components/EquipmentOverview";
+import EquipmentActions from "../components/EquipmentActions";
+import EquipmentInventory from "../components/EquipmentInventory";
+import EquipmentRepairQueue from "../components/EquipmentRepairQueue";
+import EquipmentAlerts from "../components/EquipmentAlerts";
 
-  {
-    item:"Cricket Bats",
-    stock:18,
-  },
+export default function Equipment() {
 
-  {
-    item:"Leather Balls",
-    stock:72,
-  },
+  return (
 
-  {
-    item:"Helmets",
-    stock:14,
-  },
+    <DashboardLayout>
 
-  {
-    item:"Batting Pads",
-    stock:22,
-  },
+      <PageHeader
+        title="Equipment"
+        subtitle="Academy Equipment Management"
+      />
 
-];
+      <div className="mt-8">
 
-export default function Equipment(){
+        <EquipmentOverview />
 
-    return(
+      </div>
 
-        <DashboardLayout>
+      <div className="mt-8">
 
-            <PageHeader
-                title="Equipment"
-                subtitle="Academy Inventory"
-            />
+        <EquipmentActions />
 
-            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+      </div>
 
-                {equipment.map(item=>(
+      <div className="mt-8">
 
-                    <div
-                        key={item.item}
-                        className="bg-white rounded-3xl shadow-sm p-6"
-                    >
+        <EquipmentInventory />
 
-                        <h2 className="text-xl font-bold">
+      </div>
 
-                            {item.item}
+      <div className="grid lg:grid-cols-2 gap-8 mt-8">
 
-                        </h2>
+        <EquipmentRepairQueue />
 
-                        <h1 className="text-5xl font-black mt-6 text-green-600">
+        <EquipmentAlerts />
 
-                            {item.stock}
+      </div>
 
-                        </h1>
+    </DashboardLayout>
 
-                        <p className="text-slate-500 mt-2">
-
-                            Available
-
-                        </p>
-
-                    </div>
-
-                ))}
-
-            </div>
-
-        </DashboardLayout>
-
-    )
+  );
 
 }
