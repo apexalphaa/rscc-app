@@ -1,18 +1,19 @@
+import { useState } from "react";
+
 import DashboardLayout from "../layouts/DashboardLayout";
 import PageHeader from "../components/PageHeader";
 
 import AttendanceSessionInfo from "../components/AttendanceSessionInfo";
-import AttendanceProgress from "../components/AttendanceProgress";
-import AttendanceNotes from "../components/AttendanceNotes";
-import AttendanceFooter from "../components/AttendanceFooter";
+import AttendanceSummary from "../components/AttendanceSummary";
+import AttendancePlayerList from "../components/AttendancePlayerList";
+import AttendanceControls from "../components/AttendanceControls";
+import AttendanceHistory from "../components/AttendanceHistory";
 
 import attendanceDummyPlayers from "../data/attendanceDummyPlayers";
 
 export default function Attendance() {
 
-  const attendance = attendanceDummyPlayers.filter(
-    (player) => player.present
-  ).length;
+  const [players, setPlayers] = useState(attendanceDummyPlayers);
 
   return (
 
@@ -20,33 +21,43 @@ export default function Attendance() {
 
       <PageHeader
         title="Attendance"
-        subtitle="Track daily attendance"
+        subtitle="Manage Daily Attendance"
       />
 
       <div className="mt-8">
 
-        <AttendanceSessionInfo />
+        <AttendanceSessionInfo/>
 
       </div>
 
       <div className="mt-8">
 
-        <AttendanceProgress
-          attendance={attendance}
-          totalPlayers={attendanceDummyPlayers.length}
+        <AttendanceSummary
+          players={players}
         />
 
       </div>
 
       <div className="mt-8">
 
-        <AttendanceNotes />
+        <AttendanceControls
+          setPlayers={setPlayers}
+        />
 
       </div>
 
       <div className="mt-8">
 
-        <AttendanceFooter />
+        <AttendancePlayerList
+          players={players}
+          setPlayers={setPlayers}
+        />
+
+      </div>
+
+      <div className="mt-8">
+
+        <AttendanceHistory/>
 
       </div>
 
