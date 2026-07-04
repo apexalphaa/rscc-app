@@ -53,13 +53,14 @@ const initialMatch = {
 
   timeline: [],
 };
-const [innings,setInnings]=useState(1);
-
-const [target,setTarget]=useState(0);
 
 export default function useMatchEngine() {
 
   const [match, setMatch] = useState(initialMatch);
+
+  const [innings, setInnings] = useState(1);
+
+  const [target, setTarget] = useState(0);
 
   function setPlayingXI(player, checked) {
 
@@ -158,29 +159,22 @@ export default function useMatchEngine() {
         case "RUN":
 
           next.innings.score += event.runs;
-
           next.innings.legalBalls++;
-
           next.currentOver.push(String(event.runs));
 
           next.batters.striker.runs += event.runs;
-
           next.batters.striker.balls++;
 
           next.partnership.runs += event.runs;
-
           next.partnership.balls++;
 
           next.bowler.runs += event.runs;
-
           next.bowler.balls++;
 
           if (event.runs % 2 === 1) {
 
             const temp = next.batters.striker;
-
             next.batters.striker = next.batters.nonStriker;
-
             next.batters.nonStriker = temp;
 
           }
@@ -190,13 +184,10 @@ export default function useMatchEngine() {
         case "DOT":
 
           next.innings.legalBalls++;
-
           next.currentOver.push(".");
 
           next.batters.striker.balls++;
-
           next.partnership.balls++;
-
           next.bowler.balls++;
 
           break;
@@ -204,13 +195,10 @@ export default function useMatchEngine() {
         case "WICKET":
 
           next.innings.wickets++;
-
           next.innings.legalBalls++;
-
           next.currentOver.push("W");
 
           next.bowler.wickets++;
-
           next.bowler.balls++;
 
           next.batters.striker.balls++;
@@ -231,46 +219,38 @@ export default function useMatchEngine() {
         case "WIDE":
 
           next.innings.score++;
-
           next.extras.wide++;
-
           next.currentOver.push("WD");
 
           next.bowler.runs++;
 
           break;
-        case "BYE":
 
-    next.innings.score += event.runs;
-
-    next.extras.bye += event.runs;
-
-    next.innings.legalBalls++;
-
-    next.currentOver.push(`B${event.runs}`);
-
-    break;
-
-case "LEGBYE":
-
-    next.innings.score += event.runs;
-
-    next.extras.legBye += event.runs;
-
-    next.innings.legalBalls++;
-
-    next.currentOver.push(`LB${event.runs}`);
-
-    break;
         case "NOBALL":
 
           next.innings.score++;
-
           next.extras.noBall++;
-
           next.currentOver.push("NB");
 
           next.bowler.runs++;
+
+          break;
+
+        case "BYE":
+
+          next.innings.score += event.runs;
+          next.extras.bye += event.runs;
+          next.innings.legalBalls++;
+          next.currentOver.push(`B${event.runs}`);
+
+          break;
+
+        case "LEGBYE":
+
+          next.innings.score += event.runs;
+          next.extras.legBye += event.runs;
+          next.innings.legalBalls++;
+          next.currentOver.push(`LB${event.runs}`);
 
           break;
 
@@ -319,71 +299,69 @@ case "LEGBYE":
       if (prev.timeline.length === 0)
         return prev;
 
-      // Temporary implementation.
-      // Full event replay engine will come in Sprint 20.
+      // Full replay engine will be implemented later.
 
       return prev;
 
     });
 
   }
-function finishFirstInnings(){
 
-    setTarget(match.innings.score+1);
+  function finishFirstInnings() {
+
+    setTarget(match.innings.score + 1);
 
     setInnings(2);
 
-}
+  }
 
-function finishMatch(){
+  function finishMatch() {
 
-    // backend later
+    // Backend implementation later
 
-}
+  }
 
-function currentRunRate(){
+  function currentRunRate() {
 
-    if(match.innings.legalBalls===0)
-        return "0.00";
-
-    return (
-
-        match.innings.score/
-
-        (match.innings.legalBalls/6)
-
-    ).toFixed(2);
-
-}
-
-function requiredRunRate(){
-
-    if(innings===1)
-        return "-";
-
-    const runsNeeded=target-match.innings.score;
-
-    const ballsLeft=
-
-        match.info.totalOvers*6-
-
-        match.innings.legalBalls;
-
-    if(ballsLeft<=0)
-        return "-";
+    if (match.innings.legalBalls === 0)
+      return "0.00";
 
     return (
-
-        runsNeeded/
-
-        (ballsLeft/6)
-
+      match.innings.score /
+      (match.innings.legalBalls / 6)
     ).toFixed(2);
 
-}
+  }
+
+  function requiredRunRate() {
+
+    if (innings === 1)
+      return "-";
+
+    const runsNeeded =
+      target - match.innings.score;
+
+    const ballsLeft =
+      match.info.totalOvers * 6 -
+      match.innings.legalBalls;
+
+    if (ballsLeft <= 0)
+      return "-";
+
+    return (
+      runsNeeded /
+      (ballsLeft / 6)
+    ).toFixed(2);
+
+  }
+
   function resetMatch() {
 
     setMatch(initialMatch);
+
+    setInnings(1);
+
+    setTarget(0);
 
   }
 
@@ -407,17 +385,18 @@ function requiredRunRate(){
 
     innings,
 
-target,
+    target,
 
-setInnings,
+    setInnings,
 
-finishFirstInnings,
+    finishFirstInnings,
 
-finishMatch,
+    finishMatch,
 
-currentRunRate,
+    currentRunRate,
 
-requiredRunRate,
+    requiredRunRate,
+
   };
 
 }
