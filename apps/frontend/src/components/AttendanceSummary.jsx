@@ -1,60 +1,55 @@
-export default function AttendanceSummary({
-  attendance,
-}) {
+export default function AttendanceSummary({ players }) {
 
-  const present = Object.values(attendance).filter(
-    (x) => x === "Present"
+  const present = players.filter(
+    p => p.status === "Present"
   ).length;
 
-  const absent = Object.values(attendance).filter(
-    (x) => x === "Absent"
+  const absent = players.filter(
+    p => p.status === "Absent"
   ).length;
 
-  const late = Object.values(attendance).filter(
-    (x) => x === "Late"
+  const late = players.filter(
+    p => p.status === "Late"
   ).length;
-
-  const cards = [
-    {
-      title: "Present",
-      value: present,
-      color: "bg-green-100",
-    },
-    {
-      title: "Absent",
-      value: absent,
-      color: "bg-red-100",
-    },
-    {
-      title: "Late",
-      value: late,
-      color: "bg-yellow-100",
-    },
-  ];
 
   return (
-    <div className="grid md:grid-cols-3 gap-6">
 
-      {cards.map((card) => (
+    <div className="grid md:grid-cols-4 gap-6">
 
-        <div
-          key={card.title}
-          className={`${card.color} rounded-2xl p-6`}
-        >
+      <Card title="Total Players" value={players.length} />
 
-          <p>{card.title}</p>
+      <Card title="Present" value={present} />
 
-          <h2 className="text-4xl font-bold mt-3">
+      <Card title="Absent" value={absent} />
 
-            {card.value}
-
-          </h2>
-
-        </div>
-
-      ))}
+      <Card title="Late" value={late} />
 
     </div>
+
+  );
+
+}
+
+function Card({ title, value }) {
+
+  return (
+
+    <div className="bg-white rounded-3xl shadow-sm p-6">
+
+      <h3 className="text-slate-500">
+
+        {title}
+
+      </h3>
+
+      <p className="text-4xl font-black mt-2 text-green-600">
+
+        {value}
+
+      </p>
+
+    </div>
+
   );
 
 }
