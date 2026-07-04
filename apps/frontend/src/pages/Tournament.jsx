@@ -2,20 +2,23 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import PageHeader from "../components/PageHeader";
 import Button from "../components/common/Button";
 
+import TournamentHeaderCard from "../components/TournamentHeaderCard";
+import TournamentActions from "../components/TournamentActions";
 import TournamentStats from "../components/TournamentStats";
 import TournamentGrid from "../components/TournamentGrid";
 import PointsTable from "../components/PointsTable";
 import FixturesCard from "../components/FixturesCard";
 import BracketCard from "../components/BracketCard";
+import TournamentAwards from "../components/TournamentAwards";
 
-export default function Tournaments() {
+export default function Tournament() {
 
   return (
 
     <DashboardLayout>
 
       <PageHeader
-        title="Tournaments"
+        title="Tournament"
         subtitle="Manage academy tournaments"
       />
 
@@ -31,27 +34,45 @@ export default function Tournaments() {
 
       <div className="mt-8">
 
-        <TournamentStats />
+        <TournamentHeaderCard/>
 
       </div>
 
       <div className="mt-8">
 
-        <TournamentGrid />
+        <TournamentActions/>
 
       </div>
 
       <div className="mt-8">
 
-        <PointsTable />
+        <TournamentStats/>
+
+      </div>
+
+      <div className="mt-8">
+
+        <TournamentGrid/>
+
+      </div>
+
+      <div className="mt-8">
+
+        <PointsTable/>
 
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8 mt-8">
 
-        <FixturesCard />
+        <FixturesCard/>
 
-        <BracketCard />
+        <BracketCard/>
+
+      </div>
+
+      <div className="mt-8">
+
+        <TournamentAwards/>
 
       </div>
 
