@@ -4,7 +4,7 @@ import {
   UserCog,
   ClipboardCheck,
   Trophy,
-  Dumbbell,
+  Activity,
   Wallet,
   Package,
   Bell,
@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
 } from "lucide-react";
+
 const navigation = [
 
   {
@@ -39,13 +40,14 @@ const navigation = [
   },
 
   {
-  title: "Matches",
-  path: "/matches",
-  icon: Dumbbell,
-},
+    title: "Scoring",
+    path: "/matches",
+    icon: Activity,
+  },
+
   {
-    title: "Tournaments",
-    path: "/tournaments",
+    title: "Tournament",
+    path: "/tournament",
     icon: Trophy,
   },
 
@@ -86,6 +88,5 @@ const navigation = [
   },
 
 ];
-
 
 export default navigation;
