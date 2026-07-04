@@ -45,16 +45,20 @@ import MatchSetup from "../components/MatchSetup";
 export default function Matches() {
 const {
   match,
+  dispatchBall,
+  undoBall,
+  resetMatch,
+
+  setPlayingXI,
+  setStriker,
+  setNonStriker,
+  setBowler,
+
   innings,
   target,
   finishFirstInnings,
   currentRunRate,
   requiredRunRate,
-  dispatchBall,
-  undoBall,
-  resetMatch,
-  setStriker,
-  setBowler,
 } = useMatchEngine();
 
   function run(value) {
@@ -227,7 +231,13 @@ Start Match
 </div>
 <div className="mt-8">
 
-    <MatchSetup/>
+    <MatchSetup
+        match={match}
+        setPlayingXI={setPlayingXI}
+        setStriker={setStriker}
+        setNonStriker={setNonStriker}
+        setBowler={setBowler}
+    />
 
 </div>
 <div className="grid lg:grid-cols-2 gap-8 mt-8">
