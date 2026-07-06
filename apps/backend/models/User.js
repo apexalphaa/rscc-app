@@ -19,6 +19,13 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      minlength: 6,
+      select: false,
+    },
+
+    phone: {
+      type: String,
+      default: "",
     },
 
     role: {
@@ -27,22 +34,55 @@ const userSchema = new mongoose.Schema(
         "admin",
         "coach",
         "player",
+        "viewer",
       ],
-      default: "player",
+      default: "viewer",
     },
 
-    phone: {
+    avatar: {
       type: String,
       default: "",
     },
 
-    isActive: {
+    academy: {
+      type: String,
+      default: "Rising Star Cricket Club",
+    },
+
+    jerseyNumber: {
+      type: Number,
+      default: null,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "active",
+        "inactive",
+        "suspended",
+      ],
+      default: "active",
+    },
+
+    isVerified: {
       type: Boolean,
       default: true,
     },
 
     lastLogin: {
       type: Date,
+    },
+
+    refreshToken: {
+      type: String,
+      default: "",
+      select: false,
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
   },
   {
