@@ -10,15 +10,23 @@ import {
   generateRefreshToken,
 } from "../utils/generateToken.js";
 
+/*
+|--------------------------------------------------------------------------
+| Register User
+|--------------------------------------------------------------------------
+*/
+
 export const register = async (req, res) => {
   try {
+    const body = req.body || {};
+
     const {
       name,
       email,
       password,
       role,
       phone,
-    } = req.body;
+    } = body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -38,19 +46,18 @@ export const register = async (req, res) => {
       });
     }
 
-    const hashedPassword = await hashPassword(
-      password
-    );
+    const hashedPassword = await hashPassword(password);
 
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: role || "player",
+      role: role || "viewer",
       phone,
+      academy: "Rising Star Cricket Club",
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "User Registered Successfully",
       user: {
@@ -58,28 +65,49 @@ export const register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        academy: user.academy,
       },
     });
+
   } catch (error) {
+
     console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Registration Failed",
+      error: error.message,
     });
+
   }
 };
 
+/*
+|--------------------------------------------------------------------------
+| Login User
+|--------------------------------------------------------------------------
+*/
+
 export const login = async (req, res) => {
   try {
+
+    const body = req.body || {};
+
     const {
       email,
       password,
-    } = req.body;
+    } = body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
 
     const user = await User.findOne({
       email,
-    });
+    }).select("+password +refreshToken");
 
     if (!user) {
       return res.status(401).json({
@@ -88,11 +116,10 @@ export const login = async (req, res) => {
       });
     }
 
-    const isMatch =
-      await comparePassword(
-        password,
-        user.password
-      );
+    const isMatch = await comparePassword(
+      password,
+      user.password
+    );
 
     if (!isMatch) {
       return res.status(401).json({
@@ -103,20 +130,19 @@ export const login = async (req, res) => {
 
     user.lastLogin = new Date();
 
+    const accessToken = generateAccessToken(user);
+
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+
     await user.save();
 
-    const accessToken =
-      generateAccessToken(user);
-
-    const refreshToken =
-      generateRefreshToken(user);
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Login Successful",
 
       accessToken,
-
       refreshToken,
 
       user: {
@@ -124,21 +150,66 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        academy: user.academy,
+        avatar: user.avatar,
+        status: user.status,
       },
     });
+
   } catch (error) {
+
     console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Login Failed",
+      error: error.message,
     });
+
   }
 };
 
+/*
+|--------------------------------------------------------------------------
+| Logout User
+|--------------------------------------------------------------------------
+*/
+
 export const logout = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Logout Successful",
-  });
+  try {
+
+    const { email } = req.body || {};
+
+    if (email) {
+
+      const user = await User.findOne({
+        email,
+      }).select("+refreshToken");
+
+      if (user) {
+
+        user.refreshToken = "";
+
+        await user.save();
+
+      }
+
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Logout Successful",
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Logout Failed",
+      error: error.message,
+    });
+
+  }
 };
