@@ -200,7 +200,44 @@ export const logout = async (req, res) => {
       success: true,
       message: "Logout Successful",
     });
+/*
+|--------------------------------------------------------------------------
+| Current User
+|--------------------------------------------------------------------------
+*/
 
+export const getCurrentUser = async (
+    req,
+    res
+) => {
+
+    return res.status(200).json({
+
+        success: true,
+
+        user: {
+
+            id: req.user._id,
+
+            name: req.user.name,
+
+            email: req.user.email,
+
+            role: req.user.role,
+
+            academy: req.user.academy,
+
+            avatar: req.user.avatar,
+
+            phone: req.user.phone,
+
+            status: req.user.status,
+
+        },
+
+    });
+
+};
   } catch (error) {
 
     console.error(error);
