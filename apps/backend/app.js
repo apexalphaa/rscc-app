@@ -2,9 +2,16 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+
 import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
+
+/*
+|--------------------------------------------------------------------------
+| Global Middleware
+|--------------------------------------------------------------------------
+*/
 
 app.use(
   cors({
@@ -12,10 +19,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(
-    "/api/v1/auth",
-    authRoutes
-);
+
 app.use(express.json());
 
 app.use(
@@ -27,6 +31,17 @@ app.use(
 app.use(cookieParser());
 
 app.use(morgan("dev"));
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+app.use(
+  "/api/v1/auth",
+  authRoutes
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +62,20 @@ app.get("/", (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
+| API Root
+|--------------------------------------------------------------------------
+*/
+
+app.get("/api/v1", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "RSCC API Running",
+    version: "v1",
+  });
+});
+
+/*
+|--------------------------------------------------------------------------
 | Health Check
 |--------------------------------------------------------------------------
 */
@@ -58,20 +87,6 @@ app.get("/health", (req, res) => {
     database: "Connected",
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
-  });
-});
-
-/*
-|--------------------------------------------------------------------------
-| API Root
-|--------------------------------------------------------------------------
-*/
-
-app.get("/api/v1", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "RSCC API Running",
-    version: "v1",
   });
 });
 
