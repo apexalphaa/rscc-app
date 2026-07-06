@@ -12,7 +12,7 @@ import {
 
 /*
 |--------------------------------------------------------------------------
-| Register User
+| Register
 |--------------------------------------------------------------------------
 */
 
@@ -84,11 +84,12 @@ export const register = async (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
-| Login User
+| Login
 |--------------------------------------------------------------------------
 */
 
 export const login = async (req, res) => {
+
   try {
 
     const body = req.body || {};
@@ -99,10 +100,12 @@ export const login = async (req, res) => {
     } = body;
 
     if (!email || !password) {
+
       return res.status(400).json({
         success: false,
         message: "Email and Password are required",
       });
+
     }
 
     const user = await User.findOne({
@@ -110,10 +113,12 @@ export const login = async (req, res) => {
     }).select("+password +refreshToken");
 
     if (!user) {
+
       return res.status(401).json({
         success: false,
         message: "Invalid Email",
       });
+
     }
 
     const isMatch = await comparePassword(
@@ -122,38 +127,54 @@ export const login = async (req, res) => {
     );
 
     if (!isMatch) {
+
       return res.status(401).json({
         success: false,
         message: "Invalid Password",
       });
+
     }
 
     user.lastLogin = new Date();
 
-    const accessToken = generateAccessToken(user);
+    const accessToken =
+      generateAccessToken(user);
 
-    const refreshToken = generateRefreshToken(user);
+    const refreshToken =
+      generateRefreshToken(user);
 
     user.refreshToken = refreshToken;
 
     await user.save();
 
     return res.status(200).json({
+
       success: true,
+
       message: "Login Successful",
 
       accessToken,
+
       refreshToken,
 
       user: {
+
         id: user._id,
+
         name: user.name,
+
         email: user.email,
+
         role: user.role,
+
         academy: user.academy,
+
         avatar: user.avatar,
+
         status: user.status,
+
       },
+
     });
 
   } catch (error) {
@@ -161,21 +182,27 @@ export const login = async (req, res) => {
     console.error(error);
 
     return res.status(500).json({
+
       success: false,
+
       message: "Login Failed",
+
       error: error.message,
+
     });
 
   }
+
 };
 
 /*
 |--------------------------------------------------------------------------
-| Logout User
+| Logout
 |--------------------------------------------------------------------------
 */
 
 export const logout = async (req, res) => {
+
   try {
 
     const { email } = req.body || {};
@@ -197,56 +224,79 @@ export const logout = async (req, res) => {
     }
 
     return res.status(200).json({
+
       success: true,
+
       message: "Logout Successful",
+
     });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+
+      success: false,
+
+      message: "Logout Failed",
+
+      error: error.message,
+
+    });
+
+  }
+
+};
+
 /*
 |--------------------------------------------------------------------------
 | Current User
 |--------------------------------------------------------------------------
 */
 
-export const getCurrentUser = async (
-    req,
-    res
-) => {
+export const getCurrentUser = async (req, res) => {
+
+  try {
 
     return res.status(200).json({
 
-        success: true,
+      success: true,
 
-        user: {
+      user: {
 
-            id: req.user._id,
+        id: req.user._id,
 
-            name: req.user.name,
+        name: req.user.name,
 
-            email: req.user.email,
+        email: req.user.email,
 
-            role: req.user.role,
+        role: req.user.role,
 
-            academy: req.user.academy,
+        academy: req.user.academy,
 
-            avatar: req.user.avatar,
+        avatar: req.user.avatar,
 
-            phone: req.user.phone,
+        phone: req.user.phone,
 
-            status: req.user.status,
+        status: req.user.status,
 
-        },
+      },
 
     });
 
-};
   } catch (error) {
 
     console.error(error);
 
     return res.status(500).json({
+
       success: false,
-      message: "Logout Failed",
-      error: error.message,
+
+      message: "Unable to fetch current user",
+
     });
 
   }
+
 };
