@@ -6,6 +6,7 @@ import morgan from "morgan";
 import authRoutes from "./routes/auth.routes.js";
 import testRoutes from "./routes/test.routes.js";
 import matchRoutes from "./routes/match.routes.js";
+import teamRoutes from "./routes/team.routes.js";
 
 const app = express();
 
@@ -33,11 +34,10 @@ app.use(
 app.use(cookieParser());
 
 app.use(morgan("dev"));
-app.use("/api/v1/matches", matchRoutes);
 
 /*
 |--------------------------------------------------------------------------
-| Root
+| Root Routes
 |--------------------------------------------------------------------------
 */
 
@@ -59,16 +59,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-/*
-|--------------------------------------------------------------------------
-| Routes
-|--------------------------------------------------------------------------
-*/
-
-app.use("/api/v1/auth", authRoutes);
-
-app.use("/api/v1/test", testRoutes);
-
 app.get("/api/v1", (req, res) => {
   res.json({
     success: true,
@@ -78,7 +68,21 @@ app.get("/api/v1", (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
-| 404
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+app.use("/api/v1/auth", authRoutes);
+
+app.use("/api/v1/test", testRoutes);
+
+app.use("/api/v1/teams", teamRoutes);
+
+app.use("/api/v1/matches", matchRoutes);
+
+/*
+|--------------------------------------------------------------------------
+| 404 Handler
 |--------------------------------------------------------------------------
 */
 
