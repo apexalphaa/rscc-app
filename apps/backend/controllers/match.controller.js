@@ -2,7 +2,15 @@ import Match from "../models/Match.js";
 
 export const createMatch = async (req, res) => {
   try {
-    const match = await Match.create(req.body);
+    import generateMatchNumber from "../utils/generateMatchNumber.js";
+
+const data = {
+  ...req.body,
+  matchNumber: generateMatchNumber(),
+  createdBy: req.user._id,
+};
+
+const match = await Match.create(data);
 
     return res.status(201).json({
       success: true,
