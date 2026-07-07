@@ -5,6 +5,7 @@ import morgan from "morgan";
 
 import authRoutes from "./routes/auth.routes.js";
 import testRoutes from "./routes/test.routes.js";
+import matchRoutes from "./routes/match.routes.js";
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(
 app.use(cookieParser());
 
 app.use(morgan("dev"));
+app.use("/api/v1/matches", matchRoutes);
 
 /*
 |--------------------------------------------------------------------------
