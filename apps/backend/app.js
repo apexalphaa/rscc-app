@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 
 import authRoutes from "./routes/auth.routes.js";
+import testRoutes from "./routes/test.routes.js";
 
 const app = express();
 
@@ -34,65 +35,48 @@ app.use(morgan("dev"));
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
-app.use(
-  "/api/v1/auth",
-  authRoutes
-);
-
-/*
-|--------------------------------------------------------------------------
-| Root Route
+| Root
 |--------------------------------------------------------------------------
 */
 
 app.get("/", (req, res) => {
-  res.status(200).json({
+  res.json({
     success: true,
     application: "RSCC Backend",
     version: "1.0.0",
     status: "Running",
-    message: "Welcome to Rising Star Cricket Club Backend API",
     timestamp: new Date().toISOString(),
   });
 });
-
-/*
-|--------------------------------------------------------------------------
-| API Root
-|--------------------------------------------------------------------------
-*/
-
-app.get("/api/v1", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "RSCC API Running",
-    version: "v1",
-  });
-});
-
-/*
-|--------------------------------------------------------------------------
-| Health Check
-|--------------------------------------------------------------------------
-*/
 
 app.get("/health", (req, res) => {
-  res.status(200).json({
+  res.json({
     success: true,
     status: "Healthy",
-    database: "Connected",
     uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
   });
 });
 
 /*
 |--------------------------------------------------------------------------
-| 404 Handler
+| Routes
+|--------------------------------------------------------------------------
+*/
+
+app.use("/api/v1/auth", authRoutes);
+
+app.use("/api/v1/test", testRoutes);
+
+app.get("/api/v1", (req, res) => {
+  res.json({
+    success: true,
+    message: "RSCC API Running",
+  });
+});
+
+/*
+|--------------------------------------------------------------------------
+| 404
 |--------------------------------------------------------------------------
 */
 
