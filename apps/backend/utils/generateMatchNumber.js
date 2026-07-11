@@ -1,11 +1,13 @@
-export default function generateMatchNumber() {
+export default function generateMatchNumber(){
 
-  const year = new Date().getFullYear();
+    const year=new Date().getFullYear();
 
-  const random = Math.floor(
-    1000 + Math.random() * 9000
-  );
+    const random=Math.floor(
 
-  return `RSCC-M-${year}-${random}`;
+        100000+Math.random()*900000
+
+    );
+
+    return `RSCC-M-${year}-${random}`;
 
 }
