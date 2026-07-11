@@ -7,6 +7,11 @@ const matchSchema = new mongoose.Schema(
         unique:true,
     },
 
+    setupProgress:{
+        type:Number,
+        default:0,
+    },
+
     scoringMode:{
         type:String,
         enum:["offline","online"],
@@ -18,82 +23,77 @@ const matchSchema = new mongoose.Schema(
         enum:[
             "Friendly",
             "Practice",
-            "Tournament"
+            "Tournament",
+            "League",
+            "Knockout"
         ],
         default:"Friendly",
-    },
-
-    overs:{
-        type:Number,
-        required:true,
-    },
-
-    venue:{
-        type:String,
-        default:"",
-    },
-
-    matchDate:{
-        type:Date,
-        default:Date.now,
-    },
-
-    teamA:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Team",
-        required:true,
-    },
-
-    teamB:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Team",
-        required:true,
-    },
-
-    tossWinner:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Team",
-    },
-
-    tossDecision:{
-        type:String,
-        enum:["bat","bowl"],
-    },
-
-    battingFirst:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Team",
-    },
-
-    bowlingFirst:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Team",
     },
 
     status:{
         type:String,
         enum:[
-            "Upcoming",
+            "Draft",
+            "Ready",
             "Live",
             "Completed",
+            "Processing",
+            "Synced",
             "Abandoned"
         ],
-        default:"Upcoming",
+        default:"Draft",
     },
 
-    winner:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Team",
+    details:{
+        venue:{
+            type:String,
+            default:"",
+        },
+
+        ground:{
+            type:String,
+            default:"",
+        },
+
+        city:{
+            type:String,
+            default:"",
+        },
+
+        overs:{
+            type:Number,
+            default:20,
+        },
+
+        matchDate:{
+            type:Date,
+            default:Date.now,
+        }
     },
 
-    result:{
-        type:String,
-        default:"",
+    teams:{
+        home:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Team",
+        },
+
+        away:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Team",
+        }
     },
 
-    scorer:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
+    toss:{
+        winner:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Team",
+        },
+
+        decision:{
+            type:String,
+            enum:["bat","bowl",""],
+            default:"",
+        }
     },
 
     createdBy:{
