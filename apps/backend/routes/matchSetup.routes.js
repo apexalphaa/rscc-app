@@ -5,27 +5,61 @@ import authorize from "../middleware/authorize.js";
 
 import {
 
-createDraftMatch,
+    createDraftMatch,
+
+    updateMatchDetails,
+
+    selectTeams,
+
+    getDraftMatch,
 
 } from "../controllers/matchSetup.controller.js";
 
-const router=express.Router();
+const router = express.Router();
 
 router.post(
 
-"/draft",
+    "/draft",
 
-auth,
+    auth,
 
-authorize(
+    authorize("admin", "coach"),
 
-"admin",
+    createDraftMatch
 
-"coach"
+);
 
-),
+router.patch(
 
-createDraftMatch
+    "/:id/details",
+
+    auth,
+
+    authorize("admin", "coach"),
+
+    updateMatchDetails
+
+);
+
+router.patch(
+
+    "/:id/teams",
+
+    auth,
+
+    authorize("admin", "coach"),
+
+    selectTeams
+
+);
+
+router.get(
+
+    "/:id",
+
+    auth,
+
+    getDraftMatch
 
 );
 
