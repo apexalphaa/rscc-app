@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 
-const inningsSchema=new mongoose.Schema(
+const inningsSchema = new mongoose.Schema(
 {
-
     match:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Match",
@@ -11,37 +10,20 @@ const inningsSchema=new mongoose.Schema(
 
     inningsNumber:{
         type:Number,
+        enum:[1,2],
         required:true,
     },
 
     battingTeam:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Team",
+        required:true,
     },
 
     bowlingTeam:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Team",
-    },
-
-    score:{
-        type:Number,
-        default:0,
-    },
-
-    wickets:{
-        type:Number,
-        default:0,
-    },
-
-    legalBalls:{
-        type:Number,
-        default:0,
-    },
-
-    target:{
-        type:Number,
-        default:0,
+        required:true,
     },
 
     striker:{
@@ -57,6 +39,48 @@ const inningsSchema=new mongoose.Schema(
     currentBowler:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Player",
+    },
+
+    totalRuns:{
+        type:Number,
+        default:0,
+    },
+
+    wickets:{
+        type:Number,
+        default:0,
+    },
+
+    overs:{
+        type:Number,
+        default:0,
+    },
+
+    balls:{
+        type:Number,
+        default:0,
+    },
+
+    extras:{
+        wides:{
+            type:Number,
+            default:0,
+        },
+
+        noBalls:{
+            type:Number,
+            default:0,
+        },
+
+        byes:{
+            type:Number,
+            default:0,
+        },
+
+        legByes:{
+            type:Number,
+            default:0,
+        }
     },
 
     isCompleted:{
