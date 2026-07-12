@@ -1,14 +1,6 @@
-import User from "../models/User.js";
-
-import {
-  hashPassword,
-  comparePassword,
-} from "../utils/hashPassword.js";
-
-import {
-  generateAccessToken,
-  generateRefreshToken,
-} from "../utils/generateToken.js";
+import authService from "../services/auth.service.js";
+import catchAsync from "../utils/catchAsync.js";
+import sendResponse from "../utils/sendResponse.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -16,71 +8,15 @@ import {
 |--------------------------------------------------------------------------
 */
 
-export const register = async (req, res) => {
-  try {
-    const body = req.body || {};
+export const register = catchAsync(async (req, res) => {
+    const user = await authService.register(req.body);
 
-    const {
-      name,
-      email,
-      password,
-      role,
-      phone,
-    } = body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Please fill all required fields",
-      });
-    }
-
-    const existingUser = await User.findOne({
-      email,
+    return sendResponse(res, {
+        statusCode: 201,
+        message: "User Registered Successfully",
+        data: user,
     });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exists",
-      });
-    }
-
-    const hashedPassword = await hashPassword(password);
-
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: role || "viewer",
-      phone,
-      academy: "Rising Star Cricket Club",
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "User Registered Successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        academy: user.academy,
-      },
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Registration Failed",
-      error: error.message,
-    });
-
-  }
-};
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -88,112 +24,18 @@ export const register = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const login = async (req, res) => {
-
-  try {
-
-    const body = req.body || {};
-
-    const {
-      email,
-      password,
-    } = body;
-
-    if (!email || !password) {
-
-      return res.status(400).json({
-        success: false,
-        message: "Email and Password are required",
-      });
-
-    }
-
-    const user = await User.findOne({
-      email,
-    }).select("+password +refreshToken");
-
-    if (!user) {
-
-      return res.status(401).json({
-        success: false,
-        message: "Invalid Email",
-      });
-
-    }
-
-    const isMatch = await comparePassword(
-      password,
-      user.password
+export const login = catchAsync(async (req, res) => {
+    const result = await authService.login(
+        req.body.email,
+        req.body.password
     );
 
-    if (!isMatch) {
-
-      return res.status(401).json({
-        success: false,
-        message: "Invalid Password",
-      });
-
-    }
-
-    user.lastLogin = new Date();
-
-    const accessToken =
-      generateAccessToken(user);
-
-    const refreshToken =
-      generateRefreshToken(user);
-
-    user.refreshToken = refreshToken;
-
-    await user.save();
-
-    return res.status(200).json({
-
-      success: true,
-
-      message: "Login Successful",
-
-      accessToken,
-
-      refreshToken,
-
-      user: {
-
-        id: user._id,
-
-        name: user.name,
-
-        email: user.email,
-
-        role: user.role,
-
-        academy: user.academy,
-
-        avatar: user.avatar,
-
-        status: user.status,
-
-      },
-
+    return sendResponse(res, {
+        statusCode: 200,
+        message: "Login Successful",
+        data: result,
     });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-
-      success: false,
-
-      message: "Login Failed",
-
-      error: error.message,
-
-    });
-
-  }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -201,53 +43,14 @@ export const login = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const logout = async (req, res) => {
+export const logout = catchAsync(async (req, res) => {
+    await authService.logout(req.body.email);
 
-  try {
-
-    const { email } = req.body || {};
-
-    if (email) {
-
-      const user = await User.findOne({
-        email,
-      }).select("+refreshToken");
-
-      if (user) {
-
-        user.refreshToken = "";
-
-        await user.save();
-
-      }
-
-    }
-
-    return res.status(200).json({
-
-      success: true,
-
-      message: "Logout Successful",
-
+    return sendResponse(res, {
+        statusCode: 200,
+        message: "Logout Successful",
     });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-
-      success: false,
-
-      message: "Logout Failed",
-
-      error: error.message,
-
-    });
-
-  }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -255,48 +58,22 @@ export const logout = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const getCurrentUser = async (req, res) => {
-
-  try {
-
-    return res.status(200).json({
-
-      success: true,
-
-      user: {
-
-        id: req.user._id,
-
-        name: req.user.name,
-
-        email: req.user.email,
-
-        role: req.user.role,
-
-        academy: req.user.academy,
-
-        avatar: req.user.avatar,
-
-        phone: req.user.phone,
-
-        status: req.user.status,
-
-      },
-
+export const getCurrentUser = catchAsync(async (req, res) => {
+    return sendResponse(res, {
+        statusCode: 200,
+        data: {
+            id: req.user._id,
+            name: req.user.name,
+            email: req.user.email,
+            role: req.user.role,
+            academy: req.user.academy,
+            avatar: req.user.avatar,
+            phone: req.user.phone,
+            status: req.user.status,
+            isVerified: req.user.isVerified,
+            jerseyNumber: req.user.jerseyNumber,
+            createdAt: req.user.createdAt,
+            updatedAt: req.user.updatedAt,
+        },
     });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-
-      success: false,
-
-      message: "Unable to fetch current user",
-
-    });
-
-  }
-
-};
+});
