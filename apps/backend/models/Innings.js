@@ -1,215 +1,333 @@
-import express from "express";
+import mongoose from "mongoose";
 
-import auth from "../middleware/auth.js";
-import roles from "../middleware/roles.js";
-import validateObjectId from "../middleware/validateObjectId.js";
+const inningsSchema = new mongoose.Schema(
+{
+    /*
+    |--------------------------------------------------------------------------
+    | References
+    |--------------------------------------------------------------------------
+    */
 
-import {
+    match:{
 
-    getMatchSetup,
+        type:mongoose.Schema.Types.ObjectId,
 
-    getSetupStatus,
+        ref:"Match",
 
-    updateMatchDetails,
+        required:true,
 
-    assignTeams,
+        index:true,
 
-    getSquad,
+    },
 
-    updateSquad,
+    inningsNumber:{
 
-    assignPlayingXI,
+        type:Number,
 
-    assignLeadership,
+        required:true,
 
-    recordToss,
+        enum:[1,2,3,4],
 
-    assignOpeningPlayers,
+    },
 
-    assignOfficials,
+    battingTeam:{
 
-    completeSetup,
+        type:mongoose.Schema.Types.ObjectId,
 
-    resetSetup,
+        ref:"Team",
 
-    dashboardSummary,
+        required:true,
 
-} from "../controllers/matchSetup.controller.js";
+    },
 
-const router = express.Router();
+    bowlingTeam:{
+
+        type:mongoose.Schema.Types.ObjectId,
+
+        ref:"Team",
+
+        required:true,
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Current Players
+    |--------------------------------------------------------------------------
+    */
+
+    striker:{
+
+        type:mongoose.Schema.Types.ObjectId,
+
+        ref:"Player",
+
+    },
+
+    nonStriker:{
+
+        type:mongoose.Schema.Types.ObjectId,
+
+        ref:"Player",
+
+    },
+
+    currentBowler:{
+
+        type:mongoose.Schema.Types.ObjectId,
+
+        ref:"Player",
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Score
+    |--------------------------------------------------------------------------
+    */
+
+    score:{
+
+        runs:{
+            type:Number,
+            default:0,
+        },
+
+        wickets:{
+            type:Number,
+            default:0,
+        },
+
+        overs:{
+            type:Number,
+            default:0,
+        },
+
+        balls:{
+            type:Number,
+            default:0,
+        },
+
+        extras:{
+            type:Number,
+            default:0,
+        },
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Extras
+    |--------------------------------------------------------------------------
+    */
+
+    extras:{
+
+        wides:{
+            type:Number,
+            default:0,
+        },
+
+        noBalls:{
+            type:Number,
+            default:0,
+        },
+
+        byes:{
+            type:Number,
+            default:0,
+        },
+
+        legByes:{
+            type:Number,
+            default:0,
+        },
+
+        penalties:{
+            type:Number,
+            default:0,
+        },
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Batting
+    |--------------------------------------------------------------------------
+    */
+
+    battingOrder:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        }
+    ],
+
+    yetToBat:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        }
+    ],
+
+    dismissedPlayers:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        }
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bowling
+    |--------------------------------------------------------------------------
+    */
+
+    bowlersUsed:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        }
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Match State
+    |--------------------------------------------------------------------------
+    */
+
+    target:{
+
+        type:Number,
+
+        default:0,
+
+    },
+
+    requiredRuns:{
+
+        type:Number,
+
+        default:0,
+
+    },
+
+    remainingBalls:{
+
+        type:Number,
+
+        default:0,
+
+    },
+
+    currentRunRate:{
+
+        type:Number,
+
+        default:0,
+
+    },
+
+    requiredRunRate:{
+
+        type:Number,
+
+        default:0,
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | References
+    |--------------------------------------------------------------------------
+    */
+
+    currentPartnership:{
+
+        type:mongoose.Schema.Types.ObjectId,
+
+        ref:"Partnership",
+
+    },
+
+    currentOver:{
+
+        type:mongoose.Schema.Types.ObjectId,
+
+        ref:"Over",
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status
+    |--------------------------------------------------------------------------
+    */
+
+    status:{
+
+        type:String,
+
+        enum:[
+            "Not Started",
+            "Live",
+            "Completed",
+        ],
+
+        default:"Not Started",
+
+    },
+
+    completedAt:Date,
+
+},
+{
+    timestamps:true,
+
+    versionKey:false,
+
+}
+);
 
 /*
 |--------------------------------------------------------------------------
-| Dashboard
+| Indexes
 |--------------------------------------------------------------------------
 */
 
-router.get(
-    "/:id/dashboard",
-    auth,
-    validateObjectId("id"),
-    dashboardSummary
+inningsSchema.index({
+
+    match:1,
+
+    inningsNumber:1,
+
+},
+{
+    unique:true,
+});
+
+inningsSchema.index({
+
+    battingTeam:1,
+
+});
+
+inningsSchema.index({
+
+    bowlingTeam:1,
+
+});
+
+inningsSchema.index({
+
+    status:1,
+
+});
+
+export default mongoose.model(
+
+    "Innings",
+
+    inningsSchema
+
 );
-
-router.get(
-    "/:id/status",
-    auth,
-    validateObjectId("id"),
-    getSetupStatus
-);
-
-/*
-|--------------------------------------------------------------------------
-| Match Setup
-|--------------------------------------------------------------------------
-*/
-
-router.get(
-    "/:id",
-    auth,
-    validateObjectId("id"),
-    getMatchSetup
-);
-
-router.patch(
-    "/:id/details",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    updateMatchDetails
-);
-
-/*
-|--------------------------------------------------------------------------
-| Team Selection
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/teams",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignTeams
-);
-
-/*
-|--------------------------------------------------------------------------
-| Squad
-|--------------------------------------------------------------------------
-*/
-
-router.get(
-    "/:id/squad",
-    auth,
-    validateObjectId("id"),
-    getSquad
-);
-
-router.patch(
-    "/:id/squad",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    updateSquad
-);
-
-/*
-|--------------------------------------------------------------------------
-| Playing XI
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/playing-xi",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignPlayingXI
-);
-
-/*
-|--------------------------------------------------------------------------
-| Leadership
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/leadership",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignLeadership
-);
-
-/*
-|--------------------------------------------------------------------------
-| Toss
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/toss",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    recordToss
-);
-
-/*
-|--------------------------------------------------------------------------
-| Opening Players
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/opening",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignOpeningPlayers
-);
-
-/*
-|--------------------------------------------------------------------------
-| Match Officials
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/officials",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignOfficials
-);
-
-/*
-|--------------------------------------------------------------------------
-| Complete Setup
-|--------------------------------------------------------------------------
-*/
-
-router.post(
-    "/:id/complete",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    completeSetup
-);
-
-/*
-|--------------------------------------------------------------------------
-| Reset Setup
-|--------------------------------------------------------------------------
-*/
-
-router.post(
-    "/:id/reset",
-    auth,
-    roles("admin"),
-    validateObjectId("id"),
-    resetSetup
-);
-
-export default router;
