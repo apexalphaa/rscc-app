@@ -1,32 +1,36 @@
-module.exports = (schema) => {
-  return (req, res, next) => {
-    const { error, value } = schema.validate(
-      {
-        body: req.body,
-        params: req.params,
-        query: req.query,
-      },
-      {
-        abortEarly: false,
-        stripUnknown: true,
-      }
-    );
+export default function validateRequest(schema) {
 
-    if (error) {
-      return res.status(422).json({
-        success: false,
-        message: "Validation failed.",
-        errors: error.details.map((item) => ({
-          field: item.path.join("."),
-          message: item.message,
-        })),
-      });
-    }
+    return (req, res, next) => {
 
-    req.body = value.body || {};
-    req.params = value.params || {};
-    req.query = value.query || {};
+        const { error } = schema.validate(
+            {
+                body: req.body,
+                params: req.params,
+                query: req.query,
+            },
+            {
+                abortEarly: false,
+                allowUnknown: false,
+            }
+        );
 
-    next();
-  };
-};
+        if (!error) {
+            return next();
+        }
+
+        return res.status(422).json({
+
+            success: false,
+
+            message: "Validation failed",
+
+            errors: error.details.map((item) => ({
+                field: item.path.join("."),
+                message: item.message,
+            })),
+
+        });
+
+    };
+
+}
