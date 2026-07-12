@@ -1,7 +1,17 @@
-module.exports = (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route '${req.originalUrl}' not found.`,
-    timestamp: new Date().toISOString(),
-  });
-};
+import ApiError from "../utils/ApiError.js";
+
+export default function notFound(req, res, next) {
+
+    next(
+
+        new ApiError(
+
+            404,
+
+            `Cannot ${req.method} ${req.originalUrl}`
+
+        )
+
+    );
+
+}
