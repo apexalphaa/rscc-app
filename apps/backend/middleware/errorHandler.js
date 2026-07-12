@@ -1,13 +1,21 @@
-const HTTP_STATUS = require("../constants/httpStatus");
+const logger = require("../config/logger");
 
 module.exports = (err, req, res, next) => {
-  const status = err.statusCode || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+  logger.error(err.stack || err.message);
+
+  const status = err.statusCode || 500;
 
   res.status(status).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message:
+      process.env.NODE_ENV === "production"
+        ? "Internal Server Error"
+        : err.message,
+
     ...(process.env.NODE_ENV !== "production" && {
       stack: err.stack,
     }),
+
+    timestamp: new Date().toISOString(),
   });
 };
