@@ -1,17 +1,18 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
+const env = require("./env");
+const logger = require("./logger");
 
-const connectDatabase = async () => {
+mongoose.set("strictQuery", true);
+
+async function connectDatabase() {
   try {
-    const connection = await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(env.MONGO_URI);
 
-    console.log(
-      `MongoDB Connected : ${connection.connection.host}`
-    );
-  } catch (error) {
-    console.error("MongoDB Connection Error:");
-    console.error(error.message);
+    logger.success("MongoDB connected successfully.");
+  } catch (err) {
+    logger.error(err.message);
     process.exit(1);
   }
-};
+}
 
-export default connectDatabase;
+module.exports = connectDatabase;
