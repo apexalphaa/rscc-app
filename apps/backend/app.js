@@ -1,4 +1,4 @@
-import express from "express";
+/*import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -93,3 +93,19 @@ message:"Route Not Found",
 });
 
 export default app;
+*/
+const express = require("express");
+const path = require("path");
+
+const registerMiddlewares = require("./utils/registerMiddlewares");
+const registerRoutes = require("./utils/registerRoutes");
+
+const app = express();
+
+registerMiddlewares(app);
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+registerRoutes(app);
+
+module.exports = app;
