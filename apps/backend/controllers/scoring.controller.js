@@ -1,6 +1,6 @@
 import Match from "../models/Match.js";
 import Innings from "../models/Innings.js";
-import Ball from "../models/Ball.js";
+import {recordBall} from "../services/scoring.service.js";
 
 export const startMatch=async(req,res)=>{
 
@@ -56,7 +56,7 @@ export const scoreBall=async(req,res)=>{
 
 try{
 
-const ball=await Ball.create({
+const ball=await recordBall({
 
 match:req.params.matchId,
 
@@ -68,7 +68,7 @@ return res.status(201).json({
 
 success:true,
 
-message:"Ball Recorded",
+message:"Ball Recorded Successfully",
 
 ball
 
@@ -114,7 +114,7 @@ new:true
 
 );
 
-return res.json({
+return res.status(200).json({
 
 success:true,
 
@@ -138,7 +138,7 @@ message:error.message
 
 }
 
-}
+};
 
 export const finishMatch=async(req,res)=>{
 
@@ -162,11 +162,11 @@ new:true
 
 );
 
-return res.json({
+return res.status(200).json({
 
 success:true,
 
-message:"Match Finished",
+message:"Match Finished Successfully",
 
 match
 
