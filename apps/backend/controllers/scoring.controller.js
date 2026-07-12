@@ -92,7 +92,7 @@ message:error.message
 
 };
 
-export const endInnings=async(req,res){
+export const endInnings=async(req,res)=>{
 
 try{
 
