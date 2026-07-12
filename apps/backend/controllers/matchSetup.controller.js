@@ -1,63 +1,47 @@
-import Match from "../models/Match.js";
-import Team from "../models/Team.js";
-import generateMatchNumber from "../utils/generateMatchNumber.js";
+import matchSetupService from "../services/matchSetup.service.js";
+
+import catchAsync from "../utils/catchAsync.js";
+import sendResponse from "../utils/sendResponse.js";
 
 /*
 |--------------------------------------------------------------------------
-| Create Draft Match
+| Get Match Setup
 |--------------------------------------------------------------------------
 */
 
-export const createDraftMatch = async (req, res) => {
+export const getMatchSetup = catchAsync(async (req, res) => {
 
-    try {
+    const match =
+        await matchSetupService.getMatch(
+            req.params.id
+        );
 
-        const {
+    return sendResponse(res, {
+        message: "Match setup fetched successfully.",
+        data: match,
+    });
 
-            scoringMode,
-            matchType,
+});
 
-        } = req.body;
+/*
+|--------------------------------------------------------------------------
+| Get Setup Status
+|--------------------------------------------------------------------------
+*/
 
-        const match = await Match.create({
+export const getSetupStatus = catchAsync(async (req, res) => {
 
-            scoringMode,
+    const status =
+        await matchSetupService.getSetupStatus(
+            req.params.id
+        );
 
-            matchType,
+    return sendResponse(res, {
+        message: "Setup status fetched successfully.",
+        data: status,
+    });
 
-            matchNumber: generateMatchNumber(),
-
-            createdBy: req.user._id,
-
-        });
-
-        return res.status(201).json({
-
-            success: true,
-
-            message: "Draft Match Created",
-
-            match,
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message,
-
-        });
-
-    }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -65,300 +49,281 @@ export const createDraftMatch = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const updateMatchDetails = async (req, res) => {
+export const updateMatchDetails = catchAsync(async (req, res) => {
 
-    try {
-
-        const {
-
-            venue,
-            ground,
-            city,
-            overs,
-            matchDate,
-
-        } = req.body;
-
-        const match = await Match.findByIdAndUpdate(
-
+    const match =
+        await matchSetupService.updateDetails(
             req.params.id,
-
-            {
-
-                details: {
-
-                    venue,
-                    ground,
-                    city,
-                    overs,
-                    matchDate,
-
-                },
-
-                setupProgress: 1,
-
-            },
-
-            {
-
-                new: true,
-
-            }
-
+            req.body
         );
 
-        return res.status(200).json({
+    return sendResponse(res, {
+        message: "Match details updated successfully.",
+        data: match,
+    });
 
-            success: true,
-
-            message: "Match Details Updated",
-
-            match,
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message,
-
-        });
-
-    }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
-| Select Teams
+| Assign Teams
 |--------------------------------------------------------------------------
 */
 
-export const selectTeams = async (req, res) => {
+export const assignTeams = catchAsync(async (req, res) => {
 
-    try {
+    const {
+        home,
+        away,
+    } = req.body;
 
-        const {
-
-            homeTeamId,
-            awayTeamId,
-
-        } = req.body;
-
-        const home = await Team.findById(homeTeamId);
-
-        const away = await Team.findById(awayTeamId);
-
-        if (!home || !away) {
-
-            return res.status(404).json({
-
-                success: false,
-
-                message: "Invalid Team Selected",
-
-            });
-
-        }
-
-        const match = await Match.findByIdAndUpdate(
-
+    const match =
+        await matchSetupService.assignTeams(
             req.params.id,
-
-            {
-
-                teams: {
-
-                    home: homeTeamId,
-
-                    away: awayTeamId,
-
-                },
-
-                setupProgress: 2,
-
-            },
-
-            {
-
-                new: true,
-
-            }
-
-        )
-
-        .populate("teams.home")
-
-        .populate("teams.away");
-
-        return res.status(200).json({
-
-            success: true,
-
-            message: "Teams Selected",
-
-            match,
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message,
-
-        });
-
-    }
-
-};
-
-/*
-|--------------------------------------------------------------------------
-| Select Playing XI
-|--------------------------------------------------------------------------
-*/
-
-export const selectPlayingXI = async (req, res) => {
-
-    try {
-
-        const {
-
-            homeXI,
-            awayXI,
-
-            homeCaptain,
-            awayCaptain,
-
-            homeKeeper,
-            awayKeeper,
-
-        } = req.body;
-
-        const match = await Match.findByIdAndUpdate(
-
-            req.params.id,
-
-            {
-
-                playingXI: {
-
-                    home: homeXI,
-
-                    away: awayXI,
-
-                },
-
-                captains: {
-
-                    home: homeCaptain,
-
-                    away: awayCaptain,
-
-                },
-
-                wicketKeepers: {
-
-                    home: homeKeeper,
-
-                    away: awayKeeper,
-
-                },
-
-                setupProgress: 3,
-
-            },
-
-            {
-
-                new: true,
-
-            }
-
+            home,
+            away
         );
 
-        return res.status(200).json({
+    return sendResponse(res, {
+        message: "Teams assigned successfully.",
+        data: match,
+    });
 
-            success: true,
-
-            message: "Playing XI Saved",
-
-            match,
-
-        });
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message,
-
-        });
-
-    }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
-| Get Match
+| Get Squad
 |--------------------------------------------------------------------------
 */
 
-export const getDraftMatch = async (req, res) => {
+export const getSquad = catchAsync(async (req, res) => {
 
-    try {
-
-        const match = await Match.findById(
-
+    const squad =
+        await matchSetupService.getSquad(
             req.params.id
+        );
 
-        )
+    return sendResponse(res, {
+        message: "Squad fetched successfully.",
+        data: squad,
+    });
 
-        .populate("teams.home")
+});
 
-        .populate("teams.away");
+/*
+|--------------------------------------------------------------------------
+| Update Squad
+|--------------------------------------------------------------------------
+*/
 
-        return res.status(200).json({
+export const updateSquad = catchAsync(async (req, res) => {
 
-            success: true,
+    const {
+        homeSquad,
+        awaySquad,
+    } = req.body;
 
-            match,
+    const match =
+        await matchSetupService.updateSquad(
+            req.params.id,
+            homeSquad,
+            awaySquad
+        );
 
-        });
+    return sendResponse(res, {
+        message: "Squad updated successfully.",
+        data: match,
+    });
 
-    }
+});
 
-    catch (error) {
+/*
+|--------------------------------------------------------------------------
+| Assign Playing XI
+|--------------------------------------------------------------------------
+*/
 
-        return res.status(500).json({
+export const assignPlayingXI = catchAsync(async (req, res) => {
 
-            success: false,
+    const {
+        homeXI,
+        awayXI,
+    } = req.body;
 
-            message: error.message,
+    const match =
+        await matchSetupService.assignPlayingXI(
+            req.params.id,
+            homeXI,
+            awayXI
+        );
 
-        });
+    return sendResponse(res, {
+        message: "Playing XI assigned successfully.",
+        data: match,
+    });
 
-    }
+});
 
-};
+/*
+|--------------------------------------------------------------------------
+| Assign Leadership
+|--------------------------------------------------------------------------
+*/
+
+export const assignLeadership = catchAsync(async (req, res) => {
+
+    const match =
+        await matchSetupService.assignLeadership(
+            req.params.id,
+            req.body
+        );
+
+    return sendResponse(res, {
+        message: "Leadership assigned successfully.",
+        data: match,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Record Toss
+|--------------------------------------------------------------------------
+*/
+
+export const recordToss = catchAsync(async (req, res) => {
+
+    const {
+        winner,
+        decision,
+    } = req.body;
+
+    const match =
+        await matchSetupService.recordToss(
+            req.params.id,
+            winner,
+            decision
+        );
+
+    return sendResponse(res, {
+        message: "Toss recorded successfully.",
+        data: match,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Assign Opening Players
+|--------------------------------------------------------------------------
+*/
+
+export const assignOpeningPlayers = catchAsync(async (req, res) => {
+
+    const match =
+        await matchSetupService.assignOpeningPlayers(
+            req.params.id,
+            req.body
+        );
+
+    return sendResponse(res, {
+        message: "Opening players assigned successfully.",
+        data: match,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Assign Officials
+|--------------------------------------------------------------------------
+*/
+
+export const assignOfficials = catchAsync(async (req, res) => {
+
+    const match =
+        await matchSetupService.assignOfficials(
+            req.params.id,
+            req.body
+        );
+
+    return sendResponse(res, {
+        message: "Officials assigned successfully.",
+        data: match,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Complete Setup
+|--------------------------------------------------------------------------
+*/
+
+export const completeSetup = catchAsync(async (req, res) => {
+
+    const match =
+        await matchSetupService.completeSetup(
+            req.params.id
+        );
+
+    return sendResponse(res, {
+        message: "Match setup completed successfully.",
+        data: match,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Reset Setup
+|--------------------------------------------------------------------------
+*/
+
+export const resetSetup = catchAsync(async (req, res) => {
+
+    const match =
+        await matchSetupService.resetSetup(
+            req.params.id
+        );
+
+    return sendResponse(res, {
+        message: "Match setup reset successfully.",
+        data: match,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Dashboard Summary
+|--------------------------------------------------------------------------
+*/
+
+export const dashboardSummary = catchAsync(async (req, res) => {
+
+    const [
+        setup,
+        status,
+    ] = await Promise.all([
+
+        matchSetupService.getMatch(
+            req.params.id
+        ),
+
+        matchSetupService.getSetupStatus(
+            req.params.id
+        ),
+
+    ]);
+
+    return sendResponse(res, {
+        message: "Match setup dashboard fetched successfully.",
+        data: {
+            match: setup,
+            status,
+        },
+    });
+
+});
