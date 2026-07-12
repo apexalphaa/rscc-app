@@ -1,21 +1,35 @@
-const logger = require("../config/logger");
+import ApiError from "../utils/ApiError.js";
 
-module.exports = (err, req, res, next) => {
-  logger.error(err.stack || err.message);
+export default function errorHandler(
+    err,
+    req,
+    res,
+    next
+) {
 
-  const status = err.statusCode || 500;
+    if (!(err instanceof ApiError)) {
 
-  res.status(status).json({
-    success: false,
-    message:
-      process.env.NODE_ENV === "production"
-        ? "Internal Server Error"
-        : err.message,
+        console.error(err);
 
-    ...(process.env.NODE_ENV !== "production" && {
-      stack: err.stack,
-    }),
+        err = new ApiError(
+            500,
+            "Internal Server Error"
+        );
 
-    timestamp: new Date().toISOString(),
-  });
-};
+    }
+
+    return res.status(err.statusCode).json({
+
+        success: false,
+
+        message: err.message,
+
+        errors: err.errors,
+
+        ...(process.env.NODE_ENV !== "production" && {
+            stack: err.stack,
+        }),
+
+    });
+
+}
