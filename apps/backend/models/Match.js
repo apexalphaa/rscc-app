@@ -2,19 +2,31 @@ import mongoose from "mongoose";
 
 const matchSchema = new mongoose.Schema(
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Basic Information
+    |--------------------------------------------------------------------------
+    */
+
     matchNumber:{
         type:String,
         unique:true,
+        index:true,
     },
 
     setupProgress:{
         type:Number,
         default:0,
+        min:0,
+        max:100,
     },
 
     scoringMode:{
         type:String,
-        enum:["offline","online"],
+        enum:[
+            "offline",
+            "online",
+        ],
         default:"offline",
     },
 
@@ -25,7 +37,7 @@ const matchSchema = new mongoose.Schema(
             "Practice",
             "Tournament",
             "League",
-            "Knockout"
+            "Knockout",
         ],
         default:"Friendly",
     },
@@ -39,12 +51,20 @@ const matchSchema = new mongoose.Schema(
             "Completed",
             "Processing",
             "Synced",
-            "Abandoned"
+            "Abandoned",
         ],
         default:"Draft",
+        index:true,
     },
 
+    /*
+    |--------------------------------------------------------------------------
+    | Match Details
+    |--------------------------------------------------------------------------
+    */
+
     details:{
+
         venue:{
             type:String,
             default:"",
@@ -65,25 +85,57 @@ const matchSchema = new mongoose.Schema(
             default:20,
         },
 
+        ballPerOver:{
+            type:Number,
+            default:6,
+        },
+
         matchDate:{
             type:Date,
             default:Date.now,
-        }
+        },
+
+        startTime:Date,
+
+        endTime:Date,
+
+        weather:{
+            type:String,
+            default:"",
+        },
+
     },
 
+    /*
+    |--------------------------------------------------------------------------
+    | Teams
+    |--------------------------------------------------------------------------
+    */
+
     teams:{
+
         home:{
             type:mongoose.Schema.Types.ObjectId,
             ref:"Team",
+            required:true,
         },
 
         away:{
             type:mongoose.Schema.Types.ObjectId,
             ref:"Team",
-        }
+            required:true,
+        },
+
     },
 
-    playingXI:{
+    /*
+    |--------------------------------------------------------------------------
+    | Squad
+    |--------------------------------------------------------------------------
+    */
+
+    squad:{
+
         home:[
             {
                 type:mongoose.Schema.Types.ObjectId,
@@ -96,10 +148,66 @@ const matchSchema = new mongoose.Schema(
                 type:mongoose.Schema.Types.ObjectId,
                 ref:"Player",
             }
-        ]
+        ],
+
     },
 
+    /*
+    |--------------------------------------------------------------------------
+    | Playing XI
+    |--------------------------------------------------------------------------
+    */
+
+    playingXI:{
+
+        home:[
+            {
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"Player",
+            }
+        ],
+
+        away:[
+            {
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"Player",
+            }
+        ],
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bench
+    |--------------------------------------------------------------------------
+    */
+
+    substitutes:{
+
+        home:[
+            {
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"Player",
+            }
+        ],
+
+        away:[
+            {
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"Player",
+            }
+        ],
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Captain
+    |--------------------------------------------------------------------------
+    */
+
     captains:{
+
         home:{
             type:mongoose.Schema.Types.ObjectId,
             ref:"Player",
@@ -108,10 +216,26 @@ const matchSchema = new mongoose.Schema(
         away:{
             type:mongoose.Schema.Types.ObjectId,
             ref:"Player",
-        }
+        },
+
+    },
+
+    viceCaptains:{
+
+        home:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        },
+
+        away:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        },
+
     },
 
     wicketKeepers:{
+
         home:{
             type:mongoose.Schema.Types.ObjectId,
             ref:"Player",
@@ -120,10 +244,23 @@ const matchSchema = new mongoose.Schema(
         away:{
             type:mongoose.Schema.Types.ObjectId,
             ref:"Player",
-        }
+        },
+
     },
 
+    /*
+    |--------------------------------------------------------------------------
+    | Toss
+    |--------------------------------------------------------------------------
+    */
+
     toss:{
+
+        completed:{
+            type:Boolean,
+            default:false,
+        },
+
         winner:{
             type:mongoose.Schema.Types.ObjectId,
             ref:"Team",
@@ -134,11 +271,18 @@ const matchSchema = new mongoose.Schema(
             enum:[
                 "",
                 "bat",
-                "bowl"
+                "bowl",
             ],
             default:"",
-        }
+        },
+
     },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Opening Players
+    |--------------------------------------------------------------------------
+    */
 
     openingPlayers:{
 
@@ -155,28 +299,149 @@ const matchSchema = new mongoose.Schema(
         bowler:{
             type:mongoose.Schema.Types.ObjectId,
             ref:"Player",
-        }
+        },
 
     },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Match Officials
+    |--------------------------------------------------------------------------
+    */
+
+    officials:{
+
+        scorer:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User",
+        },
+
+        umpire1:{
+            type:String,
+            default:"",
+        },
+
+        umpire2:{
+            type:String,
+            default:"",
+        },
+
+        referee:{
+            type:String,
+            default:"",
+        },
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Innings
+    |--------------------------------------------------------------------------
+    */
 
     currentInnings:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Innings",
     },
 
+    innings:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Innings",
+        }
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Result
+    |--------------------------------------------------------------------------
+    */
+
     winner:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Team",
     },
 
+    result:{
+
+        type:String,
+
+        default:"",
+
+    },
+
+    margin:{
+
+        type:String,
+
+        default:"",
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Flags
+    |--------------------------------------------------------------------------
+    */
+
+    isSetupComplete:{
+        type:Boolean,
+        default:false,
+    },
+
+    isScoringStarted:{
+        type:Boolean,
+        default:false,
+    },
+
+    isArchived:{
+        type:Boolean,
+        default:false,
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Audit
+    |--------------------------------------------------------------------------
+    */
+
     createdBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
-    }
+    },
 
 },
 {
     timestamps:true,
+    versionKey:false,
+}
+);
+
+/*
+|--------------------------------------------------------------------------
+| Indexes
+|--------------------------------------------------------------------------
+*/
+
+matchSchema.index({
+    status:1,
+});
+
+matchSchema.index({
+    matchType:1,
+});
+
+matchSchema.index({
+    "details.matchDate":-1,
+});
+
+matchSchema.index({
+    "teams.home":1,
+    "teams.away":1,
+});
+
+matchSchema.index({
+    matchNumber:1,
 });
 
 export default mongoose.model(
