@@ -1,5 +1,7 @@
-import Team from "../models/Team.js";
-import generateTeamCode from "../utils/generateTeamCode.js";
+import teamService from "../services/team.service.js";
+
+import catchAsync from "../utils/catchAsync.js";
+import sendResponse from "../utils/sendResponse.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -7,88 +9,19 @@ import generateTeamCode from "../utils/generateTeamCode.js";
 |--------------------------------------------------------------------------
 */
 
-export const createTeam = async (req, res) => {
+export const createTeam = catchAsync(async (req, res) => {
 
-    try {
+    const team = await teamService.createTeam(
+        req.body
+    );
 
-        const {
+    return sendResponse(res, {
+        statusCode: 201,
+        message: "Team created successfully.",
+        data: team,
+    });
 
-            name,
-            shortName,
-            category,
-            logo,
-
-        } = req.body;
-
-        if (!name || !shortName || !category) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                message: "Please fill all required fields."
-
-            });
-
-        }
-
-        const existingTeam = await Team.findOne({
-
-            name,
-
-        });
-
-        if (existingTeam) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                message: "Team already exists."
-
-            });
-
-        }
-
-        const team = await Team.create({
-
-            name,
-
-            shortName,
-
-            category,
-
-            logo,
-
-            teamCode: generateTeamCode(category, name),
-
-        });
-
-        return res.status(201).json({
-
-            success: true,
-
-            message: "Team created successfully.",
-
-            team,
-
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message,
-
-        });
-
-    }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -96,38 +29,19 @@ export const createTeam = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const getAllTeams = async (req, res) => {
+export const getAllTeams = catchAsync(async (req, res) => {
 
-    try {
+    const result = await teamService.getTeams(
+        req.query
+    );
 
-        const teams = await Team.find()
-            .sort({
-                createdAt: -1,
-            });
+    return sendResponse(res, {
+        message: "Teams fetched successfully.",
+        data: result.teams,
+        meta: result.pagination,
+    });
 
-        return res.json({
-
-            success: true,
-
-            count: teams.length,
-
-            teams,
-
-        });
-
-    } catch (error) {
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message,
-
-        });
-
-    }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -135,47 +49,18 @@ export const getAllTeams = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const getTeamById = async (req, res) => {
+export const getTeamById = catchAsync(async (req, res) => {
 
-    try {
+    const team = await teamService.getTeam(
+        req.params.id
+    );
 
-        const team = await Team.findById(
-            req.params.id
-        );
+    return sendResponse(res, {
+        message: "Team fetched successfully.",
+        data: team,
+    });
 
-        if (!team) {
-
-            return res.status(404).json({
-
-                success: false,
-
-                message: "Team not found."
-
-            });
-
-        }
-
-        return res.json({
-
-            success: true,
-
-            team,
-
-        });
-
-    } catch (error) {
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message,
-
-        });
-
-    }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -183,47 +68,19 @@ export const getTeamById = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const updateTeam = async (req, res) => {
+export const updateTeam = catchAsync(async (req, res) => {
 
-    try {
+    const team = await teamService.updateTeam(
+        req.params.id,
+        req.body
+    );
 
-        const team = await Team.findByIdAndUpdate(
+    return sendResponse(res, {
+        message: "Team updated successfully.",
+        data: team,
+    });
 
-            req.params.id,
-
-            req.body,
-
-            {
-
-                new: true,
-
-            }
-
-        );
-
-        return res.json({
-
-            success: true,
-
-            message: "Team updated successfully.",
-
-            team,
-
-        });
-
-    } catch (error) {
-
-        return res.status(500).json({
-
-            success: false,
-
-            message: error.message,
-
-        });
-
-    }
-
-};
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -231,32 +88,234 @@ export const updateTeam = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const deleteTeam = async (req, res) => {
+export const deleteTeam = catchAsync(async (req, res) => {
 
-    try {
+    await teamService.deleteTeam(
+        req.params.id
+    );
 
-        await Team.findByIdAndDelete(
-            req.params.id
-        );
+    return sendResponse(res, {
+        message: "Team deleted successfully.",
+    });
 
-        return res.json({
+});
 
-            success: true,
+/*
+|--------------------------------------------------------------------------
+| Add Player To Team
+|--------------------------------------------------------------------------
+*/
 
-            message: "Team deleted successfully."
+export const addPlayer = catchAsync(async (req, res) => {
+
+    const team = await teamService.addPlayer(
+        req.params.id,
+        req.body.playerId
+    );
+
+    return sendResponse(res, {
+        message: "Player added successfully.",
+        data: team,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Remove Player From Team
+|--------------------------------------------------------------------------
+*/
+
+export const removePlayer = catchAsync(async (req, res) => {
+
+    const team = await teamService.removePlayer(
+        req.params.id,
+        req.params.playerId
+    );
+
+    return sendResponse(res, {
+        message: "Player removed successfully.",
+        data: team,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Team Statistics
+|--------------------------------------------------------------------------
+*/
+
+export const getStatistics = catchAsync(async (req, res) => {
+
+    const statistics =
+        await teamService.statistics();
+
+    return sendResponse(res, {
+        message: "Team statistics fetched successfully.",
+        data: statistics,
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Dashboard Summary
+|--------------------------------------------------------------------------
+*/
+
+export const dashboardSummary = catchAsync(async (req, res) => {
+
+    const [
+
+        statistics,
+
+        recentTeams,
+
+    ] = await Promise.all([
+
+        teamService.statistics(),
+
+        teamService.getTeams({
+
+            page: 1,
+
+            limit: 5,
+
+        }),
+
+    ]);
+
+    return sendResponse(res, {
+
+        message:
+            "Dashboard summary fetched successfully.",
+
+        data: {
+
+            statistics,
+
+            recentTeams:
+                recentTeams.teams,
+
+        },
+
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Teams By Category
+|--------------------------------------------------------------------------
+*/
+
+export const getTeamsByCategory =
+    catchAsync(async (req, res) => {
+
+        const result =
+            await teamService.getTeams({
+
+                category: req.params.category,
+
+                page: req.query.page,
+
+                limit: req.query.limit,
+
+            });
+
+        return sendResponse(res, {
+
+            message:
+                "Teams fetched successfully.",
+
+            data: result.teams,
+
+            meta: result.pagination,
 
         });
 
-    } catch (error) {
+    });
 
-        return res.status(500).json({
+/*
+|--------------------------------------------------------------------------
+| Search Teams
+|--------------------------------------------------------------------------
+*/
 
-            success: false,
+export const searchTeams =
+    catchAsync(async (req, res) => {
 
-            message: error.message,
+        const result =
+            await teamService.getTeams({
+
+                search: req.query.q,
+
+                page: req.query.page,
+
+                limit: req.query.limit,
+
+            });
+
+        return sendResponse(res, {
+
+            message:
+                "Search completed successfully.",
+
+            data: result.teams,
+
+            meta: result.pagination,
 
         });
 
-    }
+    });
 
-};
+/*
+|--------------------------------------------------------------------------
+| Team Players
+|--------------------------------------------------------------------------
+*/
+
+export const getTeamPlayers =
+    catchAsync(async (req, res) => {
+
+        const team =
+            await teamService.getTeam(
+                req.params.id
+            );
+
+        return sendResponse(res, {
+
+            message:
+                "Players fetched successfully.",
+
+            data: team.players,
+
+        });
+
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Team Coaches
+|--------------------------------------------------------------------------
+*/
+
+export const getTeamCoaches =
+    catchAsync(async (req, res) => {
+
+        const team =
+            await teamService.getTeam(
+                req.params.id
+            );
+
+        return sendResponse(res, {
+
+            message:
+                "Coaches fetched successfully.",
+
+            data: team.coaches,
+
+        });
+
+    });
