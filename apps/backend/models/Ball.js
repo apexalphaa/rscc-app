@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
 
-const ballSchema=new mongoose.Schema(
+const ballSchema = new mongoose.Schema(
 {
+    match:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Match",
+        required:true,
+    },
 
     innings:{
         type:mongoose.Schema.Types.ObjectId,
@@ -22,11 +27,19 @@ const ballSchema=new mongoose.Schema(
     batsman:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Player",
+        required:true,
     },
 
     bowler:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Player",
+        required:true,
+    },
+
+    nonStriker:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Player",
+        required:true,
     },
 
     runs:{
@@ -58,15 +71,20 @@ const ballSchema=new mongoose.Schema(
 
     wicketType:{
         type:String,
+        enum:[
+            "",
+            "Bowled",
+            "Caught",
+            "LBW",
+            "Run Out",
+            "Stumped",
+            "Hit Wicket",
+            "Retired Out"
+        ],
         default:"",
     },
 
     commentary:{
-        type:String,
-        default:"",
-    },
-
-    shotArea:{
         type:String,
         default:"",
     }
