@@ -1,50 +1,30 @@
-import dotenv from "dotenv";
-dotenv.config();
+require("./config/env");
 
-import http from "http";
-import { Server } from "socket.io";
+const http = require("http");
 
-import app from "./app.js";
-import connectDatabase from "./config/database.js";
+const app = require("./app");
 
-const PORT = process.env.PORT || 5000;
+const env = require("./config/env");
+const logger = require("./config/logger");
+const connectDatabase = require("./config/database");
 
-const server = http.createServer(app);
+const gracefulShutdown = require("./middleware/gracefulShutdown");
+const processHandlers = require("./middleware/processHandlers");
 
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-  },
-});
+async function bootstrap() {
+  processHandlers();
 
-app.set("io", io);
+  await connectDatabase();
 
-io.on("connection", (socket) => {
-  console.log(`Client Connected : ${socket.id}`);
+  const server = http.createServer(app);
 
-  socket.on("disconnect", () => {
-    console.log(`Client Disconnected : ${socket.id}`);
+  server.listen(env.PORT, () => {
+    logger.success(
+      `Server running on http://localhost:${env.PORT}`
+    );
   });
-});
 
-const startServer = async () => {
-  try {
-    await connectDatabase();
+  gracefulShutdown(server);
+}
 
-    server.listen(PORT, () => {
-      console.log("======================================");
-      console.log(`🚀 RSCC Backend Running`);
-      console.log(`🌐 Port : ${PORT}`);
-      console.log(`📦 Environment : ${process.env.NODE_ENV || "development"}`);
-      console.log("======================================");
-    });
-  } catch (error) {
-    console.error("Failed to start server");
-    console.error(error);
-
-    process.exit(1);
-  }
-};
-
-startServer();
+bootstrap();
