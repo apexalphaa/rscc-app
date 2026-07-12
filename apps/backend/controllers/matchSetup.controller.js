@@ -9,33 +9,54 @@ import generateMatchNumber from "../utils/generateMatchNumber.js";
 */
 
 export const createDraftMatch = async (req, res) => {
+
     try {
 
-        const { scoringMode, matchType } = req.body;
+        const {
 
-        const match = await Match.create({
             scoringMode,
             matchType,
+
+        } = req.body;
+
+        const match = await Match.create({
+
+            scoringMode,
+
+            matchType,
+
             matchNumber: generateMatchNumber(),
+
             createdBy: req.user._id,
+
         });
 
         return res.status(201).json({
+
             success: true,
-            message: "Draft Match Created Successfully",
+
+            message: "Draft Match Created",
+
             match,
+
         });
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(error);
 
         return res.status(500).json({
+
             success: false,
+
             message: error.message,
+
         });
 
     }
+
 };
 
 /*
@@ -86,18 +107,6 @@ export const updateMatchDetails = async (req, res) => {
 
         );
 
-        if (!match) {
-
-            return res.status(404).json({
-
-                success: false,
-
-                message: "Match not found",
-
-            });
-
-        }
-
         return res.status(200).json({
 
             success: true,
@@ -108,7 +117,9 @@ export const updateMatchDetails = async (req, res) => {
 
         });
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(error);
 
@@ -141,53 +152,17 @@ export const selectTeams = async (req, res) => {
 
         } = req.body;
 
-        if (!homeTeamId || !awayTeamId) {
+        const home = await Team.findById(homeTeamId);
 
-            return res.status(400).json({
+        const away = await Team.findById(awayTeamId);
 
-                success: false,
-
-                message: "Both team ids are required."
-
-            });
-
-        }
-
-        if (homeTeamId === awayTeamId) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                message: "Home and Away teams cannot be same."
-
-            });
-
-        }
-
-        const homeTeam = await Team.findById(homeTeamId);
-
-        const awayTeam = await Team.findById(awayTeamId);
-
-        if (!homeTeam) {
+        if (!home || !away) {
 
             return res.status(404).json({
 
                 success: false,
 
-                message: "Home team not found."
-
-            });
-
-        }
-
-        if (!awayTeam) {
-
-            return res.status(404).json({
-
-                success: false,
-
-                message: "Away team not found."
+                message: "Invalid Team Selected",
 
             });
 
@@ -227,7 +202,7 @@ export const selectTeams = async (req, res) => {
 
             success: true,
 
-            message: "Teams Selected Successfully",
+            message: "Teams Selected",
 
             match,
 
@@ -235,15 +210,15 @@ export const selectTeams = async (req, res) => {
 
     }
 
-    catch(error){
+    catch (error) {
 
         console.error(error);
 
         return res.status(500).json({
 
-            success:false,
+            success: false,
 
-            message:error.message,
+            message: error.message,
 
         });
 
@@ -253,41 +228,74 @@ export const selectTeams = async (req, res) => {
 
 /*
 |--------------------------------------------------------------------------
-| Get Draft Match
+| Select Playing XI
 |--------------------------------------------------------------------------
 */
 
-export const getDraftMatch = async (req,res)=>{
+export const selectPlayingXI = async (req, res) => {
 
-    try{
+    try {
 
-        const match=await Match.findById(
+        const {
 
-            req.params.id
+            homeXI,
+            awayXI,
 
-        )
+            homeCaptain,
+            awayCaptain,
 
-        .populate("teams.home")
+            homeKeeper,
+            awayKeeper,
 
-        .populate("teams.away")
+        } = req.body;
 
-        .populate("createdBy","name email");
+        const match = await Match.findByIdAndUpdate(
 
-        if(!match){
+            req.params.id,
 
-            return res.status(404).json({
+            {
 
-                success:false,
+                playingXI: {
 
-                message:"Match not found"
+                    home: homeXI,
 
-            });
+                    away: awayXI,
 
-        }
+                },
+
+                captains: {
+
+                    home: homeCaptain,
+
+                    away: awayCaptain,
+
+                },
+
+                wicketKeepers: {
+
+                    home: homeKeeper,
+
+                    away: awayKeeper,
+
+                },
+
+                setupProgress: 3,
+
+            },
+
+            {
+
+                new: true,
+
+            }
+
+        );
 
         return res.status(200).json({
 
-            success:true,
+            success: true,
+
+            message: "Playing XI Saved",
 
             match,
 
@@ -295,15 +303,59 @@ export const getDraftMatch = async (req,res)=>{
 
     }
 
-    catch(error){
+    catch (error) {
 
         console.error(error);
 
         return res.status(500).json({
 
-            success:false,
+            success: false,
 
-            message:error.message,
+            message: error.message,
+
+        });
+
+    }
+
+};
+
+/*
+|--------------------------------------------------------------------------
+| Get Match
+|--------------------------------------------------------------------------
+*/
+
+export const getDraftMatch = async (req, res) => {
+
+    try {
+
+        const match = await Match.findById(
+
+            req.params.id
+
+        )
+
+        .populate("teams.home")
+
+        .populate("teams.away");
+
+        return res.status(200).json({
+
+            success: true,
+
+            match,
+
+        });
+
+    }
+
+    catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: error.message,
 
         });
 
