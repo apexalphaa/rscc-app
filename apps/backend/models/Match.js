@@ -83,6 +83,46 @@ const matchSchema = new mongoose.Schema(
         }
     },
 
+    playingXI:{
+        home:[
+            {
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"Player",
+            }
+        ],
+
+        away:[
+            {
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"Player",
+            }
+        ]
+    },
+
+    captains:{
+        home:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        },
+
+        away:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        }
+    },
+
+    wicketKeepers:{
+        home:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        },
+
+        away:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        }
+    },
+
     toss:{
         winner:{
             type:mongoose.Schema.Types.ObjectId,
@@ -91,9 +131,42 @@ const matchSchema = new mongoose.Schema(
 
         decision:{
             type:String,
-            enum:["bat","bowl",""],
+            enum:[
+                "",
+                "bat",
+                "bowl"
+            ],
             default:"",
         }
+    },
+
+    openingPlayers:{
+
+        striker:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        },
+
+        nonStriker:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        },
+
+        bowler:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Player",
+        }
+
+    },
+
+    currentInnings:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Innings",
+    },
+
+    winner:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Team",
     },
 
     createdBy:{
