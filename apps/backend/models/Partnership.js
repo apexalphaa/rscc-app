@@ -8,18 +8,18 @@ const partnershipSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    match:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Match",
-        required:true,
-        index:true,
+    match: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Match",
+        required: true,
+        index: true,
     },
 
-    innings:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Innings",
-        required:true,
-        index:true,
+    innings: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Innings",
+        required: true,
+        index: true,
     },
 
     /*
@@ -28,16 +28,16 @@ const partnershipSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    striker:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Player",
-        required:true,
+    striker: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
+        required: true,
     },
 
-    nonStriker:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Player",
-        required:true,
+    nonStriker: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
+        required: true,
     },
 
     /*
@@ -46,14 +46,25 @@ const partnershipSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    runs:{
-        type:Number,
-        default:0,
+    runs: {
+        type: Number,
+        default: 0,
     },
 
-    balls:{
-        type:Number,
-        default:0,
+    balls: {
+        type: Number,
+        default: 0,
+    },
+
+    boundaries: {
+        fours: {
+            type: Number,
+            default: 0,
+        },
+        sixes: {
+            type: Number,
+            default: 0,
+        }
     },
 
     /*
@@ -62,41 +73,41 @@ const partnershipSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    strikerRuns:{
-        type:Number,
-        default:0,
+    strikerRuns: {
+        type: Number,
+        default: 0,
     },
 
-    strikerBalls:{
-        type:Number,
-        default:0,
+    strikerBalls: {
+        type: Number,
+        default: 0,
     },
 
-    nonStrikerRuns:{
-        type:Number,
-        default:0,
+    nonStrikerRuns: {
+        type: Number,
+        default: 0,
     },
 
-    nonStrikerBalls:{
-        type:Number,
-        default:0,
+    nonStrikerBalls: {
+        type: Number,
+        default: 0,
     },
 
     /*
     |--------------------------------------------------------------------------
-    | Wicket
+    | Wicket & Status
     |--------------------------------------------------------------------------
     */
 
-    wicket:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Ball",
-        default:null,
+    wicket: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Ball",
+        default: null,
     },
 
-    ended:{
-        type:Boolean,
-        default:false,
+    ended: {
+        type: Boolean,
+        default: false,
     },
 
     /*
@@ -105,26 +116,22 @@ const partnershipSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    startedAt:{
-        type:Date,
-        default:Date.now,
+    startedAt: {
+        type: Date,
+        default: Date.now,
     },
 
-    endedAt:Date,
-
+    endedAt: Date,
 },
 {
-    timestamps:true,
-    versionKey:false,
+    timestamps: true,
+    versionKey: false,
 }
 );
 
 partnershipSchema.index({
-    innings:1,
-    ended:1,
+    innings: 1,
+    ended: 1,
 });
 
-export default mongoose.model(
-    "Partnership",
-    partnershipSchema
-);
+export default mongoose.model("Partnership", partnershipSchema);
