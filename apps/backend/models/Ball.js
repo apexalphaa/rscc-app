@@ -8,66 +8,68 @@ const ballSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    match:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Match",
-
-        required:true,
-
-        index:true,
-
+    match: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Match",
+        required: true,
+        index: true,
     },
 
-    innings:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Innings",
-
-        required:true,
-
-        index:true,
-
+    innings: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Innings",
+        required: true,
+        index: true,
     },
 
-    over:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Over",
-
+    over: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Over",
+        index: true,
     },
 
     /*
     |--------------------------------------------------------------------------
-    | Ball Number
+    | Sequence & Numbers
     |--------------------------------------------------------------------------
     */
 
-    overNumber:{
-
-        type:Number,
-
-        required:true,
-
+    ballSequence: {
+        type: Number,
+        required: true,
+        index: true,
     },
 
-    ballNumber:{
-
-        type:Number,
-
-        required:true,
-
+    overNumber: {
+        type: Number,
+        required: true,
     },
 
-    displayNumber:{
+    ballInOver: {
+        type: Number,
+        required: true,
+    },
 
-        type:String,
+    displayNumber: {
+        type: String,
+        default: "0.0",
+    },
 
-        default:"0.0",
+    /*
+    |--------------------------------------------------------------------------
+    | Match Phase & State
+    |--------------------------------------------------------------------------
+    */
 
+    phase: {
+        type: String,
+        enum: ["Powerplay", "Middle", "Death", "Super Over"],
+        default: "Middle",
+    },
+
+    powerplay: {
+        type: Boolean,
+        default: false,
     },
 
     /*
@@ -76,67 +78,43 @@ const ballSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    striker:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Player",
-
-        required:true,
-
+    striker: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
+        required: true,
+        index: true,
     },
 
-    nonStriker:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Player",
-
-        required:true,
-
+    nonStriker: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
+        required: true,
     },
 
-    bowler:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Player",
-
-        required:true,
-
+    bowler: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
+        required: true,
+        index: true,
     },
 
     /*
     |--------------------------------------------------------------------------
-    | Runs
+    | Runs & Extras
     |--------------------------------------------------------------------------
     */
 
-    runs:{
-
-        type:Number,
-
-        default:0,
-
-        min:0,
-
-        max:6,
-
+    runs: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 6,
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Extras
-    |--------------------------------------------------------------------------
-    */
-
-    extra:{
-
-        type:{
-
-            type:String,
-
-            enum:[
+    extra: {
+        type: {
+            type: String,
+            enum: [
                 "",
                 "Wide",
                 "No Ball",
@@ -144,19 +122,12 @@ const ballSchema = new mongoose.Schema(
                 "Leg Bye",
                 "Penalty",
             ],
-
-            default:"",
-
+            default: "",
         },
-
-        runs:{
-
-            type:Number,
-
-            default:0,
-
+        runs: {
+            type: Number,
+            default: 0,
         }
-
     },
 
     /*
@@ -165,72 +136,39 @@ const ballSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    wicket:{
-
-        isWicket:{
-
-            type:Boolean,
-
-            default:false,
-
+    wicket: {
+        isWicket: {
+            type: Boolean,
+            default: false,
         },
-
-        batsman:{
-
-            type:mongoose.Schema.Types.ObjectId,
-
-            ref:"Player",
-
+        batsman: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Player",
         },
-
-        bowler:{
-
-            type:mongoose.Schema.Types.ObjectId,
-
-            ref:"Player",
-
+        bowler: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Player",
         },
-
-        fielder:{
-
-            type:mongoose.Schema.Types.ObjectId,
-
-            ref:"Player",
-
+        fielder: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Player",
         },
-
-        dismissalType:{
-
-            type:String,
-
-            enum:[
-
+        dismissalType: {
+            type: String,
+            enum: [
                 "",
-
                 "Bowled",
-
                 "Caught",
-
                 "LBW",
-
                 "Run Out",
-
                 "Stumped",
-
                 "Hit Wicket",
-
                 "Retired Out",
-
                 "Obstructing Field",
-
                 "Timed Out",
-
             ],
-
-            default:"",
-
+            default: "",
         }
-
     },
 
     /*
@@ -239,36 +177,24 @@ const ballSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    legalDelivery:{
-
-        type:Boolean,
-
-        default:true,
-
+    legalDelivery: {
+        type: Boolean,
+        default: true,
     },
 
-    freeHit:{
-
-        type:Boolean,
-
-        default:false,
-
+    freeHit: {
+        type: Boolean,
+        default: false,
     },
 
-    reviewTaken:{
-
-        type:Boolean,
-
-        default:false,
-
+    reviewTaken: {
+        type: Boolean,
+        default: false,
     },
 
-    overturned:{
-
-        type:Boolean,
-
-        default:false,
-
+    overturned: {
+        type: Boolean,
+        default: false,
     },
 
     /*
@@ -277,12 +203,15 @@ const ballSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    commentary:{
-
-        type:String,
-
-        default:"",
-
+    commentary: {
+        auto: {
+            type: String,
+            default: "",
+        },
+        manual: {
+            type: String,
+            default: "",
+        }
     },
 
     /*
@@ -291,21 +220,14 @@ const ballSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    scorer:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"User",
-
+    scorer: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
     }
-
 },
 {
-
-    timestamps:true,
-
-    versionKey:false,
-
+    timestamps: true,
+    versionKey: false,
 }
 );
 
@@ -316,31 +238,14 @@ const ballSchema = new mongoose.Schema(
 */
 
 ballSchema.index({
-
-    innings:1,
-
-    overNumber:1,
-
-    ballNumber:1,
-
+    innings: 1,
+    overNumber: 1,
+    ballInOver: 1,
 });
 
 ballSchema.index({
-
-    striker:1,
-
+    innings: 1,
+    ballSequence: 1,
 });
 
-ballSchema.index({
-
-    bowler:1,
-
-});
-
-export default mongoose.model(
-
-    "Ball",
-
-    ballSchema
-
-);
+export default mongoose.model("Ball", ballSchema);
