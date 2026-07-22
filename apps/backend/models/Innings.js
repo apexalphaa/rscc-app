@@ -8,46 +8,31 @@ const inningsSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    match:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Match",
-
-        required:true,
-
-        index:true,
-
+    match: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Match",
+        required: true,
+        index: true,
     },
 
-    inningsNumber:{
-
-        type:Number,
-
-        required:true,
-
-        enum:[1,2,3,4],
-
+    inningsNumber: {
+        type: Number,
+        required: true,
+        enum: [1, 2, 3, 4],
     },
 
-    battingTeam:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Team",
-
-        required:true,
-
+    battingTeam: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team",
+        required: true,
+        index: true,
     },
 
-    bowlingTeam:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Team",
-
-        required:true,
-
+    bowlingTeam: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team",
+        required: true,
+        index: true,
     },
 
     /*
@@ -56,28 +41,19 @@ const inningsSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    striker:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Player",
-
+    striker: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
     },
 
-    nonStriker:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Player",
-
+    nonStriker: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
     },
 
-    currentBowler:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Player",
-
+    currentBowler: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
     },
 
     /*
@@ -86,154 +62,139 @@ const inningsSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    score:{
-
-        runs:{
-            type:Number,
-            default:0,
+    score: {
+        runs: {
+            type: Number,
+            default: 0,
         },
-
-        wickets:{
-            type:Number,
-            default:0,
+        wickets: {
+            type: Number,
+            default: 0,
         },
-
-        overs:{
-            type:Number,
-            default:0,
+        overs: {
+            type: Number,
+            default: 0,
         },
-
-        balls:{
-            type:Number,
-            default:0,
-        },
-
-        extras:{
-            type:Number,
-            default:0,
-        },
-
+        balls: {
+            type: Number,
+            default: 0,
+        }
     },
 
     /*
     |--------------------------------------------------------------------------
-    | Extras
+    | Extras (Single Unified Source of Truth)
     |--------------------------------------------------------------------------
     */
 
-    extras:{
-
-        wides:{
-            type:Number,
-            default:0,
+    extras: {
+        total: {
+            type: Number,
+            default: 0,
         },
-
-        noBalls:{
-            type:Number,
-            default:0,
+        wides: {
+            type: Number,
+            default: 0,
         },
-
-        byes:{
-            type:Number,
-            default:0,
+        noBalls: {
+            type: Number,
+            default: 0,
         },
-
-        legByes:{
-            type:Number,
-            default:0,
+        byes: {
+            type: Number,
+            default: 0,
         },
-
-        penalties:{
-            type:Number,
-            default:0,
+        legByes: {
+            type: Number,
+            default: 0,
         },
-
+        penalties: {
+            type: Number,
+            default: 0,
+        }
     },
 
     /*
     |--------------------------------------------------------------------------
-    | Batting
+    | Batting & Bowling Lineups
     |--------------------------------------------------------------------------
     */
 
-    battingOrder:[
+    battingOrder: [
         {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Player",
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Player",
         }
     ],
 
-    yetToBat:[
+    yetToBat: [
         {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Player",
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Player",
         }
     ],
 
-    dismissedPlayers:[
+    dismissedPlayers: [
         {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Player",
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Player",
+        }
+    ],
+
+    bowlersUsed: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Player",
         }
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Bowling
+    | Live Feed Telemetry
     |--------------------------------------------------------------------------
     */
 
-    bowlersUsed:[
+    recentBalls: [
         {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Player",
+            type: String, // Stores last 6 delivery descriptions, e.g., ["1", "W", "4"]
         }
     ],
 
+    lastBall: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Ball",
+        default: null,
+    },
+
     /*
     |--------------------------------------------------------------------------
-    | Match State
+    | Match State & Target Metrics
     |--------------------------------------------------------------------------
     */
 
-    target:{
-
-        type:Number,
-
-        default:0,
-
+    target: {
+        type: Number,
+        default: 0,
     },
 
-    requiredRuns:{
-
-        type:Number,
-
-        default:0,
-
+    requiredRuns: {
+        type: Number,
+        default: 0,
     },
 
-    remainingBalls:{
-
-        type:Number,
-
-        default:0,
-
+    remainingBalls: {
+        type: Number,
+        default: 0,
     },
 
-    currentRunRate:{
-
-        type:Number,
-
-        default:0,
-
+    currentRunRate: {
+        type: Number,
+        default: 0,
     },
 
-    requiredRunRate:{
-
-        type:Number,
-
-        default:0,
-
+    requiredRunRate: {
+        type: Number,
+        default: 0,
     },
 
     /*
@@ -242,50 +203,49 @@ const inningsSchema = new mongoose.Schema(
     |--------------------------------------------------------------------------
     */
 
-    currentPartnership:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Partnership",
-
+    currentPartnership: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Partnership",
     },
 
-    currentOver:{
-
-        type:mongoose.Schema.Types.ObjectId,
-
-        ref:"Over",
-
+    currentOver: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Over",
     },
 
     /*
     |--------------------------------------------------------------------------
-    | Status
+    | Match Flags & Status
     |--------------------------------------------------------------------------
     */
 
-    status:{
-
-        type:String,
-
-        enum:[
-            "Not Started",
-            "Live",
-            "Completed",
-        ],
-
-        default:"Not Started",
-
+    isDeclared: {
+        type: Boolean,
+        default: false,
     },
 
-    completedAt:Date,
+    followOn: {
+        type: Boolean,
+        default: false,
+    },
 
+    superOver: {
+        type: Boolean,
+        default: false,
+    },
+
+    status: {
+        type: String,
+        enum: ["Not Started", "Live", "Completed"],
+        default: "Not Started",
+        index: true,
+    },
+
+    completedAt: Date,
 },
 {
-    timestamps:true,
-
-    versionKey:false,
-
+    timestamps: true,
+    versionKey: false,
 }
 );
 
@@ -295,39 +255,9 @@ const inningsSchema = new mongoose.Schema(
 |--------------------------------------------------------------------------
 */
 
-inningsSchema.index({
-
-    match:1,
-
-    inningsNumber:1,
-
-},
-{
-    unique:true,
-});
-
-inningsSchema.index({
-
-    battingTeam:1,
-
-});
-
-inningsSchema.index({
-
-    bowlingTeam:1,
-
-});
-
-inningsSchema.index({
-
-    status:1,
-
-});
-
-export default mongoose.model(
-
-    "Innings",
-
-    inningsSchema
-
+inningsSchema.index(
+    { match: 1, inningsNumber: 1 },
+    { unique: true }
 );
+
+export default mongoose.model("Innings", inningsSchema);
