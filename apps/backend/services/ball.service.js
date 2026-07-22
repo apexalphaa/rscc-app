@@ -6,24 +6,25 @@ import scorecardService from "./scorecard.service.js";
 import partnershipService from "./partnership.service.js";
 
 import cricketMath from "../utils/cricketMath.js";
+import deliveryValidator from "../utils/deliveryValidator.js";
+import strikeRotation from "../utils/strikeRotation.js";
+import scoreUpdater from "../utils/scoreUpdater.js";
+import overManager from "../utils/overManager.js";
 
 class BallService {
 
     /*
     |--------------------------------------------------------------------------
-    | Current Innings
+    | Innings
     |--------------------------------------------------------------------------
     */
 
     async getInnings(inningsId) {
 
-        const innings =
-            await Innings.findById(inningsId);
+        const innings = await Innings.findById(inningsId);
 
         if (!innings)
-            throw new Error(
-                "Innings not found."
-            );
+            throw new Error("Innings not found.");
 
         return innings;
 
@@ -42,53 +43,45 @@ class BallService {
                 inningsId
             );
 
-        if (!over) {
+        if (over)
+            return over;
 
-            const innings =
-                await this.getInnings(
-                    inningsId
-                );
+        const innings =
+            await this.getInnings(
+                inningsId
+            );
 
-            over =
-                await overService.createOver(
-
-                    inningsId,
-
-                    innings.currentBowler
-
-                );
-
-        }
-
-        return over;
+        return await overService.createOver(
+            inningsId,
+            innings.currentBowler
+        );
 
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Ball Number
+    | Delivery Numbers
     |--------------------------------------------------------------------------
     */
 
-    nextBallNumber(over) {
+    getBallMeta(over) {
 
         return {
 
             overNumber:
                 over.overNumber,
 
-            ballNumber:
+            ballInOver:
                 over.statistics.legalBalls + 1,
 
             displayNumber:
+                cricketMath.nextDisplayNumber(
 
-                `${
+                    over.overNumber,
 
-                    over.overNumber
-
-                }.${
                     over.statistics.legalBalls
-                }`
+
+                )
 
         };
 
@@ -96,92 +89,68 @@ class BallService {
 
     /*
     |--------------------------------------------------------------------------
-    | Validate Delivery
+    | Sanitize Payload
     |--------------------------------------------------------------------------
     */
 
-    validateDelivery(data) {
+    sanitizePayload(payload = {}) {
 
-        if (
-            data.runs < 0
-        )
-            throw new Error(
-                "Invalid runs."
-            );
+        return {
 
-        if (
-            data.runs > 7
-        )
-            throw new Error(
-                "Runs exceeded limit."
-            );
+            runs:
+                payload.runs || 0,
 
-        if (
+            extra:
+                payload.extra || null,
 
-            data.extra &&
+            wicket:
+                payload.wicket || null,
 
-            ![
-                "",
+            shot:
+                payload.shot || null,
 
-                "Wide",
+            wagonZone:
+                payload.wagonZone || null,
 
-                "No Ball",
+            notes:
+                payload.notes || ""
 
-                "Bye",
-
-                "Leg Bye",
-
-                "Penalty",
-
-            ].includes(
-                data.extra.type
-            )
-
-        ) {
-
-            throw new Error(
-                "Invalid extra."
-            );
-
-        }
-
-        return true;
+        };
 
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Record Ball
+    | Create Ball
     |--------------------------------------------------------------------------
     */
 
-    async recordBall(
+    async createBall(
 
-        inningsId,
-
+        innings,
+        over,
         payload,
-
         scorer
 
     ) {
 
-        this.validateDelivery(
+        deliveryValidator.validate(
             payload
         );
 
-        const innings =
-            await this.getInnings(
-                inningsId
+        const data =
+            this.sanitizePayload(
+                payload
             );
 
-        const over =
-            await this.getCurrentOver(
-                inningsId
-            );
-
-        const ballInfo =
-            this.nextBallNumber(
+        const meta =
+            this.getBallMeta(
                 over
+            );
+
+        const legalDelivery =
+            cricketMath.isLegalDelivery(
+                data.extra
             );
 
         const ball =
@@ -191,19 +160,21 @@ class BallService {
                     innings.match,
 
                 innings:
-                    inningsId,
+                    innings._id,
 
                 over:
                     over._id,
 
                 overNumber:
-                    ballInfo.overNumber,
+                    meta.overNumber,
 
                 ballNumber:
-                    ballInfo.ballNumber,
+                    meta.ballInOver,
 
                 displayNumber:
-                    ballInfo.displayNumber,
+                    meta.displayNumber,
+
+                legalDelivery,
 
                 striker:
                     innings.striker,
@@ -214,108 +185,47 @@ class BallService {
                 bowler:
                     innings.currentBowler,
 
-                ...payload,
+                runs:
+                    data.runs,
 
-                scorer,
+                extra:
+                    data.extra,
+
+                wicket:
+                    data.wicket,
+
+                shot:
+                    data.shot,
+
+                wagonZone:
+                    data.wagonZone,
+
+                notes:
+                    data.notes,
+
+                scorer
 
             });
 
-        return {
-
-            innings,
-
-            over,
-
-            ball,
-
-        };
+        return ball;
 
     }
+
     /*
     |--------------------------------------------------------------------------
-    | Update Innings Score
+    | Update Innings
     |--------------------------------------------------------------------------
     */
 
-    async updateInnings(inningsId, ball) {
+    async updateInnings(
+        innings,
+        ball
+    ) {
 
-        const innings =
-            await this.getInnings(
-                inningsId
-            );
-
-        const legalDelivery =
-            ball.legalDelivery;
-
-        const runs =
-            ball.runs +
-            (ball.extra?.runs || 0);
-
-        innings.score.runs += runs;
-
-        if (legalDelivery) {
-
-            innings.score.balls++;
-
-            innings.score.overs =
-                cricketMath.overString(
-                    innings.score.balls
-                );
-
-        }
-
-        if (
-            ball.wicket &&
-            ball.wicket.isWicket
-        ) {
-
-            innings.score.wickets++;
-
-        }
-
-        innings.score.extras +=
-            ball.extra?.runs || 0;
-
-        if (
-            innings.target > 0
-        ) {
-
-            innings.requiredRuns =
-                Math.max(
-                    innings.target -
-                    innings.score.runs,
-                    0
-                );
-
-        }
-
-        innings.remainingBalls =
-            Math.max(
-
-                innings.remainingBalls -
-
-                (legalDelivery ? 1 : 0),
-
-                0
-
-            );
-
-        innings.currentRunRate =
-            Number(
-                cricketMath.currentRunRate(
-                    innings.score.runs,
-                    innings.score.balls
-                )
-            );
-
-        innings.requiredRunRate =
-            Number(
-                cricketMath.requiredRunRate(
-                    innings.target,
-                    innings.score.runs,
-                    innings.remainingBalls
-                )
-            );
+        scoreUpdater.process(
+            innings,
+            ball
+        );
 
         await innings.save();
 
@@ -346,143 +256,30 @@ class BallService {
                     ball.legalDelivery,
 
                 runs:
-                    ball.runs +
-                    (ball.extra?.runs || 0),
+                    cricketMath.teamRuns(
+                        ball
+                    ),
 
                 wicket:
                     ball.wicket?.isWicket || false,
 
                 wide:
-                    ball.extra?.type ===
-                    "Wide",
+                    ball.extra?.type === "Wide",
 
                 noBall:
-                    ball.extra?.type ===
-                    "No Ball",
+                    ball.extra?.type === "No Ball",
 
                 bye:
-                    ball.extra?.type ===
-                    "Bye",
+                    ball.extra?.type === "Bye",
 
                 legBye:
-                    ball.extra?.type ===
-                    "Leg Bye",
+                    ball.extra?.type === "Leg Bye"
 
             }
 
         );
 
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update Batter
-    |--------------------------------------------------------------------------
-    */
-
-    async updateBatter(
-        innings,
-        ball
-    ) {
-
-        await scorecardService.updateBatting(
-
-            innings._id,
-
-            innings.striker,
-
-            {
-
-                runs:
-                    ball.runs,
-
-                ballFaced:
-                    ball.legalDelivery,
-
-                isFour:
-                    ball.runs === 4,
-
-                isSix:
-                    ball.runs === 6,
-
-            }
-
-        );
-
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update Bowler
-    |--------------------------------------------------------------------------
-    */
-
-    async updateBowler(
-        innings,
-        ball
-    ) {
-
-        await scorecardService.updateBowling(
-
-            innings._id,
-
-            innings.currentBowler,
-
-            {
-
-                legalBall:
-                    ball.legalDelivery,
-
-                runs:
-                    ball.runs +
-                    (ball.extra?.runs || 0),
-
-                wicket:
-                    ball.wicket?.isWicket || false,
-
-                wide:
-                    ball.extra?.type ===
-                    "Wide",
-
-                noBall:
-                    ball.extra?.type ===
-                    "No Ball",
-
-            }
-
-        );
-
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update Partnership
-    |--------------------------------------------------------------------------
-    */
-
-    async updatePartnership(
-        innings,
-        ball
-    ) {
-
-        await partnershipService.updatePartnership(
-
-            innings._id,
-
-            {
-
-                striker:
-                    innings.striker,
-
-                runs:
-                    ball.runs,
-
-                legalBall:
-                    ball.legalDelivery,
-
-            }
-
-        );
+        return over;
 
     }
 }
