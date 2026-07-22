@@ -1,5 +1,5 @@
 import Scorecard from "../models/Scorecard.js";
-import Innings from "../models/Innings.js";
+import cricketMath from "../utils/cricketMath.js";
 
 class ScorecardService {
 
@@ -8,265 +8,215 @@ class ScorecardService {
     | Get Scorecard
     |--------------------------------------------------------------------------
     */
+
     async getScorecard(inningsId) {
-        const scorecard = await Scorecard.findOne({ innings: inningsId })
-            .populate("batting.player")
-            .populate("bowling.player");
 
-        if (!scorecard) {
-            throw new Error("Scorecard not found.");
-        }
-
-        return scorecard;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Create Scorecard
-    |--------------------------------------------------------------------------
-    */
-    async createScorecard(inningsId) {
-        const innings = await Innings.findById(inningsId);
-
-        if (!innings) {
-            throw new Error("Innings not found.");
-        }
-
-        const exists = await Scorecard.findOne({ innings: inningsId });
-        if (exists) return exists;
-
-        const batting = innings.battingOrder.map((player, index) => ({
-            player,
-            battingPosition: index + 1,
-            runs: 0,
-            balls: 0,
-            fours: 0,
-            sixes: 0,
-            strikeRate: 0,
-            isOut: false
-        }));
-
-        const bowling = innings.bowlersUsed.map(player => ({
-            player,
-            overs: 0,
-            runs: 0,
-            wickets: 0,
-            maidens: 0,
-            wides: 0,
-            noBalls: 0,
-            economy: 0
-        }));
-
-        return Scorecard.create({
-            match: innings.match,
-            innings: innings._id,
-            battingTeam: innings.battingTeam,
-            bowlingTeam: innings.bowlingTeam,
-            batting,
-            bowling,
-            fallOfWickets: [],
-        });
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Find Batter
-    |--------------------------------------------------------------------------
-    */
-    findBatter(scorecard, playerId) {
-        const targetId = String(playerId);
-        return scorecard.batting.find(
-            batter => String(batter.player?._id || batter.player) === targetId
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Find Bowler
-    |--------------------------------------------------------------------------
-    */
-    findBowler(scorecard, playerId) {
-        const targetId = String(playerId);
-        return scorecard.bowling.find(
-            bowler => String(bowler.player?._id || bowler.player) === targetId
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Ensure Bowler Exists
-    |--------------------------------------------------------------------------
-    */
-    ensureBowler(scorecard, playerId) {
-        let bowler = this.findBowler(scorecard, playerId);
-
-        if (!bowler) {
-            scorecard.bowling.push({
-                player: playerId,
-                overs: 0,
-                runs: 0,
-                wickets: 0,
-                maidens: 0,
-                wides: 0,
-                noBalls: 0,
-                economy: 0
+        const scorecard =
+            await Scorecard.findOne({
+                innings: inningsId
             });
 
-            bowler = this.findBowler(scorecard, playerId);
-        }
+        if (!scorecard)
+            throw new Error("Scorecard not found.");
 
-        return bowler;
+        return scorecard;
+
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Update Batter
+    | Helpers
     |--------------------------------------------------------------------------
     */
-    async updateBatting(inningsId, playerId, payload) {
-        const scorecard = await this.getScorecard(inningsId);
-        const batter = this.findBatter(scorecard, playerId);
 
-        if (!batter) {
-            throw new Error("Batter not found.");
-        }
+    getBattingFigure(scorecard, playerId) {
 
-        const {
-            runs = 0,
-            ballFaced = true,
-            isFour = false,
-            isSix = false,
-        } = payload;
+        return scorecard.batting.find(
+            player =>
+                player.player.toString() === playerId.toString()
+        );
 
-        batter.runs = (batter.runs || 0) + runs;
+    }
 
-        if (ballFaced) {
-            batter.balls = (batter.balls || 0) + 1;
-        }
+    getBowlingFigure(scorecard, playerId) {
 
-        if (isFour) batter.fours = (batter.fours || 0) + 1;
-        if (isSix) batter.sixes = (batter.sixes || 0) + 1;
+        return scorecard.bowling.find(
+            player =>
+                player.player.toString() === playerId.toString()
+        );
 
-        batter.strikeRate = !batter.balls || batter.balls === 0
-            ? 0
-            : Number(((batter.runs * 100) / batter.balls).toFixed(2));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Batting
+    |--------------------------------------------------------------------------
+    */
+
+    async updateBatting(
+        inningsId,
+        playerId,
+        payload
+    ) {
+
+        const scorecard =
+            await this.getScorecard(
+                inningsId
+            );
+
+        const batter =
+            this.getBattingFigure(
+                scorecard,
+                playerId
+            );
+
+        if (!batter)
+            throw new Error("Batting figure not found.");
+
+        const runs =
+            payload.runs || 0;
+
+        batter.runs += runs;
+
+        if (payload.ballFaced)
+            batter.balls++;
+
+        if (payload.four)
+            batter.fours++;
+
+        if (payload.six)
+            batter.sixes++;
+
+        batter.strikeRate =
+            Number(
+                cricketMath.strikeRate(
+                    batter.runs,
+                    batter.balls
+                )
+            );
 
         await scorecard.save();
+
         return batter;
+
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Update Bowler
+    | Bowling
     |--------------------------------------------------------------------------
     */
-    async updateBowling(inningsId, playerId, payload) {
-        const scorecard = await this.getScorecard(inningsId);
-        const bowler = this.ensureBowler(scorecard, playerId);
 
-        const {
-            legalBall = true,
-            runs = 0,
-            wicket = false,
-            wide = false,
-            noBall = false,
-        } = payload;
+    async updateBowling(
+        inningsId,
+        playerId,
+        payload
+    ) {
 
-        bowler.runs = (bowler.runs || 0) + runs;
+        const scorecard =
+            await this.getScorecard(
+                inningsId
+            );
 
-        if (wicket) bowler.wickets = (bowler.wickets || 0) + 1;
-        if (wide) bowler.wides = (bowler.wides || 0) + 1;
-        if (noBall) bowler.noBalls = (bowler.noBalls || 0) + 1;
+        const bowler =
+            this.getBowlingFigure(
+                scorecard,
+                playerId
+            );
 
-        if (legalBall) {
-            // Reconstruct absolute balls to fully avoid JS decimal point drift inaccuracies
-            const currentOversInt = Math.floor(bowler.overs || 0);
-            const currentBallsInt = Math.round(((bowler.overs || 0) - currentOversInt) * 6);
-            
-            let totalBalls = (currentOversInt * 6) + currentBallsInt + 1;
-            
-            const newOvers = Math.floor(totalBalls / 6);
-            const newBalls = totalBalls % 6;
-            
-            // Stores as fractional format for exact internal mathematical modeling
-            bowler.overs = newOvers + (newBalls / 6);
+        if (!bowler)
+            throw new Error("Bowling figure not found.");
+
+        const runs =
+            payload.runs || 0;
+
+        bowler.runs += runs;
+
+        if (payload.legalBall) {
+
+            const currentBalls =
+                cricketMath.oversToBalls(
+                    bowler.overs
+                ) + 1;
+
+            bowler.overs =
+                cricketMath.overString(
+                    currentBalls
+                );
+
         }
 
-        // Exact decimal translation calculation for accurate economy representation
-        const completedOvers = Math.floor(bowler.overs || 0);
-        const activeBalls = Math.round(((bowler.overs || 0) - completedOvers) * 6);
-        const trueOversDuration = completedOvers + (activeBalls / 6);
+        if (payload.wicket)
+            bowler.wickets++;
 
-        bowler.economy = trueOversDuration === 0
-            ? 0
-            : Number((bowler.runs / trueOversDuration).toFixed(2));
+        if (payload.wide)
+            bowler.wides++;
+
+        if (payload.noBall)
+            bowler.noBalls++;
+
+        const totalBalls =
+            cricketMath.oversToBalls(
+                bowler.overs
+            );
+
+        bowler.economy =
+            Number(
+                cricketMath.economyRate(
+                    bowler.runs,
+                    totalBalls
+                )
+            );
 
         await scorecard.save();
+
         return bowler;
+
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Record Wicket
+    | Dismissal
     |--------------------------------------------------------------------------
     */
-    async recordDismissal(inningsId, payload) {
-        const scorecard = await this.getScorecard(inningsId);
-        const {
-            batsman,
-            dismissal,
-            bowler,
-            assistedBy,
-            score,
-            wicket,
-            over,
-        } = payload;
 
-        const batter = this.findBatter(scorecard, batsman);
+    async setDismissal(
+        inningsId,
+        batterId,
+        dismissal
+    ) {
 
-        if (!batter) {
-            throw new Error("Batter not found.");
-        }
+        const scorecard =
+            await this.getScorecard(
+                inningsId
+            );
+
+        const batter =
+            this.getBattingFigure(
+                scorecard,
+                batterId
+            );
+
+        if (!batter)
+            throw new Error("Batting figure not found.");
 
         batter.isOut = true;
-        batter.dismissal = dismissal;
-        batter.dismissedBy = bowler;
-        batter.assistedBy = assistedBy;
 
-        scorecard.fallOfWickets.push({
-            wicket,
-            score,
-            over,
-            batsman,
-        });
+        batter.dismissal =
+            dismissal.dismissal;
+
+        batter.dismissedBy =
+            dismissal.dismissedBy || null;
+
+        batter.assistedBy =
+            dismissal.assistedBy || null;
 
         await scorecard.save();
+
         return batter;
+
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Add Maiden Over
-    |--------------------------------------------------------------------------
-    */
-    async addMaiden(inningsId, bowlerId) {
-        const scorecard = await this.getScorecard(inningsId);
-        const bowler = this.findBowler(scorecard, bowlerId);
-
-        if (!bowler) return;
-
-        bowler.maidens = (bowler.maidens || 0) + 1;
-        await scorecard.save();
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Score Summary
-    |--------------------------------------------------------------------------
-    */
-    async summary(inningsId) {
-        return this.getScorecard(inningsId);
-    }
 }
 
 export default new ScorecardService();
