@@ -1,4 +1,4 @@
-module.exports = (...roles) => {
+export default function authorize(...roles) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
@@ -16,4 +16,4 @@ module.exports = (...roles) => {
 
     next();
   };
-};
+}
