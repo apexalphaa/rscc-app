@@ -241,6 +241,30 @@ const inningsSchema = new mongoose.Schema(
         index: true,
     },
 
+    result: {
+        type: String,
+        enum: [
+            "",
+            "Won",
+            "Lost",
+            "Tie",
+            "No Result"
+        ],
+        default: ""
+    },
+
+    completionReason: {
+        type: String,
+        enum: [
+            "",
+            "Target Chased",
+            "All Out",
+            "Overs Completed",
+            "Declared"
+        ],
+        default: ""
+    },
+
     completedAt: Date,
 },
 {
