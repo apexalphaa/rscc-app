@@ -1,4 +1,6 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const required = [
   "NODE_ENV",
@@ -17,7 +19,7 @@ if (missing.length) {
   process.exit(1);
 }
 
-module.exports = Object.freeze({
+const env = Object.freeze({
   NODE_ENV: process.env.NODE_ENV,
   PORT: Number(process.env.PORT),
   MONGO_URI: process.env.MONGO_URI,
@@ -36,3 +38,5 @@ module.exports = Object.freeze({
   RATE_LIMIT_WINDOW: Number(process.env.RATE_LIMIT_WINDOW || 15),
   RATE_LIMIT_MAX: Number(process.env.RATE_LIMIT_MAX || 100),
 });
+
+export default env;
