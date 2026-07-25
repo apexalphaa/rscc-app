@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-module.exports = (param = "id") => {
+export default function validateObjectId(param = "id") {
   return (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(req.params[param])) {
       return res.status(400).json({
@@ -11,4 +11,4 @@ module.exports = (param = "id") => {
 
     next();
   };
-};
+}
