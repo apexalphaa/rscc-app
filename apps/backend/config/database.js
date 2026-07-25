@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const env = require("./env");
-const logger = require("./logger");
+import mongoose from "mongoose";
+import env from "./env.js";
+import logger from "./logger.js";
 
 mongoose.set("strictQuery", true);
 
@@ -15,4 +15,4 @@ async function connectDatabase() {
   }
 }
 
-module.exports = connectDatabase;
+export default connectDatabase;
