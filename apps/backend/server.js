@@ -1,15 +1,15 @@
-require("./config/env");
+import "./config/env.js";
 
-const http = require("http");
+import http from "http";
 
-const app = require("./app");
+import app from "./app.js";
 
-const env = require("./config/env");
-const logger = require("./config/logger");
-const connectDatabase = require("./config/database");
+import env from "./config/env.js";
+import logger from "./config/logger.js";
+import connectDatabase from "./config/database.js";
 
-const gracefulShutdown = require("./middleware/gracefulShutdown");
-const processHandlers = require("./middleware/processHandlers");
+import gracefulShutdown from "./middleware/gracefulShutdown.js";
+import processHandlers from "./middleware/processHandlers.js";
 
 async function bootstrap() {
   processHandlers();
