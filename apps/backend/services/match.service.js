@@ -1,5 +1,6 @@
 import Match from "../models/Match.js";
 import Team from "../models/Team.js";
+import Innings from "../models/Innings.js";
 import generateMatchNumber from "../utils/generateMatchNumber.js";
 
 class MatchService {
@@ -202,24 +203,30 @@ class MatchService {
 
     /*
     |--------------------------------------------------------------------------
-    | Update Status
+    | Update Status (Synchronize with Innings State)
     |--------------------------------------------------------------------------
     */
 
-    async updateStatus(
-        id,
-        status
-    ) {
+    async updateStatus(match) {
 
-        const match =
-            await Match.findById(id);
+        const completed =
+            await Innings.countDocuments({
 
-        if (!match)
-            throw new Error(
-                "Match not found."
-            );
+                match: match._id,
 
-        match.status = status;
+                status: "Completed"
+
+            });
+
+        if (completed === 2) {
+
+            match.status = "Completed";
+
+        } else {
+
+            match.status = "Live";
+
+        }
 
         await match.save();
 
