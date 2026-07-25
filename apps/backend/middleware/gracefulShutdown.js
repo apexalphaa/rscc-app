@@ -1,6 +1,6 @@
-const logger = require("../config/logger");
+import logger from "../config/logger.js";
 
-module.exports = (server) => {
+export default function gracefulShutdown(server) {
   const shutdown = (signal) => {
     logger.warn(`${signal} received. Closing server...`);
 
@@ -17,4 +17,4 @@ module.exports = (server) => {
 
   process.on("SIGINT", () => shutdown("SIGINT"));
   process.on("SIGTERM", () => shutdown("SIGTERM"));
-};
+}
