@@ -1,5 +1,6 @@
 import Innings from "../models/Innings.js";
 import cricketMath from "../utils/cricketMath.js";
+import matchCompletion from "../utils/matchCompletion.js";
 
 class InningsService {
 
@@ -173,6 +174,48 @@ class InningsService {
 
         innings.completedAt =
             new Date();
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auto Complete If Required
+    |--------------------------------------------------------------------------
+    */
+
+    async completeIfRequired(innings) {
+
+        if (
+
+            !matchCompletion.completed(
+
+                innings
+
+            )
+
+        ) {
+
+            return false;
+
+        }
+
+        innings.status = "Completed";
+
+        innings.completedAt =
+
+            new Date();
+
+        innings.completionReason =
+
+            matchCompletion.reason(
+
+                innings
+
+            );
+
+        await innings.save();
+
+        return true;
 
     }
 
