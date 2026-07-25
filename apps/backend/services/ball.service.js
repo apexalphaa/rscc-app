@@ -4,6 +4,7 @@ import Innings from "../models/Innings.js";
 import overService from "./over.service.js";
 import scorecardService from "./scorecard.service.js";
 import partnershipService from "./partnership.service.js";
+import inningsService from "./innings.service.js";
 
 import cricketMath from "../utils/cricketMath.js";
 import deliveryValidator from "../utils/deliveryValidator.js";
@@ -266,12 +267,18 @@ class BallService {
         // 6. Complete Over State
         const overState = await this.completeOver(innings, updatedOver);
 
+        // 7. Auto Complete Innings if requirements are met
+        const inningsCompleted = await inningsService.completeIfRequired(
+            innings
+        );
+
         return {
             success: true,
             ball,
             innings,
             over: updatedOver,
             overCompleted,
+            inningsCompleted,
             nextOver: overState?.nextOver || null,
             scoreboard: {
                 score: innings.score.runs,
