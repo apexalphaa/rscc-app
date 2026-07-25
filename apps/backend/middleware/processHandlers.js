@@ -1,6 +1,6 @@
-const logger = require("../config/logger");
+import logger from "../config/logger.js";
 
-module.exports = () => {
+export default function processHandlers() {
   process.on("uncaughtException", (err) => {
     logger.error(`Uncaught Exception: ${err.stack || err.message}`);
     process.exit(1);
@@ -10,4 +10,4 @@ module.exports = () => {
     logger.error(`Unhandled Rejection: ${reason}`);
     process.exit(1);
   });
-};
+}
