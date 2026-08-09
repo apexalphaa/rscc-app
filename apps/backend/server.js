@@ -1,30 +1,51 @@
-import "./config/env.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 import http from "http";
+import { Server } from "socket.io";
 
 import app from "./app.js";
-
-import env from "./config/env.js";
-import logger from "./config/logger.js";
 import connectDatabase from "./config/database.js";
 
-import gracefulShutdown from "./middleware/gracefulShutdown.js";
-import processHandlers from "./middleware/processHandlers.js";
+const PORT = Number(process.env.PORT || 5000);
+const HOST = process.env.HOST || "0.0.0.0";
 
-async function bootstrap() {
-  processHandlers();
+const server = http.createServer(app);
 
-  await connectDatabase();
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  },
+});
 
-  const server = http.createServer(app);
+app.set("io", io);
 
-  server.listen(env.PORT, () => {
-    logger.success(
-      `Server running on http://localhost:${env.PORT}`
-    );
+io.on("connection", (socket) => {
+  console.log(`Client Connected : ${socket.id}`);
+
+  socket.on("disconnect", () => {
+    console.log(`Client Disconnected : ${socket.id}`);
   });
+});
 
-  gracefulShutdown(server);
-}
+const startServer = async () => {
+  try {
+    await connectDatabase();
 
-bootstrap();
+    server.listen(PORT, HOST, () => {
+      console.log("======================================");
+      console.log("🚀 RSCC Backend Running");
+      console.log(`🌐 Host : ${HOST}`);
+      console.log(`🌐 Port : ${PORT}`);
+      console.log(`📦 Environment : ${process.env.NODE_ENV || "development"}`);
+      console.log("======================================");
+    });
+  } catch (error) {
+    console.error("Failed to start server");
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+startServer();

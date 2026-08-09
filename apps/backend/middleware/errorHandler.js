@@ -1,35 +1,15 @@
-import ApiError from "../utils/ApiError.js";
+export const notFound = (req, res, next) => {
+  const error = new Error(`Route not found: ${req.originalUrl}`);
+  error.statusCode = 404;
+  next(error);
+};
 
-export default function errorHandler(
-    err,
-    req,
-    res,
-    next
-) {
+export const errorHandler = (err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
 
-    if (!(err instanceof ApiError)) {
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+};
 
-        console.error(err);
-
-        err = new ApiError(
-            500,
-            "Internal Server Error"
-        );
-
-    }
-
-    return res.status(err.statusCode).json({
-
-        success: false,
-
-        message: err.message,
-
-        errors: err.errors,
-
-        ...(process.env.NODE_ENV !== "production" && {
-            stack: err.stack,
-        }),
-
-    });
-
-}

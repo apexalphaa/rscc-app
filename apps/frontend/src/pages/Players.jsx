@@ -1,133 +1,70 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import DashboardLayout from "../layouts/DashboardLayout";
 import PageHeader from "../components/PageHeader";
-
 import PlayersToolbar from "../components/PlayersToolbar";
-import PlayersGrid from "../components/PlayersGrid";
-
-import PlayerProfileCard from "../components/PlayerProfileCard";
-import PlayerStatsCard from "../components/PlayerStatsCard";
-import PlayerPerformanceCard from "../components/PlayerPerformanceCard";
-import RecentMatchesCard from "../components/RecentMatchesCard";
 import AcademyOverview from "../components/AcademyOverview";
 import PlayerSection from "../components/PlayerSection";
-import playersData from "../data/players";
+import { playersService } from "../services/api";
 
 export default function Players() {
+  const [players, setPlayers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [batch, setBatch] = useState("");
+  const [role, setRole] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [search,setSearch]=useState("");
+  useEffect(() => {
+    const loadPlayers = async () => {
+      try {
+        const response = await playersService.list();
+        setPlayers(response.data.players || []);
+      } catch (err) {
+        setError(err?.response?.data?.message || "Unable to load players");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const [batch,setBatch]=useState("");
+    loadPlayers();
+  }, []);
 
-  const [role,setRole]=useState("");
-
-  const filteredPlayers=useMemo(()=>{
-
-    return playersData.filter(player=>{
-
-      const matchesSearch=player.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
-      const matchesBatch=
-        batch==="" || player.batch===batch;
-
-      const matchesRole=
-        role==="" || player.role===role;
-
+  const filteredPlayers = useMemo(() => {
+    return players.filter((player) => {
+      const name = player.fullName || player.name || "";
+      const matchesSearch = name.toLowerCase().includes(search.toLowerCase());
+      const matchesBatch = batch === "" || player.batch === batch;
+      const matchesRole = role === "" || player.role === role;
       return matchesSearch && matchesBatch && matchesRole;
-
     });
+  }, [players, search, batch, role]);
 
-  },[search,batch,role]);
-
-  const selectedPlayer=filteredPlayers[0];
-
-  return(
-
+  return (
     <DashboardLayout>
+      <PageHeader title="Players" subtitle="Manage Academy Players" />
 
-      <PageHeader
-        title="Players"
-        subtitle="Manage Academy Players"
-      />
-<div className="mt-8">
-
-    <AcademyOverview/>
-
-</div>
       <div className="mt-8">
-
-        <PlayersToolbar
-
-          search={search}
-          setSearch={setSearch}
-
-          batch={batch}
-          setBatch={setBatch}
-
-          role={role}
-          setRole={setRole}
-
-        />
-
+        <AcademyOverview />
       </div>
 
       <div className="mt-8">
-
-       <PlayerSection
-    title="Senior Team"
-    players={
-        filteredPlayers.filter(
-            p=>p.category==="Senior"
-        )
-    }
-/>
-
-<PlayerSection
-    title="Junior Team"
-    players={
-        filteredPlayers.filter(
-            p=>p.category==="Junior"
-        )
-    }
-/>
-
+        <PlayersToolbar search={search} setSearch={setSearch} batch={batch} setBatch={setBatch} role={role} setRole={setRole} />
       </div>
 
-      {selectedPlayer && (
-
-        <>
-
-          <div className="mt-10">
-
-            <PlayerProfileCard
-              player={selectedPlayer}
-            />
-
-          </div>
-
-          <div className="mt-8">
-
-            <PlayerStatsCard/>
-
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-8 mt-8">
-
-            <PlayerPerformanceCard/>
-
-            <RecentMatchesCard/>
-
-          </div>
-
-        </>
-
-      )}
-
+      <div className="mt-8">
+        {loading ? (
+          <div className="rounded-2xl border bg-white p-6 text-slate-600">Loading players…</div>
+        ) : error ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">{error}</div>
+        ) : (
+          <>
+            <PlayerSection title="Senior Team" players={filteredPlayers.filter((p) => p.category === "Senior" || p.role === "Batsman")} />
+            <div className="mt-6" />
+            <PlayerSection title="Junior Team" players={filteredPlayers.filter((p) => p.category === "Junior" || p.role === "Bowler")} />
+          </>
+        )}
+      </div>
     </DashboardLayout>
-
   );
-
 }

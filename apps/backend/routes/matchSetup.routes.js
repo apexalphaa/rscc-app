@@ -1,215 +1,80 @@
 import express from "express";
 
 import auth from "../middleware/auth.js";
-import roles from "../middleware/roles.js";
-import validateObjectId from "../middleware/validateObjectId.js";
+import authorize from "../middleware/authorize.js";
 
 import {
-
-    getMatchSetup,
-
-    getSetupStatus,
-
+    createDraftMatch,
     updateMatchDetails,
-
-    assignTeams,
-
-    getSquad,
-
-    updateSquad,
-
-    assignPlayingXI,
-
-    assignLeadership,
-
-    recordToss,
-
-    assignOpeningPlayers,
-
-    assignOfficials,
-
-    completeSetup,
-
-    resetSetup,
-
-    dashboardSummary,
-
+    selectTeams,
+    selectPlayingXI,
+    getDraftMatch
 } from "../controllers/matchSetup.controller.js";
 
 const router = express.Router();
 
 /*
 |--------------------------------------------------------------------------
-| Dashboard
+| Create Draft Match
 |--------------------------------------------------------------------------
 */
 
-router.get(
-    "/:id/dashboard",
+router.post(
+    "/draft",
     auth,
-    validateObjectId("id"),
-    dashboardSummary
-);
-
-router.get(
-    "/:id/status",
-    auth,
-    validateObjectId("id"),
-    getSetupStatus
+    authorize("admin", "coach"),
+    createDraftMatch
 );
 
 /*
 |--------------------------------------------------------------------------
-| Match Setup
+| Update Match Details
 |--------------------------------------------------------------------------
 */
-
-router.get(
-    "/:id",
-    auth,
-    validateObjectId("id"),
-    getMatchSetup
-);
 
 router.patch(
     "/:id/details",
     auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
+    authorize("admin", "coach"),
     updateMatchDetails
 );
 
 /*
 |--------------------------------------------------------------------------
-| Team Selection
+| Select Teams
 |--------------------------------------------------------------------------
 */
 
 router.patch(
     "/:id/teams",
     auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignTeams
+    authorize("admin", "coach"),
+    selectTeams
 );
 
 /*
 |--------------------------------------------------------------------------
-| Squad
-|--------------------------------------------------------------------------
-*/
-
-router.get(
-    "/:id/squad",
-    auth,
-    validateObjectId("id"),
-    getSquad
-);
-
-router.patch(
-    "/:id/squad",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    updateSquad
-);
-
-/*
-|--------------------------------------------------------------------------
-| Playing XI
+| Select Playing XI
 |--------------------------------------------------------------------------
 */
 
 router.patch(
     "/:id/playing-xi",
     auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignPlayingXI
+    authorize("admin", "coach"),
+    selectPlayingXI
 );
 
 /*
 |--------------------------------------------------------------------------
-| Leadership
+| Get Draft Match
 |--------------------------------------------------------------------------
 */
 
-router.patch(
-    "/:id/leadership",
+router.get(
+    "/:id",
     auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignLeadership
-);
-
-/*
-|--------------------------------------------------------------------------
-| Toss
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/toss",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    recordToss
-);
-
-/*
-|--------------------------------------------------------------------------
-| Opening Players
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/opening",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignOpeningPlayers
-);
-
-/*
-|--------------------------------------------------------------------------
-| Match Officials
-|--------------------------------------------------------------------------
-*/
-
-router.patch(
-    "/:id/officials",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    assignOfficials
-);
-
-/*
-|--------------------------------------------------------------------------
-| Complete Setup
-|--------------------------------------------------------------------------
-*/
-
-router.post(
-    "/:id/complete",
-    auth,
-    roles("admin", "coach"),
-    validateObjectId("id"),
-    completeSetup
-);
-
-/*
-|--------------------------------------------------------------------------
-| Reset Setup
-|--------------------------------------------------------------------------
-*/
-
-router.post(
-    "/:id/reset",
-    auth,
-    roles("admin"),
-    validateObjectId("id"),
-    resetSetup
+    getDraftMatch
 );
 
 export default router;

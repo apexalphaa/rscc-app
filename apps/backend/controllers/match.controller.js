@@ -1,7 +1,5 @@
-import matchService from "../services/match.service.js";
-
-import catchAsync from "../utils/catchAsync.js";
-import sendResponse from "../utils/sendResponse.js";
+import Match from "../models/Match.js";
+import generateMatchNumber from "../utils/generateMatchNumber.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -9,20 +7,30 @@ import sendResponse from "../utils/sendResponse.js";
 |--------------------------------------------------------------------------
 */
 
-export const createMatch = catchAsync(async (req, res) => {
+export const createMatch = async (req, res) => {
+  try {
+    const data = {
+      ...req.body,
+      matchNumber: generateMatchNumber(),
+      createdBy: req.user._id,
+    };
 
-    const match = await matchService.createMatch(
-        req.body,
-        req.user._id
-    );
+    const match = await Match.create(data);
 
-    return sendResponse(res, {
-        statusCode: 201,
-        message: "Match created successfully.",
-        data: match,
+    return res.status(201).json({
+      success: true,
+      message: "Match Created Successfully",
+      match,
     });
+  } catch (error) {
+    console.error(error);
 
-});
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -30,96 +38,101 @@ export const createMatch = catchAsync(async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const getAllMatches = catchAsync(async (req, res) => {
+export const getAllMatches = async (req, res) => {
+  try {
+    const matches = await Match.find()
+      .populate("teamA", "name shortName")
+      .populate("teamB", "name shortName")
+      .sort({ createdAt: -1 });
 
-    const result =
-        await matchService.getMatches(req.query);
-
-    return sendResponse(res, {
-
-        message: "Matches fetched successfully.",
-
-        data: result.matches,
-
-        meta: result.pagination,
-
+    return res.status(200).json({
+      success: true,
+      count: matches.length,
+      matches,
     });
+  } catch (error) {
+    console.error(error);
 
-});
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 /*
 |--------------------------------------------------------------------------
-| Get Match
+| Get Match By ID
 |--------------------------------------------------------------------------
 */
 
-export const getMatchById = catchAsync(async (req, res) => {
+export const getMatchById = async (req, res) => {
+  try {
+    const match = await Match.findById(req.params.id)
+      .populate("teamA")
+      .populate("teamB")
+      .populate("scorer", "name");
 
-    const match =
-        await matchService.getMatch(req.params.id);
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: "Match not found",
+      });
+    }
 
-    return sendResponse(res, {
-
-        message: "Match fetched successfully.",
-
-        data: match,
-
+    return res.status(200).json({
+      success: true,
+      match,
     });
+  } catch (error) {
+    console.error(error);
 
-});
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 /*
 |--------------------------------------------------------------------------
-| Update Match
+| Update Match Status
 |--------------------------------------------------------------------------
 */
 
-export const updateMatch = catchAsync(async (req, res) => {
+export const updateMatchStatus = async (req, res) => {
+  try {
+    const match = await Match.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: req.body.status,
+      },
+      {
+        new: true,
+      }
+    );
 
-    const match =
-        await matchService.updateMatch(
-            req.params.id,
-            req.body
-        );
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: "Match not found",
+      });
+    }
 
-    return sendResponse(res, {
-
-        message: "Match updated successfully.",
-
-        data: match,
-
+    return res.status(200).json({
+      success: true,
+      message: "Status Updated",
+      match,
     });
+  } catch (error) {
+    console.error(error);
 
-});
-
-/*
-|--------------------------------------------------------------------------
-| Update Status
-|--------------------------------------------------------------------------
-*/
-
-export const updateMatchStatus =
-catchAsync(async (req, res) => {
-
-    const match =
-        await matchService.updateStatus(
-
-            req.params.id,
-
-            req.body.status
-
-        );
-
-    return sendResponse(res, {
-
-        message:
-            "Match status updated successfully.",
-
-        data: match,
-
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
-
-});
+  }
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -127,275 +140,27 @@ catchAsync(async (req, res) => {
 |--------------------------------------------------------------------------
 */
 
-export const deleteMatch = catchAsync(async (req, res) => {
+export const deleteMatch = async (req, res) => {
+  try {
+    const match = await Match.findByIdAndDelete(req.params.id);
 
-    await matchService.deleteMatch(
-        req.params.id
-    );
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: "Match not found",
+      });
+    }
 
-    return sendResponse(res, {
-
-        message:
-            "Match deleted successfully.",
-
+    return res.status(200).json({
+      success: true,
+      message: "Match Deleted Successfully",
     });
+  } catch (error) {
+    console.error(error);
 
-});
-
-/*
-|--------------------------------------------------------------------------
-| Dashboard Statistics
-|--------------------------------------------------------------------------
-*/
-
-export const getStatistics =
-catchAsync(async (req, res) => {
-
-    const statistics =
-        await matchService.statistics();
-
-    return sendResponse(res, {
-
-        message:
-            "Statistics fetched successfully.",
-
-        data: statistics,
-
+    return res.status(500).json({
+      success: false,
+      message: error.message,
     });
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Dashboard Summary
-|--------------------------------------------------------------------------
-*/
-
-export const dashboardSummary =
-catchAsync(async (req, res) => {
-
-    const [
-
-        statistics,
-
-        recentMatches,
-
-    ] = await Promise.all([
-
-        matchService.statistics(),
-
-        matchService.getMatches({
-
-            page: 1,
-
-            limit: 5,
-
-        }),
-
-    ]);
-
-    return sendResponse(res, {
-
-        message:
-            "Dashboard summary fetched successfully.",
-
-        data: {
-
-            statistics,
-
-            recentMatches:
-                recentMatches.matches,
-
-        },
-
-    });
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Search Matches
-|--------------------------------------------------------------------------
-*/
-
-export const searchMatches =
-catchAsync(async (req, res) => {
-
-    const result =
-        await matchService.getMatches({
-
-            ...req.query,
-
-        });
-
-    return sendResponse(res, {
-
-        message:
-            "Search completed successfully.",
-
-        data: result.matches,
-
-        meta: result.pagination,
-
-    });
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Matches By Status
-|--------------------------------------------------------------------------
-*/
-
-export const getMatchesByStatus =
-catchAsync(async (req, res) => {
-
-    const result =
-        await matchService.getMatches({
-
-            status: req.params.status,
-
-            page: req.query.page,
-
-            limit: req.query.limit,
-
-        });
-
-    return sendResponse(res, {
-
-        message:
-            "Matches fetched successfully.",
-
-        data: result.matches,
-
-        meta: result.pagination,
-
-    });
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Matches By Type
-|--------------------------------------------------------------------------
-*/
-
-export const getMatchesByType =
-catchAsync(async (req, res) => {
-
-    const result =
-        await matchService.getMatches({
-
-            matchType: req.params.type,
-
-            page: req.query.page,
-
-            limit: req.query.limit,
-
-        });
-
-    return sendResponse(res, {
-
-        message:
-            "Matches fetched successfully.",
-
-        data: result.matches,
-
-        meta: result.pagination,
-
-    });
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Setup Progress
-|--------------------------------------------------------------------------
-*/
-
-export const updateSetupProgress =
-catchAsync(async (req, res) => {
-
-    const match =
-        await matchService.updateMatch(
-
-            req.params.id,
-
-            {
-
-                setupProgress:
-                    req.body.setupProgress,
-
-            }
-
-        );
-
-    return sendResponse(res, {
-
-        message:
-            "Setup progress updated successfully.",
-
-        data: match,
-
-    });
-
-});
-
-/*
-|--------------------------------------------------------------------------
-| Match Overview
-|--------------------------------------------------------------------------
-*/
-
-export const getMatchOverview =
-catchAsync(async (req, res) => {
-
-    const match =
-        await matchService.getMatch(
-            req.params.id
-        );
-
-    return sendResponse(res, {
-
-        message:
-            "Match overview fetched successfully.",
-
-        data: {
-
-            id: match._id,
-
-            matchNumber:
-                match.matchNumber,
-
-            status:
-                match.status,
-
-            matchType:
-                match.matchType,
-
-            scoringMode:
-                match.scoringMode,
-
-            setupProgress:
-                match.setupProgress,
-
-            venue:
-                match.details,
-
-            teams:
-                match.teams,
-
-            toss:
-                match.toss,
-
-            winner:
-                match.winner,
-
-            currentInnings:
-                match.currentInnings,
-
-        },
-
-    });
-
-});
+  }
+};

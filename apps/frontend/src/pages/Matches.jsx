@@ -43,23 +43,22 @@ import OverHistory from "../components/OverHistory";
 import MatchSetup from "../components/MatchSetup";
 
 export default function Matches() {
-const {
-  match,
-  dispatchBall,
-  undoBall,
-  resetMatch,
-
-  setPlayingXI,
-  setStriker,
-  setNonStriker,
-  setBowler,
-
-  innings,
-  target,
-  finishFirstInnings,
-  currentRunRate,
-  requiredRunRate,
-} = useMatchEngine();
+  const {
+    match,
+    dispatchBall,
+    undoBall,
+    resetMatch,
+    setPlayingXI,
+    setStriker,
+    setNonStriker,
+    setBowler,
+    innings,
+    target,
+    finishFirstInnings,
+    finishMatch,
+    currentRunRate,
+    requiredRunRate,
+  } = useMatchEngine();
 
   function run(value) {
     dispatchBall({
@@ -69,9 +68,7 @@ const {
   }
 
   function dotBall() {
-    dispatchBall({
-      type: "DOT",
-    });
+    dispatchBall({ type: "DOT" });
   }
 
   function wicket() {
@@ -99,16 +96,31 @@ const {
         title="Live Match"
         subtitle="Professional Cricket Scoring Engine"
       />
-      <div className="flex justify-end mt-8">
-
-<button
-className="bg-green-600 text-white px-8 py-3 rounded-xl hover:bg-green-700 transition"
->
-
-Start Match
-
-</button>
-
+      <div className="flex flex-wrap gap-3 justify-end mt-8">
+  <button
+    className="bg-green-600 text-white px-8 py-3 rounded-xl hover:bg-green-700 transition"
+    onClick={() => dispatchBall({ type: "RUN", runs: 0 })}
+  >
+    Start Match
+  </button>
+  <button
+    className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition"
+    onClick={finishFirstInnings}
+  >
+    Finish Innings 1
+  </button>
+  <button
+    className="bg-purple-600 text-white px-8 py-3 rounded-xl hover:bg-purple-700 transition"
+    onClick={finishMatch}
+  >
+    Finish Match
+  </button>
+  <button
+    className="bg-gray-600 text-white px-8 py-3 rounded-xl hover:bg-gray-700 transition"
+    onClick={resetMatch}
+  >
+    Reset
+  </button>
 </div>
 <div className="space-y-8 mt-8">
 

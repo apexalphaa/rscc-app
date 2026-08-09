@@ -1,18 +1,21 @@
 import mongoose from "mongoose";
-import env from "./env.js";
-import logger from "./logger.js";
 
-mongoose.set("strictQuery", true);
+const connectDatabase = async () => {
+  const uri = process.env.MONGODB_URI || process.env.DATABASE_URL;
 
-async function connectDatabase() {
+  if (!uri) {
+    console.warn("No MongoDB connection string provided; skipping database connection.");
+    return;
+  }
+
   try {
-    await mongoose.connect(env.MONGO_URI);
-
-    logger.success("MongoDB connected successfully.");
-  } catch (err) {
-    logger.error(err.message);
+    const connection = await mongoose.connect(uri);
+    console.log(`MongoDB Connected : ${connection.connection.host}`);
+  } catch (error) {
+    console.error("MongoDB Connection Error:");
+    console.error(error.message);
     process.exit(1);
   }
-}
+};
 
 export default connectDatabase;
