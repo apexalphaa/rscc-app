@@ -1,58 +1,22 @@
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
+import { Announcements, Attendance, Auth, Calendar, Coaches, Dashboard, Equipment, Events, Fees, Forgot, FutureModule, Landing, MatchDetails, Matches, Notifications, PlayerProfile, Players, Profile, Reports, Settings, Teams } from "./pages/AppPages";
 
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Players from "./pages/Players";
-import Attendance from "./pages/Attendance";
-import Matches from "./pages/Matches";
-import Tournament from "./pages/Tournament";
-import Statistics from "./pages/Statistics";
-import Fees from "./pages/Fees";
-import Equipment from "./pages/Equipment";
-import NoticeBoard from "./pages/NoticeBoard";
-import Calendar from "./pages/Calendar";
-import PlayerDetails from "./pages/PlayerDetails";
-import Coaches from "./pages/Coaches";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
-
-function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-
-      <Route path="/login" element={<Login />} />
-
-      <Route path="/dashboard" element={<Dashboard />} />
-
-      <Route path="/players" element={<Players />} />
-
-      <Route path="/attendance" element={<Attendance />} />
-
-      <Route path="/matches" element={<Matches />} />
-
-      <Route path="/tournament" element={<Tournament />} />
-
-      <Route path="/statistics" element={<Statistics />} />
-
-      <Route path="/fees" element={<Fees />} />
-
-      <Route path="/equipment" element={<Equipment />} />
-
-     <Route path="/notice-board" element={<NoticeBoard />} />
-
-      <Route path="/calendar" element={<Calendar />} /> 
-
-      <Route path="/coaches" element={<Coaches />} />
-      
-      <Route path="/players/:id" element={<PlayerDetails/>} />
-
-      <Route path="/settings" element={<Settings />} />
-
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
+export default function App() {
+  return <Routes>
+    <Route path="/" element={<Landing/>}/>
+    <Route path="/about" element={<Landing/>}/>
+    <Route path="/dashboard" element={<Dashboard/>}/>
+    <Route path="/players" element={<Players/>}/><Route path="/players/:id" element={<PlayerProfile/>}/>
+    <Route path="/attendance" element={<Attendance/>}/>
+    <Route path="/matches" element={<Matches/>}/><Route path="/matches/:id" element={<MatchDetails/>}/>
+    <Route path="/teams" element={<Teams/>}/><Route path="/teams/:id" element={<Teams/>}/>
+    <Route path="/events" element={<Events/>}/><Route path="/announcements" element={<Announcements/>}/>
+    <Route path="/equipment" element={<Equipment/>}/><Route path="/notifications" element={<Notifications/>}/>
+    <Route path="/fees" element={<Fees/>}/><Route path="/calendar" element={<Calendar/>}/><Route path="/coaches" element={<Coaches/>}/><Route path="/reports" element={<Reports/>}/>
+    <Route path="/tournaments" element={<FutureModule type="Tournaments"/>}/><Route path="/tournament" element={<FutureModule type="Tournaments"/>}/>
+    <Route path="/statistics" element={<FutureModule type="Statistics"/>}/>
+    <Route path="/profile" element={<Profile/>}/><Route path="/settings" element={<Settings/>}/>
+    <Route path="/login" element={<Auth/>}/><Route path="/register" element={<Auth mode="Create account"/>}/><Route path="/forgot-password" element={<Forgot/>}/><Route path="/reset-password" element={<Forgot reset/>}/>
+    <Route path="*" element={<Landing/>}/>
+  </Routes>;
 }
-
-export default App;

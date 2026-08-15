@@ -13,13 +13,19 @@ import playerRoutes from "./routes/player.routes.js";
 import attendanceRoutes from "./routes/attendance.routes.js";
 import equipmentRoutes from "./routes/equipment.routes.js";
 import tournamentRoutes from "./routes/tournament.routes.js";
+import eventRoutes from "./routes/event.routes.js";
+import announcementRoutes from "./routes/announcement.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
+import coachRoutes from "./routes/coach.routes.js";
+import feeRoutes from "./routes/fee.routes.js";
+import reportRoutes from "./routes/report.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: [process.env.CLIENT_URL, "http://localhost:5173"].filter(Boolean),
     credentials: true,
   })
 );
@@ -64,6 +70,12 @@ app.use("/api/v1/players", playerRoutes);
 app.use("/api/v1/attendance", attendanceRoutes);
 app.use("/api/v1/equipment", equipmentRoutes);
 app.use("/api/v1/tournaments", tournamentRoutes);
+app.use("/api/v1/events", eventRoutes);
+app.use("/api/v1/announcements", announcementRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/coaches", coachRoutes);
+app.use("/api/v1/fees", feeRoutes);
+app.use("/api/v1/reports", reportRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

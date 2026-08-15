@@ -79,6 +79,15 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    notificationPreferences: {
+      announcements: { type: Boolean, default: true },
+      events: { type: Boolean, default: true },
+      matches: { type: Boolean, default: true },
+    },
+
+    passwordResetToken: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

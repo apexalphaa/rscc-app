@@ -20,6 +20,9 @@ export const authService = {
   register: (payload) => api.post("/auth/register", payload),
   logout: (payload) => api.post("/auth/logout", payload),
   me: () => api.get("/auth/me"),
+  updateMe: (payload) => api.put("/auth/me", payload),
+  forgotPassword: (payload) => api.post("/auth/forgot-password", payload),
+  resetPassword: (payload) => api.post("/auth/reset-password", payload),
 };
 
 export const playersService = {
@@ -45,5 +48,19 @@ export const scoringService = {
   start: (matchId) => api.post(`/scoring/${matchId}/start`),
   scoreBall: (matchId, payload) => api.post(`/scoring/${matchId}/ball`, payload),
 };
+
+export const attendanceService = {
+  list: () => api.get("/attendance"),
+  getByDate: (date) => api.get(`/attendance/${date}`),
+  save: (payload) => api.post("/attendance", payload),
+};
+
+export const eventsService = { list: () => api.get("/events"), create: (payload) => api.post("/events", payload), update: (id, payload) => api.put(`/events/${id}`, payload), remove: (id) => api.delete(`/events/${id}`) };
+export const announcementsService = { list: () => api.get("/announcements"), create: (payload) => api.post("/announcements", payload), update: (id, payload) => api.put(`/announcements/${id}`, payload), remove: (id) => api.delete(`/announcements/${id}`) };
+export const equipmentService = { list: () => api.get("/equipment"), create: (payload) => api.post("/equipment", payload), update: (id, payload) => api.put(`/equipment/${id}`, payload), remove: (id) => api.delete(`/equipment/${id}`) };
+export const notificationsService = { list: () => api.get("/notifications"), markRead: (id) => api.patch(`/notifications/${id}/read`), markAllRead: () => api.patch("/notifications/read-all") };
+export const coachesService = { list: () => api.get("/coaches"), create: (payload) => api.post("/coaches", payload), update: (id,payload) => api.put(`/coaches/${id}`,payload), remove: id => api.delete(`/coaches/${id}`) };
+export const feesService = { list: () => api.get("/fees"), create: payload => api.post("/fees",payload), update: (id,payload) => api.put(`/fees/${id}`,payload), remove: id => api.delete(`/fees/${id}`) };
+export const reportsService = { academy: () => api.get("/reports/academy") };
 
 export default api;

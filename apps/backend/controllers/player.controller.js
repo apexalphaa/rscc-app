@@ -2,7 +2,11 @@ import Player from "../models/Player.js";
 
 export const createPlayer = async (req, res) => {
   try {
-    const player = await Player.create(req.body);
+    const { fullName, ...details } = req.body;
+    if (!fullName?.trim()) {
+      return res.status(400).json({ success: false, message: "Player name is required" });
+    }
+    const player = await Player.create({ fullName: fullName.trim(), ...details });
     return res.status(201).json({ success: true, player });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -53,4 +57,3 @@ export const deletePlayer = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
-

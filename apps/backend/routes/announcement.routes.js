@@ -1,0 +1,10 @@
+import express from "express";
+import auth from "../middleware/auth.js";
+import authorize from "../middleware/authorize.js";
+import { createAnnouncement, deleteAnnouncement, listAnnouncements, updateAnnouncement } from "../controllers/announcement.controller.js";
+const router = express.Router();
+router.get("/", auth, listAnnouncements);
+router.post("/", auth, authorize("admin", "coach"), createAnnouncement);
+router.put("/:id", auth, authorize("admin", "coach"), updateAnnouncement);
+router.delete("/:id", auth, authorize("admin", "coach"), deleteAnnouncement);
+export default router;

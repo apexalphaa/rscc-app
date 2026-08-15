@@ -8,6 +8,7 @@ import {
   getAllMatches,
   getMatchById,
   updateMatchStatus,
+  updateMatch,
   deleteMatch,
 } from "../controllers/match.controller.js";
 
@@ -38,6 +39,7 @@ router.patch(
   authorize("admin", "coach"),
   updateMatchStatus
 );
+router.put("/:id", auth, authorize("admin", "coach"), updateMatch);
 
 router.delete(
   "/:id",

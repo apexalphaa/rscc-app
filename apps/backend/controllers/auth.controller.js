@@ -1,4 +1,6 @@
 import User from "../models/User.js";
+import crypto from "crypto";
+import { deliverPasswordReset } from "../services/delivery.service.js";
 
 import {
   hashPassword,
@@ -299,4 +301,50 @@ export const getCurrentUser = async (req, res) => {
 
   }
 
+};
+
+export const updateCurrentUser = async (req, res) => {
+  try {
+    const { name, phone, avatar, notificationPreferences } = req.body || {};
+    const update = {};
+    if (typeof name === "string" && name.trim()) update.name = name.trim();
+    if (typeof phone === "string") update.phone = phone;
+    if (typeof avatar === "string") update.avatar = avatar;
+    if (notificationPreferences && typeof notificationPreferences === "object") update.notificationPreferences = notificationPreferences;
+    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true, runValidators: true });
+    return res.json({ success: true, user: { id: user._id, name: user.name, email: user.email, phone: user.phone, avatar: user.avatar, role: user.role, notificationPreferences: user.notificationPreferences } });
+  } catch (error) { return res.status(400).json({ success: false, message: error.message }); }
+};
+
+export const requestPasswordReset = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: String(req.body?.email || "").toLowerCase() }).select("+passwordResetToken +passwordResetExpires");
+    let resetToken;
+    if (user) {
+      resetToken = crypto.randomBytes(32).toString("hex");
+      user.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+      user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
+      await user.save({ validateBeforeSave: false });
+      try { await deliverPasswordReset({ email: user.email, phone: user.phone, token: resetToken }); } catch (deliveryError) { console.error("Password reset delivery failed", deliveryError.message); }
+    }
+    const response = { success: true, message: "If the account exists, a reset token has been generated." };
+    if (user && process.env.NODE_ENV !== "production") response.resetToken = resetToken;
+    return res.json(response);
+  } catch (error) { return res.status(500).json({ success: false, message: "Unable to start password reset" }); }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body || {};
+    if (!token || !password || password.length < 6) return res.status(400).json({ success: false, message: "A valid token and a password of at least 6 characters are required" });
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetExpires: { $gt: new Date() } }).select("+passwordResetToken +passwordResetExpires");
+    if (!user) return res.status(400).json({ success: false, message: "Reset token is invalid or has expired" });
+    user.password = await hashPassword(password);
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    user.refreshToken = "";
+    await user.save();
+    return res.json({ success: true, message: "Password reset successfully. Please sign in." });
+  } catch (error) { return res.status(500).json({ success: false, message: "Unable to reset password" }); }
 };

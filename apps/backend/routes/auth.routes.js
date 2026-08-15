@@ -11,6 +11,9 @@ import {
     logout,
 
     getCurrentUser,
+    updateCurrentUser,
+    requestPasswordReset,
+    resetPassword,
 
 } from "../controllers/auth.controller.js";
 
@@ -36,5 +39,9 @@ router.get(
     auth,
     getCurrentUser
 );
+
+router.put("/me", auth, updateCurrentUser);
+router.post("/forgot-password", requestPasswordReset);
+router.post("/reset-password", resetPassword);
 
 export default router;

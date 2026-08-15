@@ -5,8 +5,8 @@ const playerSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
       unique: true,
+      sparse: true,
     },
 
     playerId: {
@@ -74,6 +74,12 @@ const playerSchema = new mongoose.Schema(
         "Inactive",
       ],
       default: "Active",
+    },
+
+    category: {
+      type: String,
+      enum: ["U12", "U14", "U16", "U19", "Senior"],
+      default: "U12",
     },
 
     career: {
