@@ -15,6 +15,9 @@ export default function App() {
     <Route path="/fees" element={<Fees/>}/><Route path="/calendar" element={<Calendar/>}/><Route path="/coaches" element={<Coaches/>}/><Route path="/reports" element={<Reports/>}/>
     <Route path="/tournaments" element={<FutureModule type="Tournaments"/>}/><Route path="/tournament" element={<FutureModule type="Tournaments"/>}/>
     <Route path="/statistics" element={<FutureModule type="Statistics"/>}/>
+    <Route path="/live-scoring" element={<FutureModule type="Live Scoring"/>}/>
+    <Route path="/offline-scoring" element={<FutureModule type="Offline Scoring"/>}/>
+    <Route path="/analytics" element={<FutureModule type="Advanced Analytics"/>}/>
     <Route path="/profile" element={<Profile/>}/><Route path="/settings" element={<Settings/>}/>
     <Route path="/login" element={<Auth/>}/><Route path="/register" element={<Auth mode="Create account"/>}/><Route path="/forgot-password" element={<Forgot/>}/><Route path="/reset-password" element={<Forgot reset/>}/>
     <Route path="*" element={<Landing/>}/>

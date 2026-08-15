@@ -6,7 +6,13 @@ const items = [
   ["/dashboard", "Dashboard", Home], ["/players", "Players", UserRound], ["/attendance", "Attendance", CalendarDays],
   ["/matches", "Matches", ChevronRight], ["/teams", "Teams", UserRound], ["/events", "Events", CalendarDays], ["/announcements", "Announcements", Bell], ["/equipment", "Equipment", Users], ["/notifications", "Notifications", Bell],
 ];
-const future = [["/tournaments", "Tournaments"], ["/statistics", "Statistics"]];
+const future = [
+  ["/tournaments", "Tournaments"],
+  ["/live-scoring", "Live Scoring"],
+  ["/statistics", "Statistics"],
+  ["/offline-scoring", "Offline Scoring"],
+  ["/analytics", "Advanced Analytics"],
+];
 
 function Nav({ close }) {
   return <nav className="space-y-1">{items.map(([to, label, Icon]) => <NavLink key={to} to={to} onClick={close} className={({isActive}) => `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${isActive ? "bg-white text-slate-950 shadow-sm" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}><Icon size={18}/>{label}</NavLink>)}<p className="px-3 pt-5 text-[10px] font-bold uppercase tracking-[.18em] text-slate-500">Advanced modules</p>{future.map(([to,label]) => <NavLink key={to} to={to} onClick={close} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-400 hover:bg-white/10"><span>{label}</span><span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[9px] uppercase tracking-wide">Soon</span></NavLink>)}<NavLink to="/settings" onClick={close} className="mt-4 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 hover:bg-white/10">Settings</NavLink></nav>

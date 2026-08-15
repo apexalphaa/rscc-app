@@ -1,5 +1,0 @@
-import Coach from "../models/Coach.js";
-export const listCoaches = async (req,res) => { try { res.json({ success:true, coaches:await Coach.find().sort({createdAt:-1}) }); } catch(e) { res.status(500).json({success:false,message:e.message}); } };
-export const createCoach = async (req,res) => { try { res.status(201).json({success:true,coach:await Coach.create(req.body)}); } catch(e) { res.status(400).json({success:false,message:e.message}); } };
-export const updateCoach = async (req,res) => { try { const coach=await Coach.findByIdAndUpdate(req.params.id,req.body,{new:true,runValidators:true}); if(!coach)return res.status(404).json({success:false,message:"Coach not found"}); res.json({success:true,coach}); }catch(e){res.status(400).json({success:false,message:e.message});} };
-export const deleteCoach = async (req,res) => { try { const coach=await Coach.findByIdAndDelete(req.params.id); if(!coach)return res.status(404).json({success:false,message:"Coach not found"});res.json({success:true}); }catch(e){res.status(400).json({success:false,message:e.message});} };

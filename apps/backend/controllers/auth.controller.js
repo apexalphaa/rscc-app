@@ -282,6 +282,7 @@ export const getCurrentUser = async (req, res) => {
         phone: req.user.phone,
 
         status: req.user.status,
+        notificationPreferences: req.user.notificationPreferences,
 
       },
 
