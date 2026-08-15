@@ -1,0 +1,1 @@
+import express from "express";import auth from "../middleware/auth.js";import authorize from "../middleware/authorize.js";import {academyReport} from "../controllers/report.controller.js";const r=express.Router();r.get("/academy",auth,authorize("admin","coach"),academyReport);export default r;
