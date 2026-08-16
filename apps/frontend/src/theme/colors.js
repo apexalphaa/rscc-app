@@ -1,12 +1,12 @@
 const colors = {
-  primary: "#0F172A",      // Dark Navy
-  secondary: "#16A34A",    // Cricket Green
-  accent: "#F59E0B",       // Gold
-  background: "#F8FAFC",   // Light Background
+  primary: "#1D4ED8",
+  primaryDark: "#123A9B",
+  secondary: "#C91F2B",
+  accent: "#E9B949",
+  background: "#F8FAFC",
   white: "#FFFFFF",
-  text: "#1E293B",
+  text: "#0F172A",
   textLight: "#64748B",
   border: "#E2E8F0",
 };
-
 export default colors;

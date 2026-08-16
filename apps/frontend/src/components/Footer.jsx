@@ -1,181 +1,39 @@
+import { Link } from "react-router-dom";
+import BrandLogo from "./BrandLogo";
+
 export default function Footer() {
   return (
-    <footer
-      id="contact"
-      className="bg-slate-900 text-white pt-16 pb-8"
-    >
-      <div className="max-w-7xl mx-auto px-6">
-
-        <div className="grid md:grid-cols-4 gap-12">
-
-          {/* Academy Info */}
-
-          <div>
-
-            <h2 className="text-3xl font-black text-green-500">
-              RSCC
-            </h2>
-
-            <p className="mt-5 text-slate-400 leading-8">
-
-              Rising Star Cricket Club is dedicated to developing
-              disciplined, confident and skilled cricketers through
-              professional coaching, structured practice sessions,
-              competitive matches and modern training methods.
-
-            </p>
-
-          </div>
-
-          {/* Website */}
-
-          <div>
-
-            <h3 className="text-xl font-bold">
-
-              Website
-
-            </h3>
-
-            <ul className="space-y-3 mt-5 text-slate-400">
-
-              <li>
-                <a
-                  href="#about"
-                  className="hover:text-green-400 transition"
-                >
-                  About Us
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#gallery"
-                  className="hover:text-green-400 transition"
-                >
-                  Gallery
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#contact"
-                  className="hover:text-green-400 transition"
-                >
-                  Contact
-                </a>
-              </li>
-
-            </ul>
-
-          </div>
-
-          {/* Academy Portal */}
-
-          <div>
-
-            <h3 className="text-xl font-bold">
-
-              Academy Portal
-
-            </h3>
-
-            <ul className="space-y-3 mt-5 text-slate-400">
-
-              <li>
-                <a
-                  href="#academy-portal"
-                  className="hover:text-green-400 transition"
-                >
-                  Open Portal
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#academy-portal"
-                  className="hover:text-green-400 transition"
-                >
-                  Players
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#academy-portal"
-                  className="hover:text-green-400 transition"
-                >
-                  Live Scoring
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="#academy-portal"
-                  className="hover:text-green-400 transition"
-                >
-                  Statistics
-                </a>
-              </li>
-
-            </ul>
-
-          </div>
-
-          {/* Contact */}
-
-          <div>
-
-            <h3 className="text-xl font-bold">
-
-              Contact
-
-            </h3>
-
-            <div className="space-y-4 mt-5 text-slate-400">
-
-              <p>
-
-                📍 Rising Star Cricket Club
-
-              </p>
-
-              <p>
-
-                📞 +91 XXXXX XXXXX
-
-              </p>
-
-              <p>
-
-                ✉ info@rscc.com
-
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <hr className="border-slate-700 my-10" />
-
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-
-          <p className="text-slate-500 text-center">
-
-            © {new Date().getFullYear()} Rising Star Cricket Club. All Rights Reserved.
-
+    <footer id="contact" className="bg-slate-950 text-white">
+      <div className="rscc-container grid gap-10 px-5 py-14 sm:px-6 md:grid-cols-4">
+        <div className="md:col-span-2">
+          <BrandLogo dark />
+          <p className="mt-5 max-w-xl text-sm leading-7 text-slate-400">
+            Rising Star Cricket Club, Sambalpur — developing disciplined, confident and competitive cricketers through structured coaching and match experience.
           </p>
-
-          <p className="text-slate-500 text-sm">
-
-            Designed & Developed with ❤️ for RSCC
-
-          </p>
-
         </div>
-
+        <div>
+          <h3 className="font-extrabold">Academy</h3>
+          <div className="mt-4 space-y-3 text-sm text-slate-400">
+            <a href="#about" className="block hover:text-white">About</a>
+            <a href="#programs" className="block hover:text-white">Programs</a>
+            <a href="#coaches" className="block hover:text-white">Coaches</a>
+            <a href="#events" className="block hover:text-white">Events</a>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-extrabold">Member portal</h3>
+          <div className="mt-4 space-y-3 text-sm text-slate-400">
+            <Link to="/login" className="block hover:text-white">Member Login</Link>
+            <Link to="/register" className="block hover:text-white">Join RSCC</Link>
+            <Link to="/forgot-password" className="block hover:text-white">Forgot password</Link>
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-white/10">
+        <div className="rscc-container flex flex-col gap-2 px-5 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <span>© {new Date().getFullYear()} Rising Star Cricket Club. All rights reserved.</span>
+          <span>Sambalpur, Odisha</span>
+        </div>
       </div>
     </footer>
   );
