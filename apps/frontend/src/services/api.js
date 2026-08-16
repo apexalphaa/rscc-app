@@ -60,7 +60,7 @@ export const announcementsService = { list: () => api.get("/announcements"), cre
 export const equipmentService = { list: () => api.get("/equipment"), create: (payload) => api.post("/equipment", payload), update: (id, payload) => api.put(`/equipment/${id}`, payload), remove: (id) => api.delete(`/equipment/${id}`) };
 export const notificationsService = { list: () => api.get("/notifications"), markRead: (id) => api.patch(`/notifications/${id}/read`), markAllRead: () => api.patch("/notifications/read-all") };
 export const coachesService = { list: () => api.get("/coaches"), create: (payload) => api.post("/coaches", payload), update: (id,payload) => api.put(`/coaches/${id}`,payload), remove: id => api.delete(`/coaches/${id}`) };
-export const feesService = { list: () => api.get("/fees"), create: payload => api.post("/fees",payload), update: (id,payload) => api.put(`/fees/${id}`,payload), remove: id => api.delete(`/fees/${id}`) };
+export const feesService = { mine: () => api.get("/fees/me"), list: () => api.get("/fees"), create: payload => api.post("/fees",payload), update: (id,payload) => api.put(`/fees/${id}`,payload), remove: id => api.delete(`/fees/${id}`) };
 export const reportsService = { academy: () => api.get("/reports/academy") };
 
 export default api;

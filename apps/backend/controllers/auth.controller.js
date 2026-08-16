@@ -1,4 +1,6 @@
 import User from "../models/User.js";
+import Player from "../models/Player.js";
+import Coach from "../models/Coach.js";
 import crypto from "crypto";
 import { deliverPasswordReset } from "../services/delivery.service.js";
 
@@ -20,67 +22,96 @@ import {
 
 export const register = async (req, res) => {
   try {
-    const body = req.body || {};
+    const { name, email, password, role = "player", phone = "" } = req.body || {};
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedRole = String(role || "player").toLowerCase();
 
-    const {
-      name,
-      email,
-      password,
-      role,
-      phone,
-    } = body;
-
-    if (!name || !email || !password) {
+    if (!name?.trim() || !normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
-        message: "Please fill all required fields",
+        message: "Name, email and password are required",
       });
     }
 
-    const existingUser = await User.findOne({
-      email,
-    });
+    if (String(password).length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
+    }
 
+    // Public registration is intentionally limited to player/coach.
+    // Admin accounts are created by academy administration.
+    if (!["player", "coach"].includes(normalizedRole)) {
+      return res.status(400).json({
+        success: false,
+        message: "Choose Player or Coach for public registration",
+      });
+    }
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User already exists",
+        message: "An account with this email already exists",
       });
     }
 
     const hashedPassword = await hashPassword(password);
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: normalizedEmail,
       password: hashedPassword,
-      role: role || "viewer",
-      phone,
+      role: normalizedRole,
+      phone: String(phone || "").trim(),
       academy: "Rising Star Cricket Club",
     });
 
+    // Keep the academy records linked to the authenticated account.
+    if (normalizedRole === "player") {
+      await Player.create({
+        user: user._id,
+        fullName: user.name,
+        phone: user.phone,
+      });
+    } else if (normalizedRole === "coach") {
+      await Coach.create({
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        status: "Active",
+      });
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    user.refreshToken = refreshToken;
+    await user.save();
+
     return res.status(201).json({
       success: true,
-      message: "User Registered Successfully",
+      message: "Account created successfully",
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         academy: user.academy,
+        avatar: user.avatar,
+        phone: user.phone,
+        status: user.status,
       },
     });
-
   } catch (error) {
-
     console.error(error);
-
     return res.status(500).json({
       success: false,
-      message: "Registration Failed",
-      error: error.message,
+      message: "Registration failed",
+      error: process.env.NODE_ENV === "production" ? undefined : error.message,
     });
-
   }
 };
 
@@ -111,7 +142,7 @@ export const login = async (req, res) => {
     }
 
     const user = await User.findOne({
-      email,
+      email: String(email).trim().toLowerCase(),
     }).select("+password +refreshToken");
 
     if (!user) {
@@ -313,7 +344,7 @@ export const updateCurrentUser = async (req, res) => {
     if (typeof avatar === "string") update.avatar = avatar;
     if (notificationPreferences && typeof notificationPreferences === "object") update.notificationPreferences = notificationPreferences;
     const user = await User.findByIdAndUpdate(req.user._id, update, { new: true, runValidators: true });
-    return res.json({ success: true, user: { id: user._id, name: user.name, email: user.email, phone: user.phone, avatar: user.avatar, role: user.role, notificationPreferences: user.notificationPreferences } });
+    return res.json({ success: true, user: { id: user._id, name: user.name, email: user.email, phone: user.phone, avatar: user.avatar, role: user.role === "viewer" ? "player" : user.role, notificationPreferences: user.notificationPreferences } });
   } catch (error) { return res.status(400).json({ success: false, message: error.message }); }
 };
 

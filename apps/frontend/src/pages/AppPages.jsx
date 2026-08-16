@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowRight, CalendarDays, Check, CircleAlert, Clock3, MapPin, Plus, Search, Trophy, Users } from "lucide-react";
+import { ArrowRight, Bell, CalendarDays, Check, CircleAlert, Clock3, Eye, EyeOff, MapPin, Plus, Search, Trophy, Users, WalletCards } from "lucide-react";
 import { AppShell, MobileNav } from "../components/AppShell";
 import Home from "./Home";
+import logo from "../assets/rscc-logo.jpg";
 import { attendanceService, announcementsService, authService, coachesService, equipmentService, eventsService, feesService, matchesService, notificationsService, playersService, reportsService, teamsService } from "../services/api";
 
 const Card = ({ children, className = "" }) => <section className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_2px_12px_rgb(15,23,42,0.035)] ${className}`}>{children}</section>;
@@ -20,7 +21,68 @@ function useLoad(loader, dependencies = []) {
 
 export function Landing() { return <Home />; }
 
-export function Dashboard() { const { loading, error, data } = useLoad(async () => { const [players, teams, matches, user] = await Promise.all([playersService.list(), teamsService.list(), matchesService.list(), authService.me().catch(() => ({ data: { user: JSON.parse(localStorage.getItem("user") || "null") } }))]); return { players: players.data.players, teams: teams.data.teams, matches: matches.data.matches, user: user.data.user }; }); const cards = [["Players", data?.players?.length || 0, Users], ["Teams", data?.teams?.length || 0, Users], ["Matches", data?.matches?.length || 0, Trophy]]; return <Page title={`Welcome${data?.user?.name ? `, ${data.user.name}` : ""}.`} eyebrow="Academy overview"><div className="grid gap-4 sm:grid-cols-3">{cards.map(([label, value, Icon]) => <Card key={label}><Icon className="text-rscc-blue" size={20}/><p className="mt-5 text-3xl font-black">{loading ? "—" : value}</p><p className="text-sm text-slate-500">{label}</p></Card>)}</div>{error && <p className="mt-5 text-sm text-red-700">{error}</p>}<div className="mt-5 grid gap-5 lg:grid-cols-2"><Card><h2 className="font-black">Quick actions</h2><div className="mt-4 grid gap-2">{[["Register player", "/players"], ["Mark attendance", "/attendance"], ["Schedule match", "/matches"]].map(([label, to]) => <Link key={to} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold hover:bg-blue-50" to={to}>{label}<Plus size={16}/></Link>)}</div></Card><Card><h2 className="font-black">Upcoming fixtures</h2><div className="mt-4 space-y-3">{data?.matches?.slice(0, 3).map(match => <MatchRow key={match._id} match={match}/>) || <p className="text-sm text-slate-500">Loading fixtures…</p>}</div></Card></div></Page>; }
+export function Dashboard() {
+  const storedUser = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; } })();
+  const role = storedUser?.role === "viewer" ? "player" : storedUser?.role || "player";
+  const { loading, error, data } = useLoad(async () => {
+    const [matches, user] = await Promise.all([
+      matchesService.list(),
+      authService.me().catch(() => ({ data: { user: storedUser } })),
+    ]);
+    const base = { matches: matches.data.matches || [], user: user.data.user || storedUser };
+    if (role === "player") {
+      const fees = await feesService.mine().catch(() => ({ data: { fees: [] } }));
+      return { ...base, fees: fees.data.fees || [] };
+    }
+    const [players, teams] = await Promise.all([playersService.list(), teamsService.list()]);
+    return { ...base, players: players.data.players || [], teams: teams.data.teams || [] };
+  }, [role]);
+
+  const name = data?.user?.name || storedUser?.name || "RSCC Member";
+  const cards = role === "player"
+    ? [
+        ["Upcoming matches", data?.matches?.length || 0, Trophy],
+        ["My fees", data?.fees?.length || 0, WalletCards],
+        ["Notifications", "View", Bell],
+      ]
+    : [
+        ["Players", data?.players?.length || 0, Users],
+        ["Teams", data?.teams?.length || 0, Users],
+        ["Matches", data?.matches?.length || 0, Trophy],
+      ];
+
+  const quickActions = role === "admin"
+    ? [["Register player", "/players"], ["Add coach", "/coaches"], ["Mark attendance", "/attendance"], ["Record fee", "/fees"]]
+    : role === "coach"
+      ? [["Register player", "/players"], ["Mark attendance", "/attendance"], ["Schedule match", "/matches"], ["View reports", "/reports"]]
+      : [["My fees", "/fees"], ["My fixtures", "/matches"], ["Academy calendar", "/calendar"], ["Notifications", "/notifications"]];
+
+  return <Page title={`Welcome, ${name}.`} eyebrow={role === "admin" ? "Administrator dashboard" : role === "coach" ? "Coach dashboard" : "Player dashboard"}>
+    <div className="mb-5 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
+      <p className="text-sm font-bold text-rscc-blue">RSCC {role === "admin" ? "Administrator" : role === "coach" ? "Coach" : "Player"} workspace</p>
+      <p className="mt-1 text-sm text-slate-600">{role === "player" ? "Your fixtures, fees, events and academy updates are available here." : "Manage the academy from one connected workspace."}</p>
+    </div>
+
+    <div className="grid gap-4 sm:grid-cols-3">
+      {cards.map(([label, value, Icon], index) => <Card key={label}><Icon className="text-rscc-blue" size={20}/><p className="mt-5 text-3xl font-black">{loading ? "—" : value}</p><p className="text-sm text-slate-500">{label}</p>{role === "player" && index === 1 && <Link to="/fees" className="mt-3 inline-block text-xs font-bold text-rscc-blue">Open fees →</Link>}{role === "player" && index === 2 && <Link to="/notifications" className="mt-3 inline-block text-xs font-bold text-rscc-blue">Open notifications →</Link>}</Card>)}
+    </div>
+
+    {error && <p className="mt-5 text-sm text-red-700">{error}</p>}
+
+    <div className="mt-5 grid gap-5 lg:grid-cols-2">
+      <Card>
+        <h2 className="font-black">Quick actions</h2>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          {quickActions.map(([label, to]) => <Link key={to} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold hover:bg-blue-50" to={to}>{label}<Plus size={16}/></Link>)}
+        </div>
+      </Card>
+      <Card>
+        <h2 className="font-black">{role === "player" ? "Upcoming fixtures" : "Upcoming fixtures"}</h2>
+        <div className="mt-4 space-y-3">{data?.matches?.slice(0, 3).map(match => <MatchRow key={match._id} match={match}/>) || <p className="text-sm text-slate-500">No fixtures available.</p>}</div>
+      </Card>
+    </div>
+  </Page>;
+}
 
 function PlayerForm({ onSaved, onCancel }) { const [form, setForm] = useState({ fullName: "", age: "", role: "Batsman", category: "U12", gender: "Male", jerseyNumber: "" }); const [error, setError] = useState(""); const submit = async event => { event.preventDefault(); try { await playersService.create({ ...form, age: form.age ? Number(form.age) : undefined, jerseyNumber: form.jerseyNumber ? Number(form.jerseyNumber) : undefined }); onSaved(); } catch (e) { setError(e?.response?.data?.message || "Could not create player"); } }; return <Card className="mb-5"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Full name" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} className="rounded-xl border p-3"/><input type="number" placeholder="Age" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} className="rounded-xl border p-3"/><select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="rounded-xl border p-3">{["Batsman", "Bowler", "All Rounder", "Wicket Keeper"].map(x => <option key={x}>{x}</option>)}</select><select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="rounded-xl border p-3">{["U12", "U14", "U16", "U19", "Senior"].map(x => <option key={x}>{x}</option>)}</select><input type="number" placeholder="Jersey number" value={form.jerseyNumber} onChange={e => setForm({ ...form, jerseyNumber: e.target.value })} className="rounded-xl border p-3"/><div className="sm:col-span-2 flex gap-3"><button className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Save player</button><button type="button" onClick={onCancel} className="rounded-xl border px-4 py-3 text-sm font-bold">Cancel</button>{error && <span className="self-center text-sm text-red-700">{error}</span>}</div></form></Card>; }
 
@@ -148,13 +210,20 @@ export function Coaches() {
   </Page>;
 }
 export function Fees() {
+  const storedUser = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; } })();
+  const role = storedUser?.role === "viewer" ? "player" : storedUser?.role;
+  const isPlayer = role === "player";
   const [refresh, setRefresh] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
   const empty = { player: "", amount: "", dueDate: "", status: "Pending", note: "" };
   const [form, setForm] = useState(empty);
-  const { loading, error, data } = useLoad(() => feesService.list().then(r => r.data.fees), [refresh]);
-  const { data: players = [] } = useLoad(() => playersService.list().then(r => r.data.players), []);
+
+  const { loading, error, data } = useLoad(
+    () => (isPlayer ? feesService.mine().then(r => r.data.fees) : feesService.list().then(r => r.data.fees)),
+    [refresh, isPlayer]
+  );
+  const { data: players = [] } = useLoad(() => isPlayer ? Promise.resolve([]) : playersService.list().then(r => r.data.players), [isPlayer]);
 
   const submit = async (e) => {
     e.preventDefault(); setMessage("");
@@ -163,39 +232,79 @@ export function Fees() {
       setForm(empty); setShowForm(false); setRefresh(x => x + 1); setMessage("Fee record created.");
     } catch (err) { setMessage(err?.response?.data?.message || "Unable to create fee record."); }
   };
+
   const toggleStatus = async (fee) => {
     try { await feesService.update(fee._id, { status: fee.status === "Paid" ? "Pending" : "Paid" }); setRefresh(x => x + 1); }
     catch (err) { setMessage(err?.response?.data?.message || "Unable to update fee."); }
   };
+
   const remove = async (id) => {
     if (!window.confirm("Delete this fee record?")) return;
     try { await feesService.remove(id); setRefresh(x => x + 1); } catch (err) { setMessage(err?.response?.data?.message || "Unable to delete fee."); }
   };
+
   const paid = (data || []).filter(f => f.status === "Paid").reduce((s, f) => s + Number(f.amount || 0), 0);
   const due = (data || []).filter(f => f.status !== "Paid").reduce((s, f) => s + Number(f.amount || 0), 0);
 
-  return <Page title="Fees & payments" eyebrow="Academy billing">
-    <div className="mb-5 grid gap-4 sm:grid-cols-3">
-      <Card><p className="text-sm text-slate-500">Fee records</p><p className="mt-2 text-3xl font-black">{data?.length || 0}</p></Card>
-      <Card><p className="text-sm text-slate-500">Collected</p><p className="mt-2 text-3xl font-black">₹{paid.toLocaleString("en-IN")}</p></Card>
-      <Card><p className="text-sm text-slate-500">Outstanding</p><p className="mt-2 text-3xl font-black">₹{due.toLocaleString("en-IN")}</p></Card>
-    </div>
-    <div className="mb-5 flex justify-end"><button onClick={() => setShowForm(!showForm)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{showForm ? "Close" : "+ Add fee record"}</button></div>
-    {showForm && <Card className="mb-5"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      <select required value={form.player} onChange={e => setForm({ ...form, player: e.target.value })} className="rounded-xl border p-3"><option value="">Select player</option>{players.map(p => <option key={p._id} value={p._id}>{playerName(p)}{p.category ? ` · ${p.category}` : ""}</option>)}</select>
-      <input required type="number" min="0" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} placeholder="Amount" className="rounded-xl border p-3"/>
-      <input required type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} className="rounded-xl border p-3"/>
-      <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="rounded-xl border p-3"><option>Pending</option><option>Paid</option><option>Overdue</option></select>
-      <input value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} placeholder="Note (optional)" className="rounded-xl border p-3"/>
-      <button className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-slate-950">Save fee</button>
-    </form>{message && <p className="mt-3 text-sm text-slate-600">{message}</p>}</Card>}
-    {loading ? <Empty>Loading fees…</Empty> : error ? <Empty>{error}</Empty> :
-      data.length ? <div className="space-y-3">{data.map(f => <Card key={f._id}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div><h2 className="font-black">{playerName(f.player)}</h2><p className="mt-1 text-sm text-slate-500">₹{Number(f.amount).toLocaleString("en-IN")} · due {formatDate(f.dueDate)}{f.note ? ` · ${f.note}` : ""}</p></div>
-          <div className="flex items-center gap-2"><button onClick={() => toggleStatus(f)} className={`rounded-xl px-3 py-2 text-sm font-bold ${f.status === "Paid" ? "bg-green-100 text-green-700" : f.status === "Overdue" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>{f.status}</button><button onClick={() => remove(f._id)} className="rounded-xl border px-3 py-2 text-sm font-bold text-red-700">Delete</button></div>
+  return <Page title={isPlayer ? "My fees" : "Fees & payments"} eyebrow={isPlayer ? "My academy account" : "Academy billing"}>
+    {isPlayer ? (
+      <>
+        <Card className="mb-5 border-rscc-blue/20 bg-blue-50/40">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-rscc-blue">Your fee account</p>
+          <h2 className="mt-2 text-xl font-black">Stay on top of your academy payments</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Your due date, amount and payment status are shown below. RSCC will surface a notification when a fee is due soon or overdue.</p>
+        </Card>
+        {loading ? <Empty>Loading your fees…</Empty> : error ? <Empty>{error}</Empty> : data?.length ? (
+          <div className="space-y-4">
+            {data.map(f => {
+              const dueDate = new Date(f.dueDate);
+              const days = Math.ceil((dueDate - new Date()) / 86400000);
+              const status = f.status === "Paid" ? "Paid" : days < 0 ? "Overdue" : days <= 7 ? "Due Soon" : "Pending";
+              const tone = status === "Paid" ? "bg-green-50 text-green-700" : status === "Overdue" ? "bg-red-50 text-red-700" : status === "Due Soon" ? "bg-amber-50 text-amber-700" : "bg-blue-50 text-rscc-blue";
+              return <Card key={f._id}>
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">{f.note || "Academy fee"}</p>
+                    <h2 className="mt-2 text-2xl font-black">₹{Number(f.amount).toLocaleString("en-IN")}</h2>
+                    <p className="mt-1 text-sm text-slate-500">Due {formatDate(f.dueDate)}</p>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${tone}`}>{status}</span>
+                    <p className="mt-2 text-sm font-bold text-slate-600">
+                      {status === "Paid" ? `Paid ${f.paidAt ? formatDate(f.paidAt) : ""}` : days < 0 ? `${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} overdue` : days === 0 ? "Due today" : `Due in ${days} day${days === 1 ? "" : "s"}`}
+                    </p>
+                  </div>
+                </div>
+              </Card>;
+            })}
+          </div>
+        ) : <Empty>No fee records have been assigned to your player account yet.</Empty>}
+      </>
+    ) : (
+      <>
+        <div className="mb-5 grid gap-4 sm:grid-cols-3">
+          <Card><p className="text-sm text-slate-500">Fee records</p><p className="mt-2 text-3xl font-black">{data?.length || 0}</p></Card>
+          <Card><p className="text-sm text-slate-500">Collected</p><p className="mt-2 text-3xl font-black">₹{paid.toLocaleString("en-IN")}</p></Card>
+          <Card><p className="text-sm text-slate-500">Outstanding</p><p className="mt-2 text-3xl font-black">₹{due.toLocaleString("en-IN")}</p></Card>
         </div>
-      </Card>)}</div> : <Empty>No fee records yet. Add the first fee record above.</Empty>}
+        <div className="mb-5 flex justify-end"><button onClick={() => setShowForm(!showForm)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{showForm ? "Close" : "+ Add fee record"}</button></div>
+        {showForm && <Card className="mb-5"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <select required value={form.player} onChange={e => setForm({ ...form, player: e.target.value })} className="rounded-xl border p-3"><option value="">Select player</option>{players.map(p => <option key={p._id} value={p._id}>{playerName(p)}{p.category ? ` · ${p.category}` : ""}</option>)}</select>
+          <input required type="number" min="0" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} placeholder="Amount" className="rounded-xl border p-3"/>
+          <input required type="date" value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} className="rounded-xl border p-3"/>
+          <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="rounded-xl border p-3"><option>Pending</option><option>Paid</option><option>Overdue</option></select>
+          <input value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} placeholder="Note (optional)" className="rounded-xl border p-3"/>
+          <button className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-slate-950">Save fee</button>
+        </form>{message && <p className="mt-3 text-sm text-slate-600">{message}</p>}</Card>}
+        {loading ? <Empty>Loading fees…</Empty> : error ? <Empty>{error}</Empty> :
+          data.length ? <div className="space-y-3">{data.map(f => <Card key={f._id}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div><h2 className="font-black">{playerName(f.player)}</h2><p className="mt-1 text-sm text-slate-500">₹{Number(f.amount).toLocaleString("en-IN")} · due {formatDate(f.dueDate)}{f.note ? ` · ${f.note}` : ""}</p></div>
+              <div className="flex items-center gap-2"><button onClick={() => toggleStatus(f)} className={`rounded-xl px-3 py-2 text-sm font-bold ${f.status === "Paid" ? "bg-green-100 text-green-700" : f.status === "Overdue" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>{f.status}</button><button onClick={() => remove(f._id)} className="rounded-xl border px-3 py-2 text-sm font-bold text-red-700">Delete</button></div>
+            </div>
+          </Card>)}</div> : <Empty>No fee records yet. Add the first fee record above.</Empty>}
+      </>
+    )}
   </Page>;
 }
 export function Calendar() {
@@ -250,5 +359,174 @@ export function Reports() {
 export function Notifications() { const [refresh, setRefresh] = useState(0); const { loading, error, data } = useLoad(() => notificationsService.list().then(r => r.data), [refresh]); const read = async id => { await notificationsService.markRead(id); setRefresh(x => x + 1); }; return <Page title="Notifications" eyebrow="Academy alerts"><div className="mb-5 text-right"><button onClick={() => notificationsService.markAllRead().then(() => setRefresh(x => x + 1))} className="rounded-xl border px-4 py-3 text-sm font-bold">Mark all read</button></div>{loading ? <Empty>Loading notifications…</Empty> : error ? <Empty>{error}. Sign in to see your notifications.</Empty> : <div className="space-y-3">{data.notifications.map(notification => <Card key={notification._id} className={notification.read ? "opacity-70" : "border-lime-400"}><button onClick={() => !notification.read && read(notification._id)} className="w-full text-left"><div className="flex items-center justify-between gap-4"><h2 className="font-black">{notification.title}</h2>{!notification.read && <Badge>New</Badge>}</div><p className="mt-2 text-sm text-slate-600">{notification.body}</p><small className="mt-2 block text-slate-400">{formatDate(notification.createdAt)}</small></button></Card>)}</div>}</Page>; }
 export function Settings() { const { loading, error, data: user } = useLoad(() => authService.me().then(r => r.data.user), []); const [form, setForm] = useState(null); const [message, setMessage] = useState(""); useEffect(() => { if (user) setForm({ name: user.name || "", phone: user.phone || "", avatar: user.avatar || "", notificationPreferences: user.notificationPreferences || { announcements: true, events: true, matches: true } }); }, [user]); const save = async e => { e.preventDefault(); try { await authService.updateMe(form); setMessage("Settings saved."); } catch (err) { setMessage(err?.response?.data?.message || "Unable to save settings"); } }; return <Page title="Settings" eyebrow="Account & notifications">{loading ? <Empty>Loading settings…</Empty> : error || !form ? <Empty>{error || "Sign in to manage settings."}</Empty> : <Card className="max-w-2xl"><form onSubmit={save}><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-bold">Full name<input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label><label className="text-sm font-bold">Phone<input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label>
 <label className="text-sm font-bold sm:col-span-2">Avatar URL<input value={form.avatar || ""} onChange={e => setForm({ ...form, avatar: e.target.value })} placeholder="https://..." className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label></div><h2 className="mt-7 font-black">Notification preferences</h2><div className="mt-3 space-y-3">{[["announcements", "Announcements"], ["events", "Events"], ["matches", "Match updates"]].map(([key, label]) => <label key={key} className="flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm font-bold">{label}<input type="checkbox" checked={form.notificationPreferences[key] !== false} onChange={e => setForm({ ...form, notificationPreferences: { ...form.notificationPreferences, [key]: e.target.checked } })}/></label>)}</div><button className="mt-6 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Save settings</button>{message && <span className="ml-3 text-sm text-slate-600">{message}</span>}</form></Card>}</Page>; }
-export function Auth({ mode = "Login" }) { const isRegister = mode === "Create account"; const [form, setForm] = useState({ name: "", email: "", password: "" }); const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const navigate = useNavigate(); const submit = async event => { event.preventDefault(); setLoading(true); setError(""); try { if (isRegister) { await authService.register({ ...form, role: "viewer" }); navigate("/login", { state: { message: "Account created. Please sign in." } }); } else { const { data } = await authService.login({ email: form.email, password: form.password }); localStorage.setItem("accessToken", data.accessToken); localStorage.setItem("refreshToken", data.refreshToken); localStorage.setItem("user", JSON.stringify(data.user)); navigate("/dashboard"); } } catch (e) { setError(e?.response?.data?.message || "Unable to continue"); } finally { setLoading(false); } }; return <div className="grid min-h-screen place-items-center bg-[#f7f8f6] p-6"><form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl"><Link to="/" className="font-black text-rscc-blue">RSCC</Link><h1 className="mt-6 text-3xl font-black">{mode}</h1><p className="mt-2 text-sm text-slate-500">{isRegister ? "Create your academy account." : "Sign in to the academy portal."}</p>{isRegister && <input required placeholder="Full name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-6 w-full rounded-xl border p-3"/>}<input required type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="mt-4 w-full rounded-xl border p-3"/><input required minLength="6" type="password" placeholder="Password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="mt-4 w-full rounded-xl border p-3"/>{error && <p className="mt-3 text-sm text-red-700">{error}</p>}<button disabled={loading} className="mt-6 w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white disabled:opacity-60">{loading ? "Please wait…" : mode}</button><p className="mt-5 text-center text-sm text-slate-500">{isRegister ? <>Already have an account? <Link className="font-bold text-rscc-blue" to="/login">Log in</Link></> : <>New to RSCC? <Link className="font-bold text-rscc-blue" to="/register">Create account</Link></>}</p></form></div>; }
-export function Forgot({ reset = false }) { const [form, setForm] = useState({ email: "", token: "", password: "" }); const [message, setMessage] = useState(""); const submit = async e => { e.preventDefault(); try { const response = reset ? await authService.resetPassword({ token: form.token, password: form.password }) : await authService.forgotPassword({ email: form.email }); setMessage(response.data.resetToken ? `${response.data.message} Development token: ${response.data.resetToken}` : response.data.message); } catch (err) { setMessage(err?.response?.data?.message || "Unable to continue"); } }; return <div className="grid min-h-screen place-items-center bg-[#f7f8f6] p-6"><Card className="w-full max-w-md"><h1 className="text-xl font-black">{reset ? "Set new password" : "Password reset"}</h1><p className="mt-2 text-sm text-slate-600">{reset ? "Enter the reset token and your new password." : "Enter your email to request a 15-minute reset token."}</p><form onSubmit={submit} className="mt-5 space-y-3">{reset ? <><input required placeholder="Reset token" value={form.token} onChange={e => setForm({ ...form, token: e.target.value })} className="w-full rounded-xl border p-3"/><input required minLength="6" type="password" placeholder="New password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="w-full rounded-xl border p-3"/></> : <input required type="email" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full rounded-xl border p-3"/>}<button className="w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white">{reset ? "Reset password" : "Request reset"}</button></form>{message && <p className="mt-4 break-all text-sm text-slate-600">{message}</p>}<Link to={reset ? "/login" : "/reset-password"} className="mt-5 inline-block font-bold text-rscc-blue">{reset ? "Back to login" : "I have a reset token"}</Link></Card></div>; }
+export function Auth({ mode = "Login" }) {
+  const isRegister = mode === "Create account";
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", role: "player" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      if (isRegister) {
+        const response = await authService.register({
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase(),
+          phone: form.phone.trim(),
+          password: form.password,
+          role: form.role,
+        });
+        if (response.data?.accessToken) {
+          localStorage.setItem("accessToken", response.data.accessToken);
+          localStorage.setItem("refreshToken", response.data.refreshToken || "");
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+          navigate("/dashboard", { replace: true });
+        } else {
+          navigate("/login", { state: { message: "Account created. Please sign in." } });
+        }
+      } else {
+        const { data } = await authService.login({ email: form.email.trim().toLowerCase(), password: form.password });
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/dashboard", { replace: true });
+      }
+    } catch (e) {
+      setError(e?.response?.data?.message || "Unable to continue. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 px-4 py-8 sm:grid sm:place-items-center">
+      <div className="mx-auto w-full max-w-md">
+        <div className="mb-6 text-center">
+          <Link to="/" className="inline-flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center overflow-hidden rounded-full border-2 border-rscc-red bg-white">
+              <img src={logo} alt="Rising Star Cricket Club" className="h-full w-full object-cover"/>
+            </span>
+            <span className="text-left"><b className="block text-lg font-black text-rscc-blue">RSCC</b><small className="text-xs text-slate-500">Rising Star Cricket Club</small></span>
+          </Link>
+        </div>
+
+        <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+          <h1 className="text-3xl font-black">{isRegister ? "Create your RSCC account" : "Welcome back"}</h1>
+          <p className="mt-2 text-sm text-slate-500">{isRegister ? "Join the academy as a player or coach." : "Sign in to your academy workspace."}</p>
+
+          {isRegister && (
+            <>
+              <label className="mt-6 block text-sm font-bold">Full name
+                <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Your full name" className="mt-1.5 w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-rscc-blue"/>
+              </label>
+              <label className="mt-4 block text-sm font-bold">Phone
+                <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="Optional" className="mt-1.5 w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-rscc-blue"/>
+              </label>
+              <label className="mt-4 block text-sm font-bold">Account type
+                <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white p-3 outline-none focus:border-rscc-blue">
+                  <option value="player">Player</option>
+                  <option value="coach">Coach</option>
+                </select>
+              </label>
+            </>
+          )}
+
+          <label className="mt-4 block text-sm font-bold">Email
+            <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" className="mt-1.5 w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-rscc-blue"/>
+          </label>
+
+          <label className="mt-4 block text-sm font-bold">Password
+            <span className="relative mt-1.5 block">
+              <input required minLength="6" type={showPassword ? "text" : "password"} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="At least 6 characters" className="w-full rounded-xl border border-slate-300 p-3 pr-11 outline-none focus:border-rscc-blue"/>
+              <button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 hover:bg-slate-100">
+                {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+              </button>
+            </span>
+          </label>
+
+          {!isRegister && <div className="mt-3 text-right"><Link to="/forgot-password" className="text-sm font-bold text-rscc-blue hover:underline">Forgot password?</Link></div>}
+
+          {isRegister && <p className="mt-3 text-xs leading-5 text-slate-500">Admin accounts are created by academy administration. Guest access does not require an account.</p>}
+          {error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
+          {message && <p className="mt-4 rounded-xl bg-blue-50 p-3 text-sm font-semibold text-rscc-blue">{message}</p>}
+
+          <button disabled={loading} className="mt-6 w-full rounded-xl bg-rscc-blue py-3.5 text-sm font-extrabold text-white hover:bg-blue-800 disabled:opacity-60">
+            {loading ? "Please wait…" : isRegister ? "Create account" : "Sign in"}
+          </button>
+
+          <div className="mt-6 border-t pt-5 text-center text-sm text-slate-500">
+            {isRegister ? <>Already have an account? <Link className="font-bold text-rscc-blue" to="/login">Sign in</Link></> : <>New to RSCC? <Link className="font-bold text-rscc-blue" to="/register">Create account</Link></>}
+          </div>
+        </form>
+
+        <Link to="/" className="mt-5 block text-center text-sm font-bold text-slate-500 hover:text-rscc-blue">← Back to RSCC</Link>
+      </div>
+    </div>
+  );
+}
+
+export function Forgot({ reset = false }) {
+  const [form, setForm] = useState({ email: "", token: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+    try {
+      const response = reset
+        ? await authService.resetPassword({ token: form.token.trim(), password: form.password })
+        : await authService.forgotPassword({ email: form.email.trim().toLowerCase() });
+
+      if (reset) {
+        setMessage(response.data.message);
+      } else {
+        setMessage(response.data.resetToken
+          ? `${response.data.message} Use the reset token below.`
+          : response.data.message);
+        if (response.data.resetToken) setForm(current => ({ ...current, token: response.data.resetToken }));
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || "Unable to continue");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 px-4 py-8 sm:grid sm:place-items-center">
+      <div className="w-full max-w-md">
+        <div className="mb-6 text-center">
+          <Link to="/" className="text-xl font-black text-rscc-blue">RSCC</Link>
+          <p className="mt-1 text-xs text-slate-500">Rising Star Cricket Club</p>
+        </div>
+        <Card>
+          <h1 className="text-2xl font-black">{reset ? "Set a new password" : "Forgot password?"}</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-500">{reset ? "Enter the reset token you received and choose a new password." : "Enter your registered email and we'll start the password reset process."}</p>
+          <form onSubmit={submit} className="mt-6 space-y-4">
+            {reset ? <>
+              <input required placeholder="Reset token" value={form.token} onChange={e => setForm({ ...form, token: e.target.value })} className="w-full rounded-xl border border-slate-300 p-3"/>
+              <span className="relative block">
+                <input required minLength="6" type={showPassword ? "text" : "password"} placeholder="New password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="w-full rounded-xl border border-slate-300 p-3 pr-11"/>
+                <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-500">{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
+              </span>
+            </> : <input required type="email" placeholder="Email address" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full rounded-xl border border-slate-300 p-3"/>}
+            {error && <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
+            {message && <p className="rounded-xl bg-blue-50 p-3 text-sm font-semibold text-rscc-blue">{message}</p>}
+            <button className="w-full rounded-xl bg-rscc-blue py-3 text-sm font-extrabold text-white">{reset ? "Reset password" : "Send reset request"}</button>
+          </form>
+          <Link to="/login" className="mt-5 inline-block text-sm font-bold text-rscc-blue">← Back to login</Link>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+
