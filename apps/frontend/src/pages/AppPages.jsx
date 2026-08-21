@@ -98,10 +98,41 @@ function MatchForm({ teams, onSaved, onCancel }) { const [form, setForm] = useSt
 export function Matches() { const [refresh, setRefresh] = useState(0); const [creating, setCreating] = useState(false); const { loading, error, data } = useLoad(async () => { const [matches, teams] = await Promise.all([matchesService.list(), teamsService.list()]); return { matches: matches.data.matches, teams: teams.data.teams }; }, [refresh]); return <Page title="Matches" eyebrow="Fixtures & results"><div className="mb-5 flex justify-end"><button onClick={() => setCreating(!creating)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{creating ? "Close" : "+ Schedule match"}</button></div>{creating && <MatchForm teams={data?.teams || []} onCancel={() => setCreating(false)} onSaved={() => { setCreating(false); setRefresh(x => x + 1); }}/>} {loading ? <Empty>Loading fixtures…</Empty> : error ? <Empty>{error}. Sign in as an administrator or coach to manage fixtures.</Empty> : <div className="grid gap-4 lg:grid-cols-2">{data.matches.map(match => <Card key={match._id}><div className="flex justify-between"><Badge tone={match.status === "Completed" ? "slate" : "lime"}>{match.status}</Badge><span className="text-sm text-slate-500">{match.matchType}</span></div><h2 className="mt-5 text-lg font-black">{matchTitle(match)}</h2><p className="mt-3 text-sm text-slate-500"><CalendarDays className="mr-1 inline" size={15}/>{formatDate(match.details?.matchDate)}<br/><MapPin className="mr-1 inline" size={15}/>{match.details?.ground || match.details?.venue || "Venue TBC"} · {match.details?.overs || 20} overs</p><Link to={`/matches/${match._id}`} className="mt-5 inline-flex gap-1 text-sm font-bold text-rscc-blue">Match details <ArrowRight size={15}/></Link></Card>)}</div>}</Page>; }
 export function MatchDetails() { const { id } = useParams(); const { loading, error, data: match } = useLoad(() => matchesService.get(id).then(r => r.data.match), [id]); return <Page title="Match details" eyebrow="Fixture"><Card>{loading ? "Loading match…" : error ? error : <><Badge>{match.status}</Badge><h2 className="mt-4 text-2xl font-black">{matchTitle(match)}</h2><p className="mt-3 text-sm text-slate-500">{formatDate(match.details?.matchDate)} · {match.details?.ground || "Venue TBC"} · {match.details?.overs || 20} overs</p><p className="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600">Live scoring is the next module to connect to this saved fixture.</p></>}</Card></Page>; }
 
-export function Teams() { const { loading, error, data } = useLoad(() => teamsService.list().then(r => r.data.teams), []); return <Page title="Teams" eyebrow="Squads"><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{loading ? <Empty>Loading teams…</Empty> : error ? <Empty>{error}</Empty> : data.map(team => <Card key={team._id}><Badge tone="slate">{team.category}</Badge><h2 className="mt-4 text-xl font-black">{team.name}</h2><p className="mt-2 text-sm text-slate-500">{team.shortName} · {team.players?.length || 0} players</p></Card>)}</div></Page>; }
-function ContentForm({ kind, onSaved, onCancel }) { const [form, setForm] = useState(kind === "event" ? { title: "", date: "", time: "", type: "Academy event", place: "", description: "" } : { title: "", category: "General", body: "" }); const [error, setError] = useState(""); const submit = async e => { e.preventDefault(); try { await (kind === "event" ? eventsService.create(form) : announcementsService.create(form)); onSaved(); } catch (err) { setError(err?.response?.data?.message || "Unable to save"); } }; return <Card className="mb-5"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="rounded-xl border p-3"/>{kind === "event" ? <><input required type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="rounded-xl border p-3"/><input placeholder="Time" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} className="rounded-xl border p-3"/><input placeholder="Event type" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className="rounded-xl border p-3"/><input placeholder="Location" value={form.place} onChange={e => setForm({ ...form, place: e.target.value })} className="rounded-xl border p-3 sm:col-span-2"/><textarea placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="rounded-xl border p-3 sm:col-span-2"/></> : <><input placeholder="Category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="rounded-xl border p-3"/><textarea required placeholder="Announcement" value={form.body} onChange={e => setForm({ ...form, body: e.target.value })} className="rounded-xl border p-3 sm:col-span-2"/></>}<div className="sm:col-span-2 flex gap-3"><button className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Publish</button><button type="button" onClick={onCancel} className="rounded-xl border px-4 py-3 text-sm font-bold">Cancel</button>{error && <span className="self-center text-sm text-red-700">{error}</span>}</div></form></Card>; }
-export function Events() { const [refresh, setRefresh] = useState(0); const [adding, setAdding] = useState(false); const { loading, error, data } = useLoad(() => eventsService.list().then(r => r.data.events), [refresh]); return <Page title="Events" eyebrow="Academy calendar"><div className="mb-5 text-right"><button onClick={() => setAdding(!adding)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{adding ? "Close" : "+ New event"}</button></div>{adding && <ContentForm kind="event" onCancel={() => setAdding(false)} onSaved={() => { setAdding(false); setRefresh(x => x + 1); }}/>} {loading ? <Empty>Loading events…</Empty> : error ? <Empty>{error}. Sign in as an administrator or coach to manage events.</Empty> : <div className="grid gap-4 lg:grid-cols-3">{data.map(event => <Card key={event._id}><Badge tone="slate">{event.type}</Badge><h2 className="mt-4 font-black">{event.title}</h2><p className="mt-3 text-sm text-slate-500">{formatDate(event.date)} {event.time && `· ${event.time}`}<br/>{event.place}</p>{event.description && <p className="mt-3 text-sm text-slate-600">{event.description}</p>}</Card>)}</div>}</Page>; }
-export function Announcements() { const [refresh, setRefresh] = useState(0); const [adding, setAdding] = useState(false); const { loading, error, data } = useLoad(() => announcementsService.list().then(r => r.data.announcements), [refresh]); return <Page title="Announcements" eyebrow="Academy updates"><div className="mb-5 text-right"><button onClick={() => setAdding(!adding)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{adding ? "Close" : "+ New announcement"}</button></div>{adding && <ContentForm kind="announcement" onCancel={() => setAdding(false)} onSaved={() => { setAdding(false); setRefresh(x => x + 1); }}/>} {loading ? <Empty>Loading announcements…</Empty> : error ? <Empty>{error}. Sign in as an administrator or coach to publish announcements.</Empty> : <div className="grid gap-4 lg:grid-cols-2">{data.map(item => <Card key={item._id}><div className="flex justify-between"><Badge tone={item.category === "Important" ? "red" : "slate"}>{item.category}</Badge><small className="text-slate-400">{formatDate(item.createdAt)}</small></div><h2 className="mt-4 font-black">{item.title}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{item.body}</p></Card>)}</div>}</Page>; }
+export function Teams() {
+  const stored=(()=>{try{return JSON.parse(localStorage.getItem("user")||"null")}catch{return null}})();
+  const canManage=["admin","coach"].includes(stored?.role);
+  const [refresh,setRefresh]=useState(0),[adding,setAdding]=useState(false),[editing,setEditing]=useState(null),[message,setMessage]=useState("");
+  const empty={name:"",shortName:"",category:"U14",logo:""}; const [form,setForm]=useState(empty);
+  const {loading,error,data}=useLoad(()=>teamsService.list().then(r=>r.data.teams),[refresh]);
+  const submit=async e=>{e.preventDefault();try{if(editing)await teamsService.update(editing,form);else await teamsService.create(form);setForm(empty);setEditing(null);setAdding(false);setRefresh(x=>x+1);setMessage("Team saved.")}catch(err){setMessage(err?.response?.data?.message||"Unable to save team.")}};
+  const remove=async id=>{if(!confirm("Delete this team?"))return;try{await teamsService.remove(id);setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to delete team.")}};
+  return <Page title="Teams" eyebrow="Squads & academy groups">
+    {canManage&&<div className="mb-5 flex justify-end"><button onClick={()=>setAdding(v=>!v)} className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white">{adding?"Close":"+ Create team"}</button></div>}
+    {adding&&<Card className="mb-5"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Team name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="rounded-xl border p-3"/><input required placeholder="Short name" value={form.shortName} onChange={e=>setForm({...form,shortName:e.target.value})} className="rounded-xl border p-3"/><select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="rounded-xl border p-3"><option>U14</option><option>U16</option><option>U19</option><option>Senior</option><option>Visitor</option></select><input placeholder="Logo URL (optional)" value={form.logo} onChange={e=>setForm({...form,logo:e.target.value})} className="rounded-xl border p-3"/><button className="rounded-xl bg-rscc-red px-4 py-3 text-sm font-bold text-white sm:col-span-2">{editing?"Update team":"Create team"}</button></form>{message&&<p className="mt-3 text-sm">{message}</p>}</Card>}
+    {loading?<Empty>Loading teams…</Empty>:error?<Empty>{error}</Empty>:<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{(data||[]).map(team=><Card key={team._id}>{team.logo&&<img src={team.logo} alt="" className="mb-4 h-14 w-14 rounded-xl object-cover"/>}<Badge tone="slate">{team.category}</Badge><h2 className="mt-4 text-xl font-black">{team.name}</h2><p className="mt-2 text-sm text-slate-500">{team.shortName} · {team.players?.length||0} players · {team.coaches?.length||0} coaches</p>{canManage&&<div className="mt-4 flex gap-2"><button onClick={()=>{setEditing(team._id);setForm({name:team.name,shortName:team.shortName,category:team.category,logo:team.logo||""});setAdding(true)}} className="rounded-lg border px-3 py-2 text-xs font-bold">Edit</button>{stored?.role==="admin"&&<button onClick={()=>remove(team._id)} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Delete</button>}</div>}</Card>)}</div>}
+  </Page>;
+}
+
+export function Events() {
+  const role=(()=>{try{return JSON.parse(localStorage.getItem("user")||"null")?.role}catch{return null}})(), canManage=["admin","coach"].includes(role);
+  const [refresh,setRefresh]=useState(0),[adding,setAdding]=useState(false),[editing,setEditing]=useState(null),[message,setMessage]=useState("");
+  const empty={title:"",date:"",time:"",type:"Academy event",place:"",description:""};const [form,setForm]=useState(empty);
+  const {loading,error,data}=useLoad(()=>eventsService.list().then(r=>r.data.events),[refresh]);
+  const save=async e=>{e.preventDefault();try{if(editing)await eventsService.update(editing,form);else await eventsService.create(form);setForm(empty);setEditing(null);setAdding(false);setRefresh(x=>x+1);setMessage("Event saved.")}catch(err){setMessage(err?.response?.data?.message||"Unable to save event.")}};
+  const remove=async id=>{if(!confirm("Delete this event?"))return;await eventsService.remove(id);setRefresh(x=>x+1)};
+  return <Page title="Events" eyebrow="Academy events"><div className="mb-5 flex justify-end">{canManage&&<button onClick={()=>setAdding(v=>!v)} className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white">{adding?"Close":"+ New event"}</button>}</div>{adding&&<Card className="mb-5"><form onSubmit={save} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Event title" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} className="rounded-xl border p-3"/><input required type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})} className="rounded-xl border p-3"/><input type="time" value={form.time} onChange={e=>setForm({...form,time:e.target.value})} className="rounded-xl border p-3"/><select value={form.type} onChange={e=>setForm({...form,type:e.target.value})} className="rounded-xl border p-3"><option>Academy event</option><option>Training</option><option>Meeting</option><option>Trial</option><option>Holiday</option></select><input placeholder="Location" value={form.place} onChange={e=>setForm({...form,place:e.target.value})} className="rounded-xl border p-3"/><textarea placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className="rounded-xl border p-3 sm:col-span-2"/><button className="rounded-xl bg-rscc-blue py-3 font-bold text-white sm:col-span-2">{editing?"Update event":"Create event"}</button></form>{message&&<p className="mt-3 text-sm">{message}</p>}</Card>}{loading?<Empty>Loading events…</Empty>:error?<Empty>{error}</Empty>:<div className="grid gap-4 lg:grid-cols-3">{(data||[]).map(event=><Card key={event._id}><Badge tone="slate">{event.type}</Badge><h2 className="mt-4 font-black">{event.title}</h2><p className="mt-2 text-sm text-slate-500">{formatDate(event.date)} {event.time&&`· ${event.time}`}<br/>{event.place||"Location TBC"}</p>{event.description&&<p className="mt-3 text-sm text-slate-600">{event.description}</p>}{canManage&&<div className="mt-4 flex gap-2"><button onClick={()=>{setEditing(event._id);setForm({title:event.title,date:event.date?.slice(0,10)||"",time:event.time||"",type:event.type||"Academy event",place:event.place||"",description:event.description||""});setAdding(true)}} className="rounded-lg border px-3 py-2 text-xs font-bold">Edit</button><button onClick={()=>remove(event._id)} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Delete</button></div>}</Card>)}</div>}</Page>;
+}
+
+export function Announcements() {
+  const role=(()=>{try{return JSON.parse(localStorage.getItem("user")||"null")?.role}catch{return null}})(), canManage=["admin","coach"].includes(role);
+  const [refresh,setRefresh]=useState(0),[adding,setAdding]=useState(false),[editing,setEditing]=useState(null),[message,setMessage]=useState("");
+  const empty={title:"",category:"General",body:""};const [form,setForm]=useState(empty);
+  const {loading,error,data}=useLoad(()=>announcementsService.list().then(r=>r.data.announcements),[refresh]);
+  const save=async e=>{e.preventDefault();try{if(editing)await announcementsService.update(editing,form);else await announcementsService.create(form);setForm(empty);setEditing(null);setAdding(false);setRefresh(x=>x+1);setMessage("Announcement saved.")}catch(err){setMessage(err?.response?.data?.message||"Unable to save announcement.")}};
+  const remove=async id=>{if(!confirm("Delete this announcement?"))return;await announcementsService.remove(id);setRefresh(x=>x+1)};
+  return <Page title="Announcements" eyebrow="Academy communication"><div className="mb-5 flex justify-end">{canManage&&<button onClick={()=>setAdding(v=>!v)} className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white">{adding?"Close":"+ New announcement"}</button>}</div>{adding&&<Card className="mb-5"><form onSubmit={save} className="space-y-3"><input required placeholder="Title" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} className="w-full rounded-xl border p-3"/><select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="w-full rounded-xl border p-3"><option>General</option><option>Important</option><option>Training</option><option>Match</option><option>Fees</option></select><textarea required placeholder="Announcement message" value={form.body} onChange={e=>setForm({...form,body:e.target.value})} className="min-h-32 w-full rounded-xl border p-3"/><button className="rounded-xl bg-rscc-blue px-4 py-3 font-bold text-white">{editing?"Update":"Publish announcement"}</button></form>{message&&<p className="mt-3 text-sm">{message}</p>}</Card>}{loading?<Empty>Loading announcements…</Empty>:error?<Empty>{error}</Empty>:<div className="grid gap-4 lg:grid-cols-2">{(data||[]).map(item=><Card key={item._id}><div className="flex justify-between gap-3"><Badge tone={item.category==="Important"?"red":"slate"}>{item.category}</Badge><small className="text-slate-400">{formatDate(item.createdAt)}</small></div><h2 className="mt-4 font-black">{item.title}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{item.body}</p>{canManage&&<div className="mt-4 flex gap-2"><button onClick={()=>{setEditing(item._id);setForm({title:item.title,category:item.category||"General",body:item.body});setAdding(true)}} className="rounded-lg border px-3 py-2 text-xs font-bold">Edit</button><button onClick={()=>remove(item._id)} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Delete</button></div>}</Card>)}</div>}</Page>;
+}
+
 export function FutureModule({ type }) {
   const descriptions = {
     Tournaments: "Tournament management is currently under development.",
@@ -143,72 +174,40 @@ export function Profile() {
     </Card>
   </Page>;
 }
-export function Equipment() { const [refresh, setRefresh] = useState(0); const [adding, setAdding] = useState(false); const [form, setForm] = useState({ name: "", category: "General", quantity: 1, location: "" }); const [message, setMessage] = useState(""); const { loading, error, data } = useLoad(() => equipmentService.list().then(r => r.data.equipment), [refresh]); const save = async e => { e.preventDefault(); try { await equipmentService.create({ ...form, quantity: Number(form.quantity), available: Number(form.quantity) }); setAdding(false); setRefresh(x => x + 1); } catch (err) { setMessage(err?.response?.data?.message || "Unable to save equipment"); } }; return <Page title="Equipment" eyebrow="Inventory"><div className="mb-5 text-right"><button onClick={() => setAdding(!adding)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{adding ? "Close" : "+ Add equipment"}</button></div>{adding && <Card className="mb-5"><form onSubmit={save} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Item name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="rounded-xl border p-3"/><input placeholder="Category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="rounded-xl border p-3"/><input required type="number" min="0" placeholder="Quantity" value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} className="rounded-xl border p-3"/><input placeholder="Location" value={form.location} onChange={e => setForm({ ...form, place: e.target.value })} className="rounded-xl border p-3"/><button className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Save item</button>{message && <span className="self-center text-sm text-red-700">{message}</span>}</form></Card>}{loading ? <Empty>Loading equipment…</Empty> : error ? <Empty>{error}. Sign in as an administrator or coach to manage inventory.</Empty> : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{data.map(item => <Card key={item._id}><Badge tone={item.condition === "Good" ? "lime" : "red"}>{item.condition}</Badge><h2 className="mt-4 font-black">{item.name}</h2><p className="mt-2 text-sm text-slate-500">{item.category} · {item.available}/{item.quantity} available<br/>{item.location || "No location set"}</p></Card>)}</div>}</Page>; }
-export function Coaches() {
-  const [refresh, setRefresh] = useState(0);
-  const [editing, setEditing] = useState(null);
-  const [message, setMessage] = useState("");
-  const empty = { name: "", specialty: "Cricket coach", phone: "", email: "", status: "Active" };
-  const [form, setForm] = useState(empty);
-  const { loading, error, data } = useLoad(() => coachesService.list().then(r => r.data.coaches), [refresh]);
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    try {
-      if (editing) await coachesService.update(editing, form);
-      else await coachesService.create(form);
-      setForm(empty);
-      setEditing(null);
-      setRefresh(x => x + 1);
-      setMessage(editing ? "Coach updated." : "Coach added.");
-    } catch (err) {
-      setMessage(err?.response?.data?.message || "Unable to save coach.");
-    }
-  };
-
-  const edit = (coach) => {
-    setEditing(coach._id);
-    setForm({ name: coach.name || "", specialty: coach.specialty || "Cricket coach", phone: coach.phone || "", email: coach.email || "", status: coach.status || "Active" });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const remove = async (id) => {
-    if (!window.confirm("Delete this coach?")) return;
-    try { await coachesService.remove(id); setRefresh(x => x + 1); }
-    catch (err) { setMessage(err?.response?.data?.message || "Unable to delete coach."); }
-  };
-
-  return <Page title="Coaches" eyebrow="Coaching staff">
-    <Card className="mb-5">
-      <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Coach name" className="rounded-xl border p-3"/>
-        <input value={form.specialty} onChange={e => setForm({ ...form, specialty: e.target.value })} placeholder="Specialization" className="rounded-xl border p-3"/>
-        <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="Phone" className="rounded-xl border p-3"/>
-        <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="Email" className="rounded-xl border p-3"/>
-        <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="rounded-xl border p-3"><option>Active</option><option>Inactive</option></select>
-        <div className="flex gap-2">
-          <button className="flex-1 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{editing ? "Update coach" : "Add coach"}</button>
-          {editing && <button type="button" onClick={() => { setEditing(null); setForm(empty); }} className="rounded-xl border px-4 py-3 text-sm font-bold">Cancel</button>}
-        </div>
-      </form>
-      {message && <p className="mt-3 text-sm text-slate-600">{message}</p>}
-    </Card>
-    {loading ? <Empty>Loading coaches…</Empty> : error ? <Empty>{error}</Empty> :
-      data.length ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{data.map(c =>
-        <Card key={c._id}>
-          <div className="flex items-start justify-between gap-3">
-            <div><h2 className="font-black">{c.name}</h2><p className="mt-1 text-sm text-rscc-blue">{c.specialty}</p></div>
-            <Badge tone={c.status === "Active" ? "lime" : "slate"}>{c.status}</Badge>
-          </div>
-          <div className="mt-5 space-y-2 text-sm text-slate-600">
-            <p>{c.phone || "No phone number"}</p><p className="break-all">{c.email || "No email"}</p>
-          </div>
-          <div className="mt-5 flex gap-3 border-t pt-4"><button onClick={() => edit(c)} className="text-sm font-bold text-slate-800">Edit</button><button onClick={() => remove(c._id)} className="text-sm font-bold text-red-700">Delete</button></div>
-        </Card>
-      )}</div> : <Empty>No coaches have been added yet.</Empty>}
+export function Equipment() {
+  const stored=(()=>{try{return JSON.parse(localStorage.getItem("user")||"null")}catch{return null}})(), canManage=["admin","coach"].includes(stored?.role);
+  const [refresh,setRefresh]=useState(0),[adding,setAdding]=useState(false),[editing,setEditing]=useState(null),[message,setMessage]=useState("");
+  const empty={name:"",category:"Cricket",quantity:1,available:1,condition:"Good",status:"Available",assignedTo:"",location:"",purchaseDate:"",purchasePrice:"",notes:""}; const [form,setForm]=useState(empty);
+  const {loading,error,data}=useLoad(()=>equipmentService.list().then(r=>r.data.equipment),[refresh]);
+  const save=async e=>{e.preventDefault();try{const payload={...form,quantity:Number(form.quantity),available:Number(form.available),purchasePrice:Number(form.purchasePrice||0)};if(editing)await equipmentService.update(editing,payload);else await equipmentService.create(payload);setForm(empty);setEditing(null);setAdding(false);setRefresh(x=>x+1);setMessage("Equipment saved.")}catch(err){setMessage(err?.response?.data?.message||"Unable to save equipment.")}};
+  const remove=async id=>{if(!confirm("Delete this equipment record?"))return;await equipmentService.remove(id);setRefresh(x=>x+1)};
+  const items=data||[], repair=items.filter(x=>x.status==="Under Repair"||x.condition==="Needs repair"), assigned=items.filter(x=>x.status==="Assigned"), available=items.reduce((s,x)=>s+Number(x.available||0),0);
+  return <Page title="Equipment" eyebrow="Inventory, assignment & repairs">
+    <div className="grid gap-4 sm:grid-cols-4 mb-5"><Card><p className="text-sm text-slate-500">Items</p><b className="mt-2 block text-3xl">{items.length}</b></Card><Card><p className="text-sm text-slate-500">Available units</p><b className="mt-2 block text-3xl">{available}</b></Card><Card><p className="text-sm text-slate-500">Assigned records</p><b className="mt-2 block text-3xl">{assigned.length}</b></Card><Card><p className="text-sm text-slate-500">Repair queue</p><b className="mt-2 block text-3xl text-red-600">{repair.length}</b></Card></div>
+    {canManage&&<div className="mb-5 flex justify-end"><button onClick={()=>setAdding(v=>!v)} className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white">{adding?"Close":"+ Add equipment"}</button></div>}
+    {adding&&<Card className="mb-5"><form onSubmit={save} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Item name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="rounded-xl border p-3"/><input placeholder="Category" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="rounded-xl border p-3"/><input required type="number" min="0" placeholder="Quantity" value={form.quantity} onChange={e=>setForm({...form,quantity:e.target.value,available:e.target.value})} className="rounded-xl border p-3"/><input type="number" min="0" placeholder="Available" value={form.available} onChange={e=>setForm({...form,available:e.target.value})} className="rounded-xl border p-3"/><select value={form.status} onChange={e=>setForm({...form,status:e.target.value})} className="rounded-xl border p-3"><option>Available</option><option>Assigned</option><option>Under Repair</option><option>Retired</option></select><select value={form.condition} onChange={e=>setForm({...form,condition:e.target.value})} className="rounded-xl border p-3"><option>Good</option><option>Needs repair</option><option>Retired</option></select><input placeholder="Assigned to" value={form.assignedTo} onChange={e=>setForm({...form,assignedTo:e.target.value})} className="rounded-xl border p-3"/><input placeholder="Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})} className="rounded-xl border p-3"/><input type="date" value={form.purchaseDate} onChange={e=>setForm({...form,purchaseDate:e.target.value})} className="rounded-xl border p-3"/><input type="number" min="0" placeholder="Purchase price" value={form.purchasePrice} onChange={e=>setForm({...form,purchasePrice:e.target.value})} className="rounded-xl border p-3"/><textarea placeholder="Notes / repair details" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} className="rounded-xl border p-3 sm:col-span-2"/><button className="rounded-xl bg-rscc-blue px-4 py-3 font-bold text-white sm:col-span-2">{editing?"Update equipment":"Add equipment"}</button></form>{message&&<p className="mt-3 text-sm">{message}</p>}</Card>}
+    {loading?<Empty>Loading equipment…</Empty>:error?<Empty>{error}</Empty>:<div className="grid gap-4 md:grid-cols-2">{items.map(item=><Card key={item._id}><div className="flex justify-between gap-4"><div><Badge tone={item.status==="Under Repair"||item.condition==="Needs repair"?"red":item.status==="Retired"?"slate":"lime"}>{item.status||item.condition}</Badge><h2 className="mt-3 text-lg font-black">{item.name}</h2><p className="text-sm text-slate-500">{item.category} · {item.location||"Location not set"}</p></div><div className="text-right text-sm"><b>{item.available||0}/{item.quantity||0}</b><p className="text-slate-400">available</p></div></div>{(item.assignedTo||item.notes)&&<div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm"><b>{item.assignedTo?"Assigned to: ":""}</b>{item.assignedTo}{item.notes&&<p className="mt-1 text-slate-600">{item.notes}</p>}</div>}{canManage&&<div className="mt-4 flex gap-2"><button onClick={()=>{setEditing(item._id);setForm({...empty,...item,purchaseDate:item.purchaseDate?item.purchaseDate.slice(0,10):"",purchasePrice:item.purchasePrice||""});setAdding(true)}} className="rounded-lg border px-3 py-2 text-xs font-bold">Edit</button>{stored?.role==="admin"&&<button onClick={()=>remove(item._id)} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Delete</button>}</div>}</Card>)}</div>}
   </Page>;
 }
+
+export function Coaches() {
+  const stored = (() => { try { return JSON.parse(localStorage.getItem("user")||"null"); } catch { return null; }})();
+  const isAdmin = (stored?.role === "admin");
+  const [refresh,setRefresh]=useState(0), [editing,setEditing]=useState(null), [message,setMessage]=useState("");
+  const [form,setForm]=useState({name:"",specialty:"Cricket coach",phone:"",email:"",status:"Active"});
+  const {loading,error,data}=useLoad(()=>coachesService.list().then(r=>r.data.coaches),[refresh]);
+  const users=useLoad(()=>isAdmin?authService.academyUsers().then(r=>r.data.users):Promise.resolve([]),[refresh,isAdmin]);
+  const submit=async e=>{e.preventDefault();try{if(editing)await coachesService.update(editing,form);else await coachesService.create(form);setEditing(null);setForm({name:"",specialty:"Cricket coach",phone:"",email:"",status:"Active"});setMessage("Coach saved.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to save coach.")}};
+  const grant=async id=>{try{await authService.setRole(id,"coach");setMessage("Coach access granted.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to grant coach access.")}};
+  const revoke=async id=>{try{await authService.setRole(id,"player");setMessage("Coach access removed.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to change access.")}};
+  const remove=async id=>{if(!confirm("Delete this coach record?"))return;await coachesService.remove(id);setRefresh(x=>x+1)};
+  return <Page title="Coaches" eyebrow="Coaching staff">
+    {isAdmin&&<Card className="mb-5 border-rscc-red/20 bg-red-50/30"><h2 className="font-black">Coach access</h2><p className="mt-1 text-sm text-slate-500">Only administrators can grant or remove coach permissions.</p><div className="mt-4 space-y-2">{(users.data||[]).filter(u=>u.role==="player").map(u=><div key={u.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3"><div><b>{u.name}</b><p className="text-xs text-slate-500">{u.email}</p></div><button onClick={()=>grant(u.id)} className="rounded-lg bg-rscc-blue px-3 py-2 text-xs font-bold text-white">Grant coach access</button></div>)}</div></Card>}
+    {isAdmin&&<Card className="mb-5"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Coach name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="rounded-xl border p-3"/><input placeholder="Specialty" value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} className="rounded-xl border p-3"/><input placeholder="Phone" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} className="rounded-xl border p-3"/><input type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className="rounded-xl border p-3"/><button className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white sm:col-span-2">{editing?"Update coach":"Add coach"}</button></form>{message&&<p className="mt-3 text-sm text-slate-600">{message}</p>}</Card>}
+    {loading?<Empty>Loading coaches…</Empty>:error?<Empty>{error}</Empty>:<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{(data||[]).map(c=><Card key={c._id}><div className="flex items-start justify-between"><Badge tone={c.status==="Active"?"lime":"slate"}>{c.status}</Badge><Users className="text-rscc-blue"/></div><h2 className="mt-4 text-xl font-black">{c.name}</h2><p className="mt-1 text-sm text-slate-500">{c.specialty}</p><p className="mt-3 text-sm">{c.email||"No email"}<br/>{c.phone||"No phone"}</p>{c.user?.email&&<p className="mt-3 rounded-lg bg-blue-50 p-2 text-xs font-bold text-rscc-blue">Account: {c.user.email}</p>}{isAdmin&&<div className="mt-4 flex gap-2"><button onClick={()=>{setEditing(c._id);setForm({name:c.name||"",specialty:c.specialty||"",phone:c.phone||"",email:c.email||"",status:c.status||"Active"})}} className="rounded-lg border px-3 py-2 text-xs font-bold">Edit</button><button onClick={()=>remove(c._id)} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Delete</button>{c.user&&<button onClick={()=>revoke(c.user._id)} className="rounded-lg border px-3 py-2 text-xs font-bold">Remove access</button>}</div>}</Card>)}</div>}
+  </Page>;
+}
+
 export function Fees() {
   const storedUser = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; } })();
   const role = storedUser?.role === "viewer" ? "player" : storedUser?.role;
@@ -357,116 +356,57 @@ export function Reports() {
   </Page>;
 }
 export function Notifications() { const [refresh, setRefresh] = useState(0); const { loading, error, data } = useLoad(() => notificationsService.list().then(r => r.data), [refresh]); const read = async id => { await notificationsService.markRead(id); setRefresh(x => x + 1); }; return <Page title="Notifications" eyebrow="Academy alerts"><div className="mb-5 text-right"><button onClick={() => notificationsService.markAllRead().then(() => setRefresh(x => x + 1))} className="rounded-xl border px-4 py-3 text-sm font-bold">Mark all read</button></div>{loading ? <Empty>Loading notifications…</Empty> : error ? <Empty>{error}. Sign in to see your notifications.</Empty> : <div className="space-y-3">{data.notifications.map(notification => <Card key={notification._id} className={notification.read ? "opacity-70" : "border-lime-400"}><button onClick={() => !notification.read && read(notification._id)} className="w-full text-left"><div className="flex items-center justify-between gap-4"><h2 className="font-black">{notification.title}</h2>{!notification.read && <Badge>New</Badge>}</div><p className="mt-2 text-sm text-slate-600">{notification.body}</p><small className="mt-2 block text-slate-400">{formatDate(notification.createdAt)}</small></button></Card>)}</div>}</Page>; }
-export function Settings() { const { loading, error, data: user } = useLoad(() => authService.me().then(r => r.data.user), []); const [form, setForm] = useState(null); const [message, setMessage] = useState(""); useEffect(() => { if (user) setForm({ name: user.name || "", phone: user.phone || "", avatar: user.avatar || "", notificationPreferences: user.notificationPreferences || { announcements: true, events: true, matches: true } }); }, [user]); const save = async e => { e.preventDefault(); try { await authService.updateMe(form); setMessage("Settings saved."); } catch (err) { setMessage(err?.response?.data?.message || "Unable to save settings"); } }; return <Page title="Settings" eyebrow="Account & notifications">{loading ? <Empty>Loading settings…</Empty> : error || !form ? <Empty>{error || "Sign in to manage settings."}</Empty> : <Card className="max-w-2xl"><form onSubmit={save}><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-bold">Full name<input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label><label className="text-sm font-bold">Phone<input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label>
-<label className="text-sm font-bold sm:col-span-2">Avatar URL<input value={form.avatar || ""} onChange={e => setForm({ ...form, avatar: e.target.value })} placeholder="https://..." className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label></div><h2 className="mt-7 font-black">Notification preferences</h2><div className="mt-3 space-y-3">{[["announcements", "Announcements"], ["events", "Events"], ["matches", "Match updates"]].map(([key, label]) => <label key={key} className="flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm font-bold">{label}<input type="checkbox" checked={form.notificationPreferences[key] !== false} onChange={e => setForm({ ...form, notificationPreferences: { ...form.notificationPreferences, [key]: e.target.checked } })}/></label>)}</div><button className="mt-6 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Save settings</button>{message && <span className="ml-3 text-sm text-slate-600">{message}</span>}</form></Card>}</Page>; }
+export function Settings() { const { loading, error, data: user } = useLoad(() => authService.me().then(r => r.data.user), []); const [form, setForm] = useState(null); const [message, setMessage] = useState(""); useEffect(() => { if (user) setForm({ name: user.name || "", phone: user.phone || "", avatar: user.avatar || "", notificationPreferences: user.notificationPreferences || { announcements: true, events: true, matches: true, fees: true } }); }, [user]); const save = async e => { e.preventDefault(); try { await authService.updateMe(form); setMessage("Settings saved."); } catch (err) { setMessage(err?.response?.data?.message || "Unable to save settings"); } }; return <Page title="Settings" eyebrow="Account & notifications">{loading ? <Empty>Loading settings…</Empty> : error || !form ? <Empty>{error || "Sign in to manage settings."}</Empty> : <Card className="max-w-2xl"><form onSubmit={save}><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-bold">Full name<input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label><label className="text-sm font-bold">Phone<input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label>
+<label className="text-sm font-bold sm:col-span-2">Avatar URL<input value={form.avatar || ""} onChange={e => setForm({ ...form, avatar: e.target.value })} placeholder="https://..." className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label></div><h2 className="mt-7 font-black">Notification preferences</h2><div className="mt-3 space-y-3">{[["announcements", "Announcements"], ["events", "Events"], ["matches", "Match updates"], ["fees", "Fee reminders"]].map(([key, label]) => <label key={key} className="flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm font-bold">{label}<input type="checkbox" checked={form.notificationPreferences[key] !== false} onChange={e => setForm({ ...form, notificationPreferences: { ...form.notificationPreferences, [key]: e.target.checked } })}/></label>)}</div><button className="mt-6 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Save settings</button>{message && <span className="ml-3 text-sm text-slate-600">{message}</span>}</form></Card>}</Page>; }
 export function Auth({ mode = "Login" }) {
   const isRegister = mode === "Create account";
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", role: "player" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    setError("");
-    setMessage("");
-
+    setLoading(true); setError("");
     try {
       if (isRegister) {
         const response = await authService.register({
-          name: form.name.trim(),
-          email: form.email.trim().toLowerCase(),
-          phone: form.phone.trim(),
-          password: form.password,
-          role: form.role,
+          name: form.name.trim(), email: form.email.trim().toLowerCase(),
+          phone: form.phone.trim(), password: form.password,
         });
-        if (response.data?.accessToken) {
-          localStorage.setItem("accessToken", response.data.accessToken);
-          localStorage.setItem("refreshToken", response.data.refreshToken || "");
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-          navigate("/dashboard", { replace: true });
-        } else {
-          navigate("/login", { state: { message: "Account created. Please sign in." } });
-        }
+        localStorage.setItem("accessToken", response.data.accessToken);
+        localStorage.setItem("refreshToken", response.data.refreshToken || "");
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        navigate("/dashboard", { replace: true });
       } else {
         const { data } = await authService.login({ email: form.email.trim().toLowerCase(), password: form.password });
         localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("refreshToken", data.refreshToken || "");
         localStorage.setItem("user", JSON.stringify(data.user));
         navigate("/dashboard", { replace: true });
       }
     } catch (e) {
       setError(e?.response?.data?.message || "Unable to continue. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 sm:grid sm:place-items-center">
       <div className="mx-auto w-full max-w-md">
-        <div className="mb-6 text-center">
-          <Link to="/" className="inline-flex items-center gap-3">
-            <span className="grid h-12 w-12 place-items-center overflow-hidden rounded-full border-2 border-rscc-red bg-white">
-              <img src={logo} alt="Rising Star Cricket Club" className="h-full w-full object-cover"/>
-            </span>
-            <span className="text-left"><b className="block text-lg font-black text-rscc-blue">RSCC</b><small className="text-xs text-slate-500">Rising Star Cricket Club</small></span>
-          </Link>
-        </div>
-
+        <div className="mb-6 text-center"><Link to="/" className="inline-flex items-center gap-3"><span className="grid h-12 w-12 place-items-center overflow-hidden rounded-full border-2 border-rscc-red bg-white"><img src={logo} alt="Rising Star Cricket Club" className="h-full w-full object-cover"/></span><span className="text-left"><b className="block text-lg font-black text-rscc-blue">RSCC</b><small className="text-xs text-slate-500">Rising Star Cricket Club</small></span></Link></div>
         <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
           <h1 className="text-3xl font-black">{isRegister ? "Create your RSCC account" : "Welcome back"}</h1>
-          <p className="mt-2 text-sm text-slate-500">{isRegister ? "Join the academy as a player or coach." : "Sign in to your academy workspace."}</p>
-
-          {isRegister && (
-            <>
-              <label className="mt-6 block text-sm font-bold">Full name
-                <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Your full name" className="mt-1.5 w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-rscc-blue"/>
-              </label>
-              <label className="mt-4 block text-sm font-bold">Phone
-                <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="Optional" className="mt-1.5 w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-rscc-blue"/>
-              </label>
-              <label className="mt-4 block text-sm font-bold">Account type
-                <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white p-3 outline-none focus:border-rscc-blue">
-                  <option value="player">Player</option>
-                  <option value="coach">Coach</option>
-                </select>
-              </label>
-            </>
-          )}
-
-          <label className="mt-4 block text-sm font-bold">Email
-            <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" className="mt-1.5 w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-rscc-blue"/>
-          </label>
-
-          <label className="mt-4 block text-sm font-bold">Password
-            <span className="relative mt-1.5 block">
-              <input required minLength="6" type={showPassword ? "text" : "password"} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="At least 6 characters" className="w-full rounded-xl border border-slate-300 p-3 pr-11 outline-none focus:border-rscc-blue"/>
-              <button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-500 hover:bg-slate-100">
-                {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
-              </button>
-            </span>
-          </label>
-
-          {!isRegister && <div className="mt-3 text-right"><Link to="/forgot-password" className="text-sm font-bold text-rscc-blue hover:underline">Forgot password?</Link></div>}
-
-          {isRegister && <p className="mt-3 text-xs leading-5 text-slate-500">Admin accounts are created by academy administration. Guest access does not require an account.</p>}
+          <p className="mt-2 text-sm text-slate-500">{isRegister ? "Create your player account. Coach access can only be granted by an RSCC administrator." : "Sign in to your academy workspace."}</p>
+          {isRegister && <><label className="mt-6 block text-sm font-bold">Full name<input required value={form.name} onChange={e => setForm({...form,name:e.target.value})} placeholder="Your full name" className="mt-1.5 w-full rounded-xl border p-3"/></label><label className="mt-4 block text-sm font-bold">Phone<input value={form.phone} onChange={e => setForm({...form,phone:e.target.value})} placeholder="Optional" className="mt-1.5 w-full rounded-xl border p-3"/></label></>}
+          <label className="mt-4 block text-sm font-bold">Email<input required type="email" value={form.email} onChange={e => setForm({...form,email:e.target.value})} placeholder="you@example.com" className="mt-1.5 w-full rounded-xl border p-3"/></label>
+          <label className="mt-4 block text-sm font-bold">Password<span className="relative mt-1.5 block"><input required minLength="6" type={showPassword?"text":"password"} value={form.password} onChange={e => setForm({...form,password:e.target.value})} placeholder="At least 6 characters" className="w-full rounded-xl border p-3 pr-11"/><button type="button" onClick={()=>setShowPassword(v=>!v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-500">{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></span></label>
+          {!isRegister && <div className="mt-3 text-right"><Link to="/forgot-password" className="text-sm font-bold text-rscc-blue">Forgot password?</Link></div>}
           {error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
-          {message && <p className="mt-4 rounded-xl bg-blue-50 p-3 text-sm font-semibold text-rscc-blue">{message}</p>}
-
-          <button disabled={loading} className="mt-6 w-full rounded-xl bg-rscc-blue py-3.5 text-sm font-extrabold text-white hover:bg-blue-800 disabled:opacity-60">
-            {loading ? "Please wait…" : isRegister ? "Create account" : "Sign in"}
-          </button>
-
-          <div className="mt-6 border-t pt-5 text-center text-sm text-slate-500">
-            {isRegister ? <>Already have an account? <Link className="font-bold text-rscc-blue" to="/login">Sign in</Link></> : <>New to RSCC? <Link className="font-bold text-rscc-blue" to="/register">Create account</Link></>}
-          </div>
+          <button disabled={loading} className="mt-6 w-full rounded-xl bg-rscc-blue py-3.5 text-sm font-extrabold text-white disabled:opacity-60">{loading?"Please wait…":isRegister?"Create player account":"Sign in"}</button>
+          <div className="mt-6 border-t pt-5 text-center text-sm text-slate-500">{isRegister?<>Already have an account? <Link className="font-bold text-rscc-blue" to="/login">Sign in</Link></>:<>New to RSCC? <Link className="font-bold text-rscc-blue" to="/register">Create account</Link></>}</div>
         </form>
-
-        <Link to="/" className="mt-5 block text-center text-sm font-bold text-slate-500 hover:text-rscc-blue">← Back to RSCC</Link>
+        <Link to="/" className="mt-5 block text-center text-sm font-bold text-slate-500">← Back to RSCC</Link>
       </div>
     </div>
   );

@@ -83,6 +83,7 @@ const userSchema = new mongoose.Schema(
       announcements: { type: Boolean, default: true },
       events: { type: Boolean, default: true },
       matches: { type: Boolean, default: true },
+      fees: { type: Boolean, default: true },
     },
 
     passwordResetToken: { type: String, select: false },

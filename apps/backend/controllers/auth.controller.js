@@ -22,9 +22,9 @@ import {
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role = "player", phone = "" } = req.body || {};
+    const { name, email, password, phone = "" } = req.body || {};
     const normalizedEmail = String(email || "").trim().toLowerCase();
-    const normalizedRole = String(role || "player").toLowerCase();
+    const normalizedRole = "player";
 
     if (!name?.trim() || !normalizedEmail || !password) {
       return res.status(400).json({
@@ -40,14 +40,6 @@ export const register = async (req, res) => {
       });
     }
 
-    // Public registration is intentionally limited to player/coach.
-    // Admin accounts are created by academy administration.
-    if (!["player", "coach"].includes(normalizedRole)) {
-      return res.status(400).json({
-        success: false,
-        message: "Choose Player or Coach for public registration",
-      });
-    }
 
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
@@ -74,13 +66,6 @@ export const register = async (req, res) => {
         user: user._id,
         fullName: user.name,
         phone: user.phone,
-      });
-    } else if (normalizedRole === "coach") {
-      await Coach.create({
-        name: user.name,
-        phone: user.phone,
-        email: user.email,
-        status: "Active",
       });
     }
 
@@ -379,4 +364,46 @@ export const resetPassword = async (req, res) => {
     await user.save();
     return res.json({ success: true, message: "Password reset successfully. Please sign in." });
   } catch (error) { return res.status(500).json({ success: false, message: "Unable to reset password" }); }
+};
+
+/* Admin-only academy user management. Public registration always creates players. */
+export const listAcademyUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: { $in: ["player", "coach"] } })
+      .select("name email phone role status createdAt")
+      .sort({ createdAt: -1 });
+    return res.json({ success: true, users });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const setUserRole = async (req, res) => {
+  try {
+    const { role } = req.body || {};
+    if (!["player", "coach"].includes(role)) {
+      return res.status(400).json({ success: false, message: "Role must be player or coach" });
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    user.role = role;
+    user.createdBy = req.user._id;
+    await user.save();
+
+    if (role === "coach") {
+      await Coach.findOneAndUpdate(
+        { user: user._id },
+        { user: user._id, name: user.name, email: user.email, phone: user.phone, status: "Active" },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    }
+
+    return res.json({
+      success: true,
+      message: role === "coach" ? "Coach access granted" : "Player access restored",
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, status: user.status }
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
 };

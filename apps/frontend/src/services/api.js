@@ -23,6 +23,8 @@ export const authService = {
   updateMe: (payload) => api.put("/auth/me", payload),
   forgotPassword: (payload) => api.post("/auth/forgot-password", payload),
   resetPassword: (payload) => api.post("/auth/reset-password", payload),
+  academyUsers: () => api.get("/auth/users"),
+  setRole: (id, role) => api.patch(`/auth/users/${id}/role`, { role }),
 };
 
 export const playersService = {
@@ -35,7 +37,10 @@ export const playersService = {
 
 export const teamsService = {
   list: () => api.get("/teams"),
+  get: (id) => api.get(`/teams/${id}`),
   create: (payload) => api.post("/teams", payload),
+  update: (id, payload) => api.put(`/teams/${id}`, payload),
+  remove: (id) => api.delete(`/teams/${id}`),
 };
 
 export const matchesService = {

@@ -1,7 +1,12 @@
 import Player from "../models/Player.js";
 import Notification from "../models/Notification.js";
 import Fee from "../models/Fee.js";
-export const listFees = async (req,res) => { try { res.json({success:true,fees:await Fee.find().populate("player","fullName category").sort({dueDate:1})}); }catch(e){res.status(500).json({success:false,message:e.message});} };
+export const listFees = async (req,res) => {
+  try {
+    const fees = await Fee.find().populate("player","fullName category").sort({dueDate:1});
+    res.json({success:true,fees});
+  } catch(e) { res.status(500).json({success:false,message:e.message}); }
+};
 export const createFee = async (req,res) => { try { res.status(201).json({success:true,fee:await Fee.create(req.body)}); }catch(e){res.status(400).json({success:false,message:e.message});} };
 export const updateFee = async (req,res) => { try { const values={...req.body}; if(values.status==="Paid"&&!values.paidAt)values.paidAt=new Date(); const fee=await Fee.findByIdAndUpdate(req.params.id,values,{new:true,runValidators:true}).populate("player","fullName category"); if(!fee)return res.status(404).json({success:false,message:"Fee not found"});res.json({success:true,fee});}catch(e){res.status(400).json({success:false,message:e.message});} };
 export const deleteFee = async (req,res) => { try { const fee=await Fee.findByIdAndDelete(req.params.id);if(!fee)return res.status(404).json({success:false,message:"Fee not found"});res.json({success:true});}catch(e){res.status(400).json({success:false,message:e.message});} };
