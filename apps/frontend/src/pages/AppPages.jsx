@@ -86,7 +86,99 @@ export function Dashboard() {
 
 function PlayerForm({ onSaved, onCancel }) { const [form, setForm] = useState({ fullName: "", age: "", role: "Batsman", category: "U12", gender: "Male", jerseyNumber: "" }); const [error, setError] = useState(""); const submit = async event => { event.preventDefault(); try { await playersService.create({ ...form, age: form.age ? Number(form.age) : undefined, jerseyNumber: form.jerseyNumber ? Number(form.jerseyNumber) : undefined }); onSaved(); } catch (e) { setError(e?.response?.data?.message || "Could not create player"); } }; return <Card className="mb-5"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Full name" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} className="rounded-xl border p-3"/><input type="number" placeholder="Age" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} className="rounded-xl border p-3"/><select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="rounded-xl border p-3">{["Batsman", "Bowler", "All Rounder", "Wicket Keeper"].map(x => <option key={x}>{x}</option>)}</select><select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="rounded-xl border p-3">{["U12", "U14", "U16", "U19", "Senior"].map(x => <option key={x}>{x}</option>)}</select><input type="number" placeholder="Jersey number" value={form.jerseyNumber} onChange={e => setForm({ ...form, jerseyNumber: e.target.value })} className="rounded-xl border p-3"/><div className="sm:col-span-2 flex gap-3"><button className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Save player</button><button type="button" onClick={onCancel} className="rounded-xl border px-4 py-3 text-sm font-bold">Cancel</button>{error && <span className="self-center text-sm text-red-700">{error}</span>}</div></form></Card>; }
 
-export function Players() { const [refresh, setRefresh] = useState(0); const [adding, setAdding] = useState(false); const [query, setQuery] = useState(""); const { loading, error, data } = useLoad(() => playersService.list().then(r => r.data.players), [refresh]); const filtered = useMemo(() => (data || []).filter(p => `${playerName(p)} ${p.role || ""} ${p.category || ""}`.toLowerCase().includes(query.toLowerCase())), [data, query]); const categories = ["U12", "U14", "U16", "U19", "Senior"]; return <Page title="Players" eyebrow="Player management"><div className="mb-5 flex gap-3"><label className="flex flex-1 items-center gap-2 rounded-xl border bg-white px-3"><Search size={17} className="text-slate-400"/><input className="w-full py-3 outline-none" placeholder="Search player, role, or age group" value={query} onChange={e => setQuery(e.target.value)}/></label><button onClick={() => setAdding(!adding)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{adding ? "Close" : "+ Register player"}</button></div>{adding && <PlayerForm onCancel={() => setAdding(false)} onSaved={() => { setAdding(false); setRefresh(x => x + 1); }}/>} {error && <Empty>{error}. Sign in as an administrator or coach to manage players.</Empty>} {loading ? <Empty>Loading players…</Empty> : !error && <div className="space-y-8">{categories.map(category => { const group = filtered.filter(p => (p.category || "U12") === category); return <section key={category}><div className="mb-3 flex items-center gap-3"><h2 className="text-lg font-black">{category === "Senior" ? "Senior Players" : `${category} Players`}</h2><Badge tone="slate">{group.length}</Badge></div>{group.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{group.map(p => <Link key={p._id} to={`/players/${p._id}`}><Card className="h-full transition hover:-translate-y-0.5 hover:shadow-md"><h3 className="font-black">{playerName(p)}</h3><p className="mt-1 text-sm text-slate-500">{p.role || "Player"} · #{p.jerseyNumber || "—"}</p><div className="mt-5 grid grid-cols-2 gap-3 border-t pt-4 text-sm"><span><small className="block text-slate-400">Age</small>{p.age || "—"}</span><span><small className="block text-slate-400">Runs</small>{p.career?.runs || 0}</span></div></Card></Link>)}</div> : <p className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">No {category} players yet.</p>}</section>; })}</div>} {!loading && !error && !filtered.length && <Empty>No players found.</Empty>}</Page>; }
+export function Players() {
+  const stored = (() => { try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; } })();
+  const canApprove = ["admin", "coach"].includes(stored?.role);
+  const [refresh, setRefresh] = useState(0);
+  const [adding, setAdding] = useState(false);
+  const [query, setQuery] = useState("");
+  const [message, setMessage] = useState("");
+  const { loading, error, data } = useLoad(() => playersService.list().then(r => r.data.players), [refresh]);
+  const pending = useLoad(() => canApprove ? authService.pendingMembers().then(r => r.data.users) : Promise.resolve([]), [refresh, canApprove]);
+
+  const filtered = useMemo(
+    () => (data || []).filter(p => `${playerName(p)} ${p.role || ""} ${p.category || ""}`.toLowerCase().includes(query.toLowerCase())),
+    [data, query]
+  );
+  const categories = ["U12", "U14", "U16", "U19", "Senior"];
+
+  const approve = async (id, name) => {
+    try { await authService.approveMember(id); setMessage(`${name} has been approved and their player profile is now active.`); setRefresh(x => x + 1); }
+    catch (e) { setMessage(e?.response?.data?.message || "Unable to approve this request."); }
+  };
+  const reject = async (id, name) => {
+    try { await authService.rejectMember(id); setMessage(`${name}'s membership request was rejected.`); setRefresh(x => x + 1); }
+    catch (e) { setMessage(e?.response?.data?.message || "Unable to reject this request."); }
+  };
+
+  return <Page title="Players" eyebrow="Player management">
+    {canApprove && <Card className="mb-5 border-amber-200 bg-amber-50/60">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wider text-amber-700">Approval queue</p>
+          <h2 className="mt-1 text-lg font-black">Pending player memberships</h2>
+          <p className="mt-1 text-sm text-slate-600">Review the complete player information submitted during registration. Approval activates the existing player record.</p>
+        </div>
+        <Badge tone="slate">{pending.data?.length || 0} pending</Badge>
+      </div>
+
+      {pending.loading ? <p className="mt-4 text-sm text-slate-500">Loading requests…</p> :
+        pending.error ? <p className="mt-4 text-sm text-red-700">{pending.error}</p> :
+        <div className="mt-4 space-y-3">
+          {(pending.data || []).map(u => {
+            const p = u.player || {};
+            return <div key={u._id || u.id} className="rounded-2xl border border-amber-100 bg-white p-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <h3 className="font-black">{p.fullName || u.name}</h3>
+                  <p className="mt-1 text-sm text-slate-500">{u.email}{u.phone ? ` · ${u.phone}` : ""}</p>
+                  <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-xs sm:grid-cols-4">
+                    <span><small className="block text-slate-400">Age</small><b>{p.age || "—"}</b></span>
+                    <span><small className="block text-slate-400">Category</small><b>{p.category || "—"}</b></span>
+                    <span><small className="block text-slate-400">Playing role</small><b>{p.role || "—"}</b></span>
+                    <span><small className="block text-slate-400">Jersey</small><b>#{p.jerseyNumber || "—"}</b></span>
+                    <span><small className="block text-slate-400">Gender</small><b>{p.gender || "—"}</b></span>
+                    <span><small className="block text-slate-400">Batting</small><b>{p.battingStyle || "—"}</b></span>
+                    <span><small className="block text-slate-400">Parent</small><b>{p.parentName || "—"}</b></span>
+                    <span><small className="block text-slate-400">Parent phone</small><b>{p.parentPhone || "—"}</b></span>
+                  </div>
+                  {p.address && <p className="mt-3 text-xs text-slate-500">Address: {p.address}</p>}
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <button onClick={() => approve(u._id || u.id, u.name)} className="rounded-xl bg-rscc-blue px-4 py-2.5 text-xs font-bold text-white">Approve</button>
+                  <button onClick={() => reject(u._id || u.id, u.name)} className="rounded-xl border border-red-200 px-4 py-2.5 text-xs font-bold text-red-700">Reject</button>
+                </div>
+              </div>
+            </div>;
+          })}
+          {!pending.data?.length && <p className="text-sm text-slate-500">No pending player approvals.</p>}
+        </div>}
+      {message && <p className="mt-3 text-sm font-semibold text-slate-700">{message}</p>}
+    </Card>}
+
+    <div className="mb-5 flex gap-3">
+      <label className="flex flex-1 items-center gap-2 rounded-xl border bg-white px-3">
+        <Search size={17} className="text-slate-400"/>
+        <input className="w-full py-3 outline-none" placeholder="Search player, role, or age group" value={query} onChange={e => setQuery(e.target.value)}/>
+      </label>
+      {canApprove && <button onClick={() => setAdding(!adding)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{adding ? "Close" : "+ Register player"}</button>}
+    </div>
+
+    {adding && <PlayerForm onCancel={() => setAdding(false)} onSaved={() => { setAdding(false); setRefresh(x => x + 1); }}/>}
+    {error && <Empty>{error}. Sign in as an administrator or coach to manage players.</Empty>}
+    {loading ? <Empty>Loading players…</Empty> : !error && <div className="space-y-8">
+      {categories.map(category => {
+        const group = filtered.filter(p => (p.category || "U12") === category);
+        return <section key={category}>
+          <div className="mb-3 flex items-center gap-3"><h2 className="text-lg font-black">{category === "Senior" ? "Senior Players" : `${category} Players`}</h2><Badge tone="slate">{group.length}</Badge></div>
+          {group.length ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{group.map(p => <Link key={p._id} to={`/players/${p._id}`}><Card className="h-full transition hover:-translate-y-0.5 hover:shadow-md"><h3 className="font-black">{playerName(p)}</h3><p className="mt-1 text-sm text-slate-500">{p.role || "Player"} · #{p.jerseyNumber || "—"}</p><div className="mt-5 grid grid-cols-2 gap-3 border-t pt-4 text-sm"><span><small className="block text-slate-400">Age</small>{p.age || "—"}</span><span><small className="block text-slate-400">Runs</small>{p.career?.runs || 0}</span></div></Card></Link>)}</div>
+          : <p className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">No {category} players yet.</p>}
+        </section>;
+      })}
+    </div>}
+    {!loading && !error && !filtered.length && <Empty>No players found.</Empty>}
+  </Page>;
+}
 
 export function PlayerProfile() { const { id } = useParams(); const { loading, error, data: player } = useLoad(() => playersService.get(id).then(r => r.data.player), [id]); if (loading) return <Page title="Player" eyebrow="Player profile"><Empty>Loading player…</Empty></Page>; if (error) return <Page title="Player" eyebrow="Player profile"><Empty>{error}</Empty></Page>; return <Page title={playerName(player)} eyebrow="Player profile"><Card className="max-w-3xl"><h2 className="text-xl font-black">{playerName(player)}</h2><p className="mt-1 text-sm text-slate-500">{player.role || "Player"} · #{player.jerseyNumber || "—"}</p><div className="mt-7 grid grid-cols-2 gap-5 text-sm sm:grid-cols-4">{[["Age", player.age], ["Batting", player.battingStyle], ["Runs", player.career?.runs || 0], ["Wickets", player.career?.wickets || 0]].map(([label, value]) => <span key={label}><small className="block text-slate-400">{label}</small><b>{value || "—"}</b></span>)}</div></Card></Page>; }
 
@@ -153,25 +245,43 @@ export function FutureModule({ type }) {
 
 export function Profile() {
   const { loading, error, data: user } = useLoad(() => authService.me().then(r => r.data.user), []);
-  return <Page title="My profile" eyebrow="Account">
-    <Card className="max-w-2xl">
-      {loading ? "Loading profile…" : error ? <><p>{error}</p><Link className="mt-4 inline-block font-bold text-rscc-blue" to="/login">Sign in</Link></> :
-      <div>
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-slate-900 text-2xl font-black text-blue-300">
-            {user.avatar ? <img src={user.avatar} alt="" className="h-full w-full object-cover"/> : (user.name || "U").slice(0, 2).toUpperCase()}
+  const player = user?.player;
+  return <Page title="My profile" eyebrow="Account & membership">
+    <div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
+      <Card>
+        {loading ? "Loading profile…" : error ? <><p>{error}</p><Link className="mt-4 inline-block font-bold text-rscc-blue" to="/login">Sign in</Link></> :
+        <div>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+            <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl bg-blue-50 text-2xl font-black text-rscc-blue">
+              {user.avatar ? <img src={user.avatar} alt="" className="h-full w-full object-cover"/> : (user.name || "U").slice(0, 2).toUpperCase()}
+            </div>
+            <div><h2 className="text-2xl font-black">{user.name}</h2><p className="mt-1 text-sm text-slate-500">{user.email}</p><div className="mt-2 flex gap-2"><Badge tone="slate">{user.role === "admin" ? "Administrator" : user.role === "coach" ? "Coach" : "Player"}</Badge><Badge tone={user.status === "active" ? "blue" : "red"}>{user.status}</Badge></div></div>
           </div>
-          <div><h2 className="text-2xl font-black">{user.name}</h2><p className="mt-1 text-sm text-slate-500">{user.email}</p><Badge tone="slate">{user.role}</Badge></div>
+          <div className="mt-7 grid gap-5 border-t pt-6 sm:grid-cols-2">
+            <div><small className="text-slate-400">Academy</small><p className="mt-1 font-bold">{user.academy || "Rising Star Cricket Club"}</p></div>
+            <div><small className="text-slate-400">Phone</small><p className="mt-1 font-bold">{user.phone || "Not added"}</p></div>
+            {player && <>
+              <div><small className="text-slate-400">Age group</small><p className="mt-1 font-bold">{player.category || "—"}</p></div>
+              <div><small className="text-slate-400">Playing role</small><p className="mt-1 font-bold">{player.role || "—"}</p></div>
+              <div><small className="text-slate-400">Jersey number</small><p className="mt-1 font-bold">#{player.jerseyNumber || "—"}</p></div>
+              <div><small className="text-slate-400">Player status</small><p className="mt-1 font-bold">{player.academyStatus || "—"}</p></div>
+              <div><small className="text-slate-400">Batting style</small><p className="mt-1 font-bold">{player.battingStyle || "—"}</p></div>
+              <div><small className="text-slate-400">Bowling style</small><p className="mt-1 font-bold">{player.bowlingStyle || "—"}</p></div>
+            </>}
+          </div>
+          <Link to="/settings" className="mt-7 inline-block rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white">Edit profile & settings</Link>
+        </div>}
+      </Card>
+
+      <Card>
+        <h2 className="font-black">Account & privacy</h2>
+        <div className="mt-4 space-y-3 text-sm">
+          <Link to="/settings" className="flex items-center justify-between rounded-xl bg-slate-50 p-4 font-bold">Profile details <ArrowRight size={16}/></Link>
+          <Link to="/settings" className="flex items-center justify-between rounded-xl bg-slate-50 p-4 font-bold">Notification preferences <ArrowRight size={16}/></Link>
+          <Link to="/forgot-password" className="flex items-center justify-between rounded-xl bg-slate-50 p-4 font-bold">Change password <ArrowRight size={16}/></Link>
         </div>
-        <div className="mt-7 grid gap-4 border-t pt-6 sm:grid-cols-2">
-          <div><small className="text-slate-400">Academy</small><p className="mt-1 font-bold">{user.academy || "Rising Star Cricket Club"}</p></div>
-          <div><small className="text-slate-400">Phone</small><p className="mt-1 font-bold">{user.phone || "Not added"}</p></div>
-          <div><small className="text-slate-400">Account status</small><p className="mt-1 font-bold capitalize">{user.status || "active"}</p></div>
-          <div><small className="text-slate-400">Notifications</small><p className="mt-1 font-bold">{Object.values(user.notificationPreferences || {}).filter(Boolean).length} preferences enabled</p></div>
-        </div>
-        <Link to="/settings" className="mt-7 inline-block rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Edit profile & settings</Link>
-      </div>}
-    </Card>
+      </Card>
+    </div>
   </Page>;
 }
 export function Equipment() {
@@ -338,13 +448,15 @@ export function Calendar() {
   const [refresh, setRefresh] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
+  const [month, setMonth] = useState(() => new Date());
   const empty = { title: "", date: "", type: "Training", place: "", description: "" };
   const [form, setForm] = useState(empty);
+
   const { loading, error, data } = useLoad(async () => {
     const [events, matches] = await Promise.all([eventsService.list(), matchesService.list()]);
     return [
-      ...events.data.events.map(e => ({ id: e._id, title: e.title, date: e.date, type: e.type || "Event", location: e.place, description: e.description })),
-      ...matches.data.matches.map(m => ({ id: m._id, title: matchTitle(m), date: m.details?.matchDate, type: "Match", location: m.details?.ground || m.details?.venue }))
+      ...(events.data.events || []).map(e => ({ id: e._id, title: e.title, date: e.date, type: e.type || "Event", location: e.place, description: e.description })),
+      ...(matches.data.matches || []).map(m => ({ id: m._id, title: matchTitle(m), date: m.details?.matchDate, type: "Match", location: m.details?.ground || m.details?.venue }))
     ].filter(x => x.date).sort((a,b) => new Date(a.date) - new Date(b.date));
   }, [refresh]);
 
@@ -354,33 +466,84 @@ export function Calendar() {
     catch (err) { setMessage(err?.response?.data?.message || "Unable to create event."); }
   };
 
+  const start = new Date(month.getFullYear(), month.getMonth(), 1);
+  const end = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+  const firstDay = start.getDay();
+  const days = Array.from({ length: firstDay + end.getDate() }, (_, i) => i < firstDay ? null : i - firstDay + 1);
+  const monthItems = (data || []).filter(item => {
+    const d = new Date(item.date);
+    return d.getFullYear() === month.getFullYear() && d.getMonth() === month.getMonth();
+  });
+  const eventsForDay = day => monthItems.filter(item => new Date(item.date).getDate() === day);
+  const changeMonth = delta => setMonth(new Date(month.getFullYear(), month.getMonth() + delta, 1));
+
   return <Page title="Calendar" eyebrow="Academy schedule">
-    <div className="mb-5 flex justify-end"><button onClick={() => setShowForm(!showForm)} className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">{showForm ? "Close" : "+ Add event"}</button></div>
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        <button onClick={() => changeMonth(-1)} className="rounded-xl border px-3 py-2 font-bold">←</button>
+        <h2 className="min-w-40 text-center font-black">{month.toLocaleDateString("en-IN",{month:"long",year:"numeric"})}</h2>
+        <button onClick={() => changeMonth(1)} className="rounded-xl border px-3 py-2 font-bold">→</button>
+      </div>
+      <button onClick={() => setShowForm(!showForm)} className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white">{showForm ? "Close" : "+ Add event"}</button>
+    </div>
+
     {showForm && <Card className="mb-5"><form onSubmit={createEvent} className="grid gap-3 sm:grid-cols-2">
-      <input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Event title" className="rounded-xl border p-3"/>
-      <input required type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="rounded-xl border p-3"/>
-      <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className="rounded-xl border p-3"><option>Training</option><option>Meeting</option><option>Fitness</option><option>Other</option></select>
-      <input value={form.location} onChange={e => setForm({ ...form, place: e.target.value })} placeholder="Location" className="rounded-xl border p-3"/>
-      <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Description" className="min-h-24 rounded-xl border p-3 sm:col-span-2"/>
-      <button className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-slate-950">Add to calendar</button>
-    </form>{message && <p className="mt-3 text-sm text-slate-600">{message}</p>}</Card>}
-    {loading ? <Empty>Loading calendar…</Empty> : error ? <Empty>{error}</Empty> : data.length ? <div className="space-y-3">{data.map(i => <Card key={i.type+i.id}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><Badge tone={i.type === "Match" ? "lime" : "slate"}>{i.type}</Badge><h2 className="mt-3 font-black">{i.title}</h2><p className="mt-1 text-sm text-slate-500">{formatDate(i.date)}</p>{i.location && <p className="mt-1 text-sm text-slate-500">{i.location}</p>}</div><CalendarDays className="text-rscc-blue" size={22}/></div>
-    </Card>)}</div> : <Empty>No upcoming calendar items yet.</Empty>}
+      <input required value={form.title} onChange={e=>setForm({...form,title:e.target.value})} placeholder="Event title" className="rounded-xl border p-3"/>
+      <input required type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})} className="rounded-xl border p-3"/>
+      <select value={form.type} onChange={e=>setForm({...form,type:e.target.value})} className="rounded-xl border p-3"><option>Training</option><option>Meeting</option><option>Fitness</option><option>Other</option></select>
+      <input value={form.place} onChange={e=>setForm({...form,place:e.target.value})} placeholder="Location" className="rounded-xl border p-3"/>
+      <textarea value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="Description" className="min-h-24 rounded-xl border p-3 sm:col-span-2"/>
+      <button className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Add to calendar</button>
+    </form>{message&&<p className="mt-3 text-sm text-slate-600">{message}</p>}</Card>}
+
+    {loading ? <Empty>Loading calendar…</Empty> : error ? <Empty>{error}</Empty> : <>
+      <Card className="overflow-hidden p-0">
+        <div className="grid grid-cols-7 border-b bg-slate-50 text-center text-xs font-extrabold text-slate-500">
+          {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(day=><div key={day} className="p-3">{day}</div>)}
+        </div>
+        <div className="grid grid-cols-7">
+          {days.map((day,index) => <div key={index} className="min-h-24 border-b border-r p-2 sm:min-h-28">
+            {day && <><span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${day===new Date().getDate() && month.getMonth()===new Date().getMonth() && month.getFullYear()===new Date().getFullYear() ? "bg-rscc-blue text-white" : "text-slate-600"}`}>{day}</span>
+            <div className="mt-2 space-y-1">{eventsForDay(day).slice(0,2).map(item=><Link key={item.type+item.id} to={item.type==="Match"?`/matches/${item.id}`:"/events"} className="block truncate rounded-md bg-blue-50 px-1.5 py-1 text-[10px] font-bold text-rscc-blue">{item.title}</Link>)}</div></>}
+          </div>)}
+        </div>
+      </Card>
+      <div className="mt-5">
+        <h2 className="mb-3 font-black">Upcoming schedule</h2>
+        <div className="space-y-3">{(data||[]).filter(x=>new Date(x.date)>=new Date(new Date().setHours(0,0,0,0))).slice(0,8).map(i=><Card key={i.type+i.id}><div className="flex items-center justify-between gap-3"><div><Badge tone={i.type==="Match"?"blue":"slate"}>{i.type}</Badge><h3 className="mt-2 font-black">{i.title}</h3><p className="text-sm text-slate-500">{formatDate(i.date)}{i.location?` · ${i.location}`:""}</p></div><CalendarDays className="text-rscc-blue" size={22}/></div></Card>)}</div>
+      </div>
+    </>}
   </Page>;
 }
 export function Reports() {
-  const { loading, error, data } = useLoad(() => reportsService.academy().then(r => r.data.report), []);
-  if (loading) return <Page title="Academy reports" eyebrow="Live summary"><Empty>Loading report…</Empty></Page>;
-  if (error) return <Page title="Academy reports" eyebrow="Live summary"><Empty>{error}</Empty></Page>;
-  const cards = [["Players", data.players], ["Matches", data.matches], ["Attendance sessions", data.attendanceSessions], ["Fee records", data.totalFees], ["Fees received", `₹${Number(data.paid || 0).toLocaleString("en-IN")}`], ["Fees due", `₹${Number(data.due || 0).toLocaleString("en-IN")}`]];
-  return <Page title="Academy reports" eyebrow="Live summary">
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{cards.map(([label,value]) => <Card key={label}><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-3xl font-black">{value}</p></Card>)}</div>
+  const [refresh,setRefresh]=useState(0);
+  const { loading, error, data } = useLoad(() => reportsService.academy().then(r => r.data.report), [refresh]);
+  const exportReport = () => {
+    if (!data) return;
+    const rows = [
+      ["Metric","Value"],
+      ["Players",data.players],["Matches",data.matches],["Attendance sessions",data.attendanceSessions],
+      ["Fee records",data.totalFees],["Fees received",data.paid],["Fees due",data.due],
+      ...Object.entries(data.playersByCategory||{}).map(([k,v])=>[`Players - ${k}`,v]),
+      ...Object.entries(data.attendanceBreakdown||{}).map(([k,v])=>[`Attendance - ${k}`,v]),
+    ];
+    const csv = rows.map(row=>row.map(value=>`"${String(value??"").replace(/"/g,'""')}"`).join(",")).join("\\n");
+    const blob = new Blob([csv],{type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=`rscc-academy-report-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
+  };
+  if (loading) return <Page title="Academy reports" eyebrow="Live management report"><Empty>Loading report…</Empty></Page>;
+  if (error) return <Page title="Academy reports" eyebrow="Live management report"><Empty>{error}</Empty></Page>;
+  const cards = [["Players", data.players],["Matches",data.matches],["Attendance sessions",data.attendanceSessions],["Fee records",data.totalFees],["Fees received",`₹${Number(data.paid||0).toLocaleString("en-IN")}`],["Fees due",`₹${Number(data.due||0).toLocaleString("en-IN")}`]];
+  return <Page title="Academy reports" eyebrow="Live management report">
+    <div className="mb-5 flex flex-wrap justify-end gap-2"><button onClick={()=>setRefresh(x=>x+1)} className="rounded-xl border px-4 py-3 text-sm font-bold">Refresh</button><button onClick={exportReport} className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white">Export CSV</button></div>
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{cards.map(([label,value])=><Card key={label}><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-3xl font-black">{value}</p></Card>)}</div>
     <div className="mt-5 grid gap-5 lg:grid-cols-2">
-      <Card><h2 className="font-black">Attendance breakdown</h2><div className="mt-5 space-y-3">{Object.entries(data.attendanceBreakdown || {}).map(([label,value]) => <div key={label} className="flex justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm"><span className="capitalize">{label}</span><b>{value}</b></div>)}</div></Card>
-      <Card><h2 className="font-black">Players by age group</h2><div className="mt-5 space-y-3">{Object.entries(data.playersByCategory || {}).map(([label,value]) => <div key={label} className="flex justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm"><span>{label}</span><b>{value}</b></div>)}</div></Card>
+      <Card><h2 className="font-black">Players by age group</h2><div className="mt-5 space-y-3">{Object.entries(data.playersByCategory||{}).map(([label,value])=><div key={label} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm"><span>{label}</span><b>{value}</b></div>)}</div></Card>
+      <Card><h2 className="font-black">Attendance breakdown</h2><div className="mt-5 space-y-3">{Object.entries(data.attendanceBreakdown||{}).map(([label,value])=><div key={label} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm"><span className="capitalize">{label}</span><b>{value}</b></div>)}</div></Card>
     </div>
-    <Card className="mt-5"><h2 className="font-black">Report scope</h2><p className="mt-2 text-sm leading-6 text-slate-500">This report summarizes live academy records from players, fixtures, attendance sessions and fee records. Advanced cricket performance analytics will be added later with the Statistics module.</p></Card>
+    <Card className="mt-5"><h2 className="font-black">Upcoming academy events</h2><div className="mt-4 space-y-2">{(data.upcomingEvents||[]).map(event=><div key={event._id} className="flex justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm"><span><b>{event.title}</b><span className="ml-2 text-slate-500">{event.type||"Event"}</span></span><span className="text-slate-500">{formatDate(event.date)}</span></div>)}{!(data.upcomingEvents||[]).length&&<p className="text-sm text-slate-500">No upcoming events.</p>}</div></Card>
+    <p className="mt-4 text-xs text-slate-400">Generated {formatDate(data.generatedAt)}. Advanced cricket performance analytics remain part of the future Statistics module.</p>
   </Page>;
 }
 export function Notifications() { const [refresh, setRefresh] = useState(0); const { loading, error, data } = useLoad(() => notificationsService.list().then(r => r.data), [refresh]); const read = async id => { await notificationsService.markRead(id); setRefresh(x => x + 1); }; return <Page title="Notifications" eyebrow="Academy alerts"><div className="mb-5 text-right"><button onClick={() => notificationsService.markAllRead().then(() => setRefresh(x => x + 1))} className="rounded-xl border px-4 py-3 text-sm font-bold">Mark all read</button></div>{loading ? <Empty>Loading notifications…</Empty> : error ? <Empty>{error}. Sign in to see your notifications.</Empty> : <div className="space-y-3">{data.notifications.map(notification => <Card key={notification._id} className={notification.read ? "opacity-70" : "border-lime-400"}><button onClick={() => !notification.read && read(notification._id)} className="w-full text-left"><div className="flex items-center justify-between gap-4"><h2 className="font-black">{notification.title}</h2>{!notification.read && <Badge>New</Badge>}</div><p className="mt-2 text-sm text-slate-600">{notification.body}</p><small className="mt-2 block text-slate-400">{formatDate(notification.createdAt)}</small></button></Card>)}</div>}</Page>; }
@@ -388,12 +551,20 @@ export function Settings() { const { loading, error, data: user } = useLoad(() =
 <label className="text-sm font-bold sm:col-span-2">Avatar URL<input value={form.avatar || ""} onChange={e => setForm({ ...form, avatar: e.target.value })} placeholder="https://..." className="mt-1.5 w-full rounded-xl border p-3 font-normal"/></label></div><h2 className="mt-7 font-black">Notification preferences</h2><div className="mt-3 space-y-3">{[["announcements", "Announcements"], ["events", "Events"], ["matches", "Match updates"], ["fees", "Fee reminders"]].map(([key, label]) => <label key={key} className="flex items-center justify-between rounded-xl bg-slate-50 p-3 text-sm font-bold">{label}<input type="checkbox" checked={form.notificationPreferences[key] !== false} onChange={e => setForm({ ...form, notificationPreferences: { ...form.notificationPreferences, [key]: e.target.checked } })}/></label>)}</div><button className="mt-6 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Save settings</button>{message && <span className="ml-3 text-sm text-slate-600">{message}</span>}</form></Card>}</Page>; }
 export function Auth({ mode = "Login" }) {
   const isRegister = mode === "Create account";
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const emptyForm = {
+    name: "", phone: "", email: "", password: "",
+    age: "", category: "U12", gender: "Male", role: "Batsman",
+    jerseyNumber: "", dateOfBirth: "", battingStyle: "", bowlingStyle: "",
+    parentName: "", parentPhone: "", address: "",
+  };
+  const [form, setForm] = useState(emptyForm);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const set = (key, value) => setForm(current => ({ ...current, [key]: value }));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -401,12 +572,19 @@ export function Auth({ mode = "Login" }) {
     try {
       if (isRegister) {
         const response = await authService.register({
-          name: form.name.trim(), email: form.email.trim().toLowerCase(),
-          phone: form.phone.trim(), password: form.password,
+          ...form,
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase(),
+          phone: form.phone.trim(),
+          age: form.age ? Number(form.age) : undefined,
+          jerseyNumber: form.jerseyNumber ? Number(form.jerseyNumber) : undefined,
+          parentName: form.parentName.trim(),
+          parentPhone: form.parentPhone.trim(),
+          address: form.address.trim(),
         });
         if (response.data.pendingApproval) {
-          setMessage("Account created successfully. Your membership request has been sent to RSCC. An admin or coach must approve it before you can sign in.");
-          setForm({ name: "", email: "", phone: "", password: "" });
+          setMessage("Your request has been delivered to Rising Star Cricket Club. It will be reviewed by an administrator or coach. Once approved, your player profile will already be set up and you can sign in without entering these details again.");
+          setForm(emptyForm);
         } else {
           localStorage.setItem("accessToken", response.data.accessToken);
           localStorage.setItem("refreshToken", response.data.refreshToken || "");
@@ -427,19 +605,68 @@ export function Auth({ mode = "Login" }) {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-8 sm:grid sm:place-items-center">
-      <div className="mx-auto w-full max-w-md">
-        <div className="mb-6 text-center"><Link to="/" className="inline-flex items-center gap-3"><span className="grid h-12 w-12 place-items-center overflow-hidden rounded-full border-2 border-rscc-red bg-white"><img src={logo} alt="Rising Star Cricket Club" className="h-full w-full object-cover"/></span><span className="text-left"><b className="block text-lg font-black text-rscc-blue">RSCC</b><small className="text-xs text-slate-500">Rising Star Cricket Club</small></span></Link></div>
+      <div className={`mx-auto w-full ${isRegister ? "max-w-3xl" : "max-w-md"}`}>
+        <div className="mb-6 text-center">
+          <Link to="/" className="inline-flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center overflow-hidden rounded-full border-2 border-rscc-red bg-white">
+              <img src={logo} alt="Rising Star Cricket Club" className="h-full w-full object-cover"/>
+            </span>
+            <span className="text-left"><b className="block text-lg font-black text-rscc-blue">RSCC</b><small className="text-xs text-slate-500">Rising Star Cricket Club</small></span>
+          </Link>
+        </div>
         <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
-          <h1 className="text-3xl font-black">{isRegister ? "Create your RSCC account" : "Welcome back"}</h1>
-          <p className="mt-2 text-sm text-slate-500">{isRegister ? "Create your player account. Coach access can only be granted by an RSCC administrator." : "Sign in to your academy workspace."}</p>
-          {isRegister && <><label className="mt-6 block text-sm font-bold">Full name<input required value={form.name} onChange={e => setForm({...form,name:e.target.value})} placeholder="Your full name" className="mt-1.5 w-full rounded-xl border p-3"/></label><label className="mt-4 block text-sm font-bold">Phone<input value={form.phone} onChange={e => setForm({...form,phone:e.target.value})} placeholder="Optional" className="mt-1.5 w-full rounded-xl border p-3"/></label></>}
-          <label className="mt-4 block text-sm font-bold">Email<input required type="email" value={form.email} onChange={e => setForm({...form,email:e.target.value})} placeholder="you@example.com" className="mt-1.5 w-full rounded-xl border p-3"/></label>
-          <label className="mt-4 block text-sm font-bold">Password<span className="relative mt-1.5 block"><input required minLength="6" type={showPassword?"text":"password"} value={form.password} onChange={e => setForm({...form,password:e.target.value})} placeholder="At least 6 characters" className="w-full rounded-xl border p-3 pr-11"/><button type="button" onClick={()=>setShowPassword(v=>!v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-500">{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></span></label>
+          <h1 className="text-3xl font-black">{isRegister ? "Join RSCC" : "Welcome back"}</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            {isRegister
+              ? "Create your player account and submit your membership request. Coach access can only be granted later by an RSCC administrator."
+              : "Sign in to your academy workspace."}
+          </p>
+
+          {isRegister ? (
+            <>
+              <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-slate-700">
+                <b className="text-rscc-blue">What happens next?</b>
+                <p className="mt-1">Your details are saved with your membership request. An admin or coach reviews the request, and your player profile is activated after approval.</p>
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <label className="text-sm font-bold">Full name<input required value={form.name} onChange={e=>set("name",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3" placeholder="Full name"/></label>
+                <label className="text-sm font-bold">Phone<input value={form.phone} onChange={e=>set("phone",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3" placeholder="Phone number"/></label>
+                <label className="text-sm font-bold">Date of birth<input type="date" value={form.dateOfBirth} onChange={e=>set("dateOfBirth",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3"/></label>
+                <label className="text-sm font-bold">Age<input type="number" min="4" max="60" value={form.age} onChange={e=>set("age",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3" placeholder="Age"/></label>
+                <label className="text-sm font-bold">Category<select value={form.category} onChange={e=>set("category",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3">{["U12","U14","U16","U19","Senior"].map(x=><option key={x}>{x}</option>)}</select></label>
+                <label className="text-sm font-bold">Playing role<select value={form.role} onChange={e=>set("role",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3">{["Batsman","Bowler","All Rounder","Wicket Keeper"].map(x=><option key={x}>{x}</option>)}</select></label>
+                <label className="text-sm font-bold">Gender<select value={form.gender} onChange={e=>set("gender",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3"><option>Male</option><option>Female</option></select></label>
+                <label className="text-sm font-bold">Jersey number<input type="number" min="0" max="99" value={form.jerseyNumber} onChange={e=>set("jerseyNumber",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3" placeholder="Optional"/></label>
+                <label className="text-sm font-bold">Batting style<select value={form.battingStyle} onChange={e=>set("battingStyle",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3"><option value="">Select</option><option>Right Hand Bat</option><option>Left Hand Bat</option></select></label>
+                <label className="text-sm font-bold">Bowling style<input value={form.bowlingStyle} onChange={e=>set("bowlingStyle",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3" placeholder="e.g. Right-arm fast"/></label>
+                <label className="text-sm font-bold">Parent/guardian name<input value={form.parentName} onChange={e=>set("parentName",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3" placeholder="For junior players"/></label>
+                <label className="text-sm font-bold">Parent/guardian phone<input value={form.parentPhone} onChange={e=>set("parentPhone",e.target.value)} className="mt-1.5 w-full rounded-xl border p-3"/></label>
+                <label className="text-sm font-bold sm:col-span-2">Address<textarea value={form.address} onChange={e=>set("address",e.target.value)} className="mt-1.5 min-h-20 w-full rounded-xl border p-3" placeholder="Residential address"/></label>
+              </div>
+            </>
+          ) : null}
+
+          <label className="mt-4 block text-sm font-bold">Email
+            <input required type="email" value={form.email} onChange={e=>set("email",e.target.value)} placeholder="you@example.com" className="mt-1.5 w-full rounded-xl border p-3"/>
+          </label>
+          <label className="mt-4 block text-sm font-bold">Password
+            <span className="relative mt-1.5 block">
+              <input required minLength="6" type={showPassword?"text":"password"} value={form.password} onChange={e=>set("password",e.target.value)} placeholder="At least 6 characters" className="w-full rounded-xl border p-3 pr-11"/>
+              <button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={()=>setShowPassword(v=>!v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-500">{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button>
+            </span>
+          </label>
+
           {!isRegister && <div className="mt-3 text-right"><Link to="/forgot-password" className="text-sm font-bold text-rscc-blue">Forgot password?</Link></div>}
-          {message && <p className="mt-4 rounded-xl bg-green-50 p-3 text-sm font-semibold text-green-700">{message}</p>}
+          {message && <div className="mt-5 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-semibold leading-6 text-green-800"><b>Request submitted</b><p className="mt-1 font-medium">{message}</p></div>}
           {error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
-          <button disabled={loading} className="mt-6 w-full rounded-xl bg-rscc-blue py-3.5 text-sm font-extrabold text-white disabled:opacity-60">{loading?"Please wait…":isRegister?"Create player account":"Sign in"}</button>
-          <div className="mt-6 border-t pt-5 text-center text-sm text-slate-500">{isRegister?<>Already have an account? <Link className="font-bold text-rscc-blue" to="/login">Sign in</Link></>:<>New to RSCC? <Link className="font-bold text-rscc-blue" to="/register">Create account</Link></>}</div>
+
+          <button disabled={loading} className="mt-6 w-full rounded-xl bg-rscc-blue py-3.5 text-sm font-extrabold text-white disabled:opacity-60">
+            {loading ? "Please wait…" : isRegister ? "Submit membership request" : "Sign in"}
+          </button>
+          <div className="mt-6 border-t pt-5 text-center text-sm text-slate-500">
+            {isRegister ? <>Already have an account? <Link className="font-bold text-rscc-blue" to="/login">Sign in</Link></> : <>New to RSCC? <Link className="font-bold text-rscc-blue" to="/register">Create account</Link></>}
+          </div>
         </form>
         <Link to="/" className="mt-5 block text-center text-sm font-bold text-slate-500">← Back to RSCC</Link>
       </div>

@@ -30,63 +30,83 @@ import {
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password, phone = "" } = req.body || {};
+    const {
+      name, email, password, phone = "",
+      dateOfBirth = null, age = null, gender = "Male",
+      battingStyle = "", bowlingStyle = "", role = "Batsman",
+      jerseyNumber = null, category = "U12",
+      parentName = "", parentPhone = "", address = "",
+    } = req.body || {};
+
     const normalizedEmail = String(email || "").trim().toLowerCase();
-    const normalizedRole = BOOTSTRAP_ADMIN_EMAILS.has(normalizedEmail) ? "admin" : "player";
+    const isBootstrapAdmin = BOOTSTRAP_ADMIN_EMAILS.has(normalizedEmail);
 
     if (!name?.trim() || !normalizedEmail || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Name, email and password are required",
-      });
+      return res.status(400).json({ success: false, message: "Name, email and password are required" });
     }
-
     if (String(password).length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 6 characters",
-      });
+      return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
     }
-
+    if (!["Male", "Female"].includes(gender)) {
+      return res.status(400).json({ success: false, message: "Please select a valid gender" });
+    }
+    if (!["U12", "U14", "U16", "U19", "Senior"].includes(category)) {
+      return res.status(400).json({ success: false, message: "Please select a valid age category" });
+    }
+    if (!["Batsman", "Bowler", "All Rounder", "Wicket Keeper"].includes(role)) {
+      return res.status(400).json({ success: false, message: "Please select a valid playing role" });
+    }
 
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "An account with this email already exists",
-      });
+      return res.status(400).json({ success: false, message: "An account with this email already exists" });
     }
 
     const hashedPassword = await hashPassword(password);
-
     const user = await User.create({
       name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,
-      role: normalizedRole,
+      role: isBootstrapAdmin ? "admin" : "player",
       phone: String(phone || "").trim(),
       academy: "Rising Star Cricket Club",
-      status: normalizedRole === "admin" ? "active" : "pending",
-      isVerified: normalizedRole === "admin",
+      status: isBootstrapAdmin ? "active" : "pending",
+      isVerified: isBootstrapAdmin,
+      jerseyNumber: jerseyNumber ? Number(jerseyNumber) : null,
     });
 
-    // Keep the academy records linked to the authenticated account.
-    if (normalizedRole === "player") {
-      await Player.create({
-        user: user._id,
-        fullName: user.name,
-        phone: user.phone,
-      });
+    const player = await Player.create({
+      user: user._id,
+      fullName: user.name,
+      phone: user.phone,
+      dateOfBirth: dateOfBirth || undefined,
+      age: age ? Number(age) : undefined,
+      gender,
+      battingStyle: battingStyle || undefined,
+      bowlingStyle: bowlingStyle || "",
+      role,
+      jerseyNumber: jerseyNumber ? Number(jerseyNumber) : undefined,
+      category,
+      parentName: String(parentName || "").trim(),
+      parentPhone: String(parentPhone || "").trim(),
+      address: String(address || "").trim(),
+      academyStatus: isBootstrapAdmin ? "Active" : "Inactive",
+    });
 
-      const approvers = await User.find({ role: { $in: ["admin", "coach"] }, status: "active" }).select("_id");
+    if (!isBootstrapAdmin) {
+      const approvers = await User.find({
+        role: { $in: ["admin", "coach"] },
+        status: "active",
+      }).select("_id");
+
       if (approvers.length) {
         await Notification.insertMany(
           approvers.map((approver) => ({
             user: approver._id,
-            title: "New membership approval request",
-            body: `${user.name} has requested to join RSCC as a player.`,
+            title: "Player approval pending",
+            body: `${user.name}'s RSCC player membership request is waiting for approval.`,
             type: "system",
-            link: "/coaches",
+            link: "/players",
           }))
         );
       }
@@ -94,7 +114,7 @@ export const register = async (req, res) => {
 
     let accessToken = null;
     let refreshToken = null;
-    if (normalizedRole === "admin") {
+    if (isBootstrapAdmin) {
       accessToken = generateAccessToken(user);
       refreshToken = generateRefreshToken(user);
       user.refreshToken = refreshToken;
@@ -103,10 +123,10 @@ export const register = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      pendingApproval: normalizedRole !== "admin",
-      message: normalizedRole === "admin"
+      pendingApproval: !isBootstrapAdmin,
+      message: isBootstrapAdmin
         ? "Admin account created successfully"
-        : "Account created. Your RSCC membership is awaiting approval.",
+        : "Your RSCC membership request has been delivered. It will be reviewed by an administrator or coach. You will be able to sign in after approval.",
       accessToken,
       refreshToken,
       user: {
@@ -118,13 +138,14 @@ export const register = async (req, res) => {
         avatar: user.avatar,
         phone: user.phone,
         status: user.status,
+        playerId: player._id,
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Registration error:", error);
     return res.status(500).json({
       success: false,
-      message: "Registration failed",
+      message: "We couldn't submit your membership request. Please try again.",
       error: process.env.NODE_ENV === "production" ? undefined : error.message,
     });
   }
@@ -336,31 +357,24 @@ export const getCurrentUser = async (req, res) => {
       await req.user.save();
     }
 
+    const player = await Player.findOne({ user: req.user._id }).select(
+      "fullName age gender role category jerseyNumber dateOfBirth battingStyle bowlingStyle parentName parentPhone address academyStatus"
+    );
+
     return res.status(200).json({
-
       success: true,
-
       user: {
-
         id: req.user._id,
-
         name: req.user.name,
-
         email: req.user.email,
-
         role: req.user.role,
-
         academy: req.user.academy,
-
         avatar: req.user.avatar,
-
         phone: req.user.phone,
-
         status: req.user.status,
         notificationPreferences: req.user.notificationPreferences,
-
+        player: player || null,
       },
-
     });
 
   } catch (error) {
@@ -440,9 +454,20 @@ export const listAcademyUsers = async (req, res) => {
 export const listPendingMembers = async (req, res) => {
   try {
     const users = await User.find({ status: "pending", role: "player" })
-      .select("name email phone role status createdAt")
+      .select("name email phone role status createdAt jerseyNumber")
       .sort({ createdAt: 1 });
-    return res.json({ success: true, users });
+
+    const playerIds = users.map((u) => u._id);
+    const players = await Player.find({ user: { $in: playerIds } })
+      .select("user fullName age gender role category jerseyNumber dateOfBirth battingStyle bowlingStyle parentName parentPhone address");
+
+    const byUser = new Map(players.map((p) => [String(p.user), p]));
+    const pending = users.map((u) => ({
+      ...u.toObject(),
+      player: byUser.get(String(u._id)) || null,
+    }));
+
+    return res.json({ success: true, users: pending });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -457,6 +482,12 @@ export const approveMember = async (req, res) => {
     user.isVerified = true;
     user.createdBy = req.user._id;
     await user.save();
+
+    await Player.findOneAndUpdate(
+      { user: user._id },
+      { academyStatus: "Active", createdBy: req.user._id },
+      { new: true }
+    );
 
     await Notification.create({
       user: user._id,
@@ -485,6 +516,20 @@ export const rejectMember = async (req, res) => {
     user.isVerified = false;
     user.createdBy = req.user._id;
     await user.save();
+
+    await Player.findOneAndUpdate(
+      { user: user._id },
+      { academyStatus: "Inactive", createdBy: req.user._id },
+      { new: true }
+    );
+
+    await Notification.create({
+      user: user._id,
+      title: "RSCC membership request update",
+      body: "Your RSCC membership request was not approved. Please contact the academy for more information.",
+      type: "system",
+      link: "/",
+    });
 
     return res.json({
       success: true,

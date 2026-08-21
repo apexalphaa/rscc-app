@@ -9,6 +9,12 @@ const playerSchema = new mongoose.Schema(
       sparse: true,
     },
 
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
     playerId: {
       type: String,
       unique: true,
