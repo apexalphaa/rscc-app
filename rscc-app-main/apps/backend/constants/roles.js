@@ -1,0 +1,13 @@
+const ROLES = Object.freeze({
+  SUPER_ADMIN: "SUPER_ADMIN",
+  ADMIN: "ADMIN",
+  COACH: "COACH",
+  CAPTAIN: "CAPTAIN",
+  PLAYER: "PLAYER",
+  PARENT: "PARENT",
+  SCORER: "SCORER",
+  VIEWER: "VIEWER",
+  GUEST: "GUEST",
+});
+
+module.exports = ROLES;
