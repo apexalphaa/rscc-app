@@ -1,8 +1,16 @@
 import User from "../models/User.js";
 import Player from "../models/Player.js";
 import Coach from "../models/Coach.js";
+import Notification from "../models/Notification.js";
 import crypto from "crypto";
 import { deliverPasswordReset } from "../services/delivery.service.js";
+
+// Bootstrap the requested RSCC administrator. Prefer ADMIN_EMAILS in Render; the requested
+// address remains as a safe fallback so the existing account can be promoted on next login.
+const BOOTSTRAP_ADMIN_EMAILS = new Set(
+  String(process.env.ADMIN_EMAILS || "f17121221@gmail.com")
+    .split(",").map((email) => email.trim().toLowerCase()).filter(Boolean)
+);
 
 import {
   hashPassword,
@@ -24,7 +32,7 @@ export const register = async (req, res) => {
   try {
     const { name, email, password, phone = "" } = req.body || {};
     const normalizedEmail = String(email || "").trim().toLowerCase();
-    const normalizedRole = "player";
+    const normalizedRole = BOOTSTRAP_ADMIN_EMAILS.has(normalizedEmail) ? "admin" : "player";
 
     if (!name?.trim() || !normalizedEmail || !password) {
       return res.status(400).json({
@@ -58,6 +66,8 @@ export const register = async (req, res) => {
       role: normalizedRole,
       phone: String(phone || "").trim(),
       academy: "Rising Star Cricket Club",
+      status: normalizedRole === "admin" ? "active" : "pending",
+      isVerified: normalizedRole === "admin",
     });
 
     // Keep the academy records linked to the authenticated account.
@@ -67,16 +77,36 @@ export const register = async (req, res) => {
         fullName: user.name,
         phone: user.phone,
       });
+
+      const approvers = await User.find({ role: { $in: ["admin", "coach"] }, status: "active" }).select("_id");
+      if (approvers.length) {
+        await Notification.insertMany(
+          approvers.map((approver) => ({
+            user: approver._id,
+            title: "New membership approval request",
+            body: `${user.name} has requested to join RSCC as a player.`,
+            type: "system",
+            link: "/coaches",
+          }))
+        );
+      }
     }
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-    user.refreshToken = refreshToken;
-    await user.save();
+    let accessToken = null;
+    let refreshToken = null;
+    if (normalizedRole === "admin") {
+      accessToken = generateAccessToken(user);
+      refreshToken = generateRefreshToken(user);
+      user.refreshToken = refreshToken;
+      await user.save();
+    }
 
     return res.status(201).json({
       success: true,
-      message: "Account created successfully",
+      pendingApproval: normalizedRole !== "admin",
+      message: normalizedRole === "admin"
+        ? "Admin account created successfully"
+        : "Account created. Your RSCC membership is awaiting approval.",
       accessToken,
       refreshToken,
       user: {
@@ -151,6 +181,28 @@ export const login = async (req, res) => {
         message: "Invalid Password",
       });
 
+    }
+
+    // Promote the bootstrap administrator on login without exposing an admin choice in registration.
+    if (BOOTSTRAP_ADMIN_EMAILS.has(user.email) && user.role !== "admin") {
+      user.role = "admin";
+      user.status = "active";
+      user.isVerified = true;
+    }
+
+    if (user.role !== "admin" && user.status === "pending") {
+      return res.status(403).json({
+        success: false,
+        code: "MEMBERSHIP_PENDING",
+        message: "Your RSCC membership is awaiting approval from an administrator or coach.",
+      });
+    }
+
+    if (user.role !== "admin" && user.status !== "active") {
+      return res.status(403).json({
+        success: false,
+        message: "Your RSCC membership is not active. Please contact the academy.",
+      });
     }
 
     user.lastLogin = new Date();
@@ -277,6 +329,13 @@ export const getCurrentUser = async (req, res) => {
 
   try {
 
+    if (BOOTSTRAP_ADMIN_EMAILS.has(String(req.user.email || "").toLowerCase()) && req.user.role !== "admin") {
+      req.user.role = "admin";
+      req.user.status = "active";
+      req.user.isVerified = true;
+      await req.user.save();
+    }
+
     return res.status(200).json({
 
       success: true,
@@ -370,11 +429,70 @@ export const resetPassword = async (req, res) => {
 export const listAcademyUsers = async (req, res) => {
   try {
     const users = await User.find({ role: { $in: ["player", "coach"] } })
-      .select("name email phone role status createdAt")
-      .sort({ createdAt: -1 });
+      .select("name email phone role status isVerified createdAt")
+      .sort({ status: 1, createdAt: -1 });
     return res.json({ success: true, users });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const listPendingMembers = async (req, res) => {
+  try {
+    const users = await User.find({ status: "pending", role: "player" })
+      .select("name email phone role status createdAt")
+      .sort({ createdAt: 1 });
+    return res.json({ success: true, users });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const approveMember = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id, status: "pending", role: "player" });
+    if (!user) return res.status(404).json({ success: false, message: "Pending member not found" });
+
+    user.status = "active";
+    user.isVerified = true;
+    user.createdBy = req.user._id;
+    await user.save();
+
+    await Notification.create({
+      user: user._id,
+      title: "RSCC membership approved",
+      body: "Your RSCC membership has been approved. You can now sign in to your player account.",
+      type: "system",
+      link: "/dashboard",
+    });
+
+    return res.json({
+      success: true,
+      message: `${user.name} has been approved as a player.`,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, status: user.status },
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const rejectMember = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id, status: "pending", role: "player" });
+    if (!user) return res.status(404).json({ success: false, message: "Pending member not found" });
+
+    user.status = "inactive";
+    user.isVerified = false;
+    user.createdBy = req.user._id;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: `${user.name}'s membership request was rejected.`,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, status: user.status },
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -386,7 +504,12 @@ export const setUserRole = async (req, res) => {
     }
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    if (user.email === [...BOOTSTRAP_ADMIN_EMAILS][0]) {
+      return res.status(403).json({ success: false, message: "The bootstrap administrator cannot be demoted." });
+    }
     user.role = role;
+    user.status = "active";
+    user.isVerified = true;
     user.createdBy = req.user._id;
     await user.save();
 
@@ -396,6 +519,8 @@ export const setUserRole = async (req, res) => {
         { user: user._id, name: user.name, email: user.email, phone: user.phone, status: "Active" },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
+    } else {
+      await Coach.findOneAndUpdate({ user: user._id }, { status: "Inactive" });
     }
 
     return res.json({

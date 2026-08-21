@@ -181,12 +181,23 @@ export function Equipment() {
   const {loading,error,data}=useLoad(()=>equipmentService.list().then(r=>r.data.equipment),[refresh]);
   const save=async e=>{e.preventDefault();try{const payload={...form,quantity:Number(form.quantity),available:Number(form.available),purchasePrice:Number(form.purchasePrice||0)};if(editing)await equipmentService.update(editing,payload);else await equipmentService.create(payload);setForm(empty);setEditing(null);setAdding(false);setRefresh(x=>x+1);setMessage("Equipment saved.")}catch(err){setMessage(err?.response?.data?.message||"Unable to save equipment.")}};
   const remove=async id=>{if(!confirm("Delete this equipment record?"))return;await equipmentService.remove(id);setRefresh(x=>x+1)};
+  const issue=async item=>{const assignedTo=window.prompt("Assign to (player/coach name):",item.assignedTo||"");if(!assignedTo)return;const quantity=window.prompt("How many units?", "1");try{await equipmentService.issue(item._id,{assignedTo,quantity:Number(quantity||1)});setMessage("Equipment issued.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to issue equipment.")}};
+  const returnItem=async item=>{const quantity=window.prompt("How many units returned?","1");try{await equipmentService.returnItem(item._id,{quantity:Number(quantity||1)});setMessage("Equipment returned.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to return equipment.")}};
+  const sendRepair=async item=>{try{await equipmentService.sendToRepair(item._id);setMessage("Equipment moved to repair queue.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to move equipment to repair.")}};
+  const completeRepair=async item=>{try{await equipmentService.completeRepair(item._id);setMessage("Repair completed and equipment marked available.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to complete repair.")}};
   const items=data||[], repair=items.filter(x=>x.status==="Under Repair"||x.condition==="Needs repair"), assigned=items.filter(x=>x.status==="Assigned"), available=items.reduce((s,x)=>s+Number(x.available||0),0);
   return <Page title="Equipment" eyebrow="Inventory, assignment & repairs">
     <div className="grid gap-4 sm:grid-cols-4 mb-5"><Card><p className="text-sm text-slate-500">Items</p><b className="mt-2 block text-3xl">{items.length}</b></Card><Card><p className="text-sm text-slate-500">Available units</p><b className="mt-2 block text-3xl">{available}</b></Card><Card><p className="text-sm text-slate-500">Assigned records</p><b className="mt-2 block text-3xl">{assigned.length}</b></Card><Card><p className="text-sm text-slate-500">Repair queue</p><b className="mt-2 block text-3xl text-red-600">{repair.length}</b></Card></div>
     {canManage&&<div className="mb-5 flex justify-end"><button onClick={()=>setAdding(v=>!v)} className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white">{adding?"Close":"+ Add equipment"}</button></div>}
     {adding&&<Card className="mb-5"><form onSubmit={save} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Item name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="rounded-xl border p-3"/><input placeholder="Category" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="rounded-xl border p-3"/><input required type="number" min="0" placeholder="Quantity" value={form.quantity} onChange={e=>setForm({...form,quantity:e.target.value,available:e.target.value})} className="rounded-xl border p-3"/><input type="number" min="0" placeholder="Available" value={form.available} onChange={e=>setForm({...form,available:e.target.value})} className="rounded-xl border p-3"/><select value={form.status} onChange={e=>setForm({...form,status:e.target.value})} className="rounded-xl border p-3"><option>Available</option><option>Assigned</option><option>Under Repair</option><option>Retired</option></select><select value={form.condition} onChange={e=>setForm({...form,condition:e.target.value})} className="rounded-xl border p-3"><option>Good</option><option>Needs repair</option><option>Retired</option></select><input placeholder="Assigned to" value={form.assignedTo} onChange={e=>setForm({...form,assignedTo:e.target.value})} className="rounded-xl border p-3"/><input placeholder="Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})} className="rounded-xl border p-3"/><input type="date" value={form.purchaseDate} onChange={e=>setForm({...form,purchaseDate:e.target.value})} className="rounded-xl border p-3"/><input type="number" min="0" placeholder="Purchase price" value={form.purchasePrice} onChange={e=>setForm({...form,purchasePrice:e.target.value})} className="rounded-xl border p-3"/><textarea placeholder="Notes / repair details" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} className="rounded-xl border p-3 sm:col-span-2"/><button className="rounded-xl bg-rscc-blue px-4 py-3 font-bold text-white sm:col-span-2">{editing?"Update equipment":"Add equipment"}</button></form>{message&&<p className="mt-3 text-sm">{message}</p>}</Card>}
-    {loading?<Empty>Loading equipment…</Empty>:error?<Empty>{error}</Empty>:<div className="grid gap-4 md:grid-cols-2">{items.map(item=><Card key={item._id}><div className="flex justify-between gap-4"><div><Badge tone={item.status==="Under Repair"||item.condition==="Needs repair"?"red":item.status==="Retired"?"slate":"lime"}>{item.status||item.condition}</Badge><h2 className="mt-3 text-lg font-black">{item.name}</h2><p className="text-sm text-slate-500">{item.category} · {item.location||"Location not set"}</p></div><div className="text-right text-sm"><b>{item.available||0}/{item.quantity||0}</b><p className="text-slate-400">available</p></div></div>{(item.assignedTo||item.notes)&&<div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm"><b>{item.assignedTo?"Assigned to: ":""}</b>{item.assignedTo}{item.notes&&<p className="mt-1 text-slate-600">{item.notes}</p>}</div>}{canManage&&<div className="mt-4 flex gap-2"><button onClick={()=>{setEditing(item._id);setForm({...empty,...item,purchaseDate:item.purchaseDate?item.purchaseDate.slice(0,10):"",purchasePrice:item.purchasePrice||""});setAdding(true)}} className="rounded-lg border px-3 py-2 text-xs font-bold">Edit</button>{stored?.role==="admin"&&<button onClick={()=>remove(item._id)} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Delete</button>}</div>}</Card>)}</div>}
+    {loading?<Empty>Loading equipment…</Empty>:error?<Empty>{error}</Empty>:<div className="grid gap-4 md:grid-cols-2">{items.map(item=><Card key={item._id}><div className="flex justify-between gap-4"><div><Badge tone={item.status==="Under Repair"||item.condition==="Needs repair"?"red":item.status==="Retired"?"slate":"lime"}>{item.status||item.condition}</Badge><h2 className="mt-3 text-lg font-black">{item.name}</h2><p className="text-sm text-slate-500">{item.category} · {item.location||"Location not set"}</p></div><div className="text-right text-sm"><b>{item.available||0}/{item.quantity||0}</b><p className="text-slate-400">available</p></div></div>{(item.assignedTo||item.notes)&&<div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm"><b>{item.assignedTo?"Assigned to: ":""}</b>{item.assignedTo}{item.notes&&<p className="mt-1 text-slate-600">{item.notes}</p>}</div>}{canManage&&<div className="mt-4 flex flex-wrap gap-2">
+      <button onClick={()=>{setEditing(item._id);setForm({...empty,...item,purchaseDate:item.purchaseDate?item.purchaseDate.slice(0,10):"",purchasePrice:item.purchasePrice||""});setAdding(true)}} className="rounded-lg border px-3 py-2 text-xs font-bold">Edit</button>
+      {item.status!=="Retired"&&item.status!=="Under Repair"&&<button onClick={()=>issue(item)} className="rounded-lg border px-3 py-2 text-xs font-bold">Issue</button>}
+      {item.status==="Assigned"&&<button onClick={()=>returnItem(item)} className="rounded-lg border px-3 py-2 text-xs font-bold">Return</button>}
+      {item.status!=="Under Repair"&&item.status!=="Retired"&&<button onClick={()=>sendRepair(item)} className="rounded-lg border border-amber-200 px-3 py-2 text-xs font-bold text-amber-700">Send to repair</button>}
+      {item.status==="Under Repair"&&<button onClick={()=>completeRepair(item)} className="rounded-lg bg-rscc-blue px-3 py-2 text-xs font-bold text-white">Repair complete</button>}
+      {stored?.role==="admin"&&<button onClick={()=>remove(item._id)} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Delete</button>}
+    </div>}</Card>)}</div>}
   </Page>;
 }
 
@@ -197,11 +208,28 @@ export function Coaches() {
   const [form,setForm]=useState({name:"",specialty:"Cricket coach",phone:"",email:"",status:"Active"});
   const {loading,error,data}=useLoad(()=>coachesService.list().then(r=>r.data.coaches),[refresh]);
   const users=useLoad(()=>isAdmin?authService.academyUsers().then(r=>r.data.users):Promise.resolve([]),[refresh,isAdmin]);
+  const pending=useLoad(()=>authService.pendingMembers().then(r=>r.data.users),[refresh]);
   const submit=async e=>{e.preventDefault();try{if(editing)await coachesService.update(editing,form);else await coachesService.create(form);setEditing(null);setForm({name:"",specialty:"Cricket coach",phone:"",email:"",status:"Active"});setMessage("Coach saved.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to save coach.")}};
   const grant=async id=>{try{await authService.setRole(id,"coach");setMessage("Coach access granted.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to grant coach access.")}};
   const revoke=async id=>{try{await authService.setRole(id,"player");setMessage("Coach access removed.");setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to change access.")}};
   const remove=async id=>{if(!confirm("Delete this coach record?"))return;await coachesService.remove(id);setRefresh(x=>x+1)};
   return <Page title="Coaches" eyebrow="Coaching staff">
+    <Card className="mb-5 border-amber-200 bg-amber-50/50">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div><h2 className="font-black">Membership approvals</h2><p className="mt-1 text-sm text-slate-600">New members must be approved before they can sign in. Admins and coaches can approve or reject requests.</p></div>
+        <Badge tone="slate">{pending.data?.length || 0} pending</Badge>
+      </div>
+      <div className="mt-4 space-y-2">
+        {(pending.data || []).map(u => <div key={u._id || u.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3">
+          <div><b>{u.name}</b><p className="text-xs text-slate-500">{u.email}{u.phone ? ` · ${u.phone}` : ""}</p></div>
+          <div className="flex gap-2">
+            <button onClick={async()=>{try{await authService.approveMember(u._id || u.id);setMessage(`${u.name} approved.`);setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to approve member.")}}} className="rounded-lg bg-rscc-blue px-3 py-2 text-xs font-bold text-white">Approve</button>
+            <button onClick={async()=>{try{await authService.rejectMember(u._id || u.id);setMessage(`${u.name} rejected.`);setRefresh(x=>x+1)}catch(err){setMessage(err?.response?.data?.message||"Unable to reject member.")}}} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Reject</button>
+          </div>
+        </div>)}
+        {!pending.loading && !(pending.data||[]).length && <p className="text-sm text-slate-500">No pending membership requests.</p>}
+      </div>
+    </Card>
     {isAdmin&&<Card className="mb-5 border-rscc-red/20 bg-red-50/30"><h2 className="font-black">Coach access</h2><p className="mt-1 text-sm text-slate-500">Only administrators can grant or remove coach permissions.</p><div className="mt-4 space-y-2">{(users.data||[]).filter(u=>u.role==="player").map(u=><div key={u.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-3"><div><b>{u.name}</b><p className="text-xs text-slate-500">{u.email}</p></div><button onClick={()=>grant(u.id)} className="rounded-lg bg-rscc-blue px-3 py-2 text-xs font-bold text-white">Grant coach access</button></div>)}</div></Card>}
     {isAdmin&&<Card className="mb-5"><form onSubmit={submit} className="grid gap-3 sm:grid-cols-2"><input required placeholder="Coach name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="rounded-xl border p-3"/><input placeholder="Specialty" value={form.specialty} onChange={e=>setForm({...form,specialty:e.target.value})} className="rounded-xl border p-3"/><input placeholder="Phone" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} className="rounded-xl border p-3"/><input type="email" placeholder="Email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className="rounded-xl border p-3"/><button className="rounded-xl bg-rscc-blue px-4 py-3 text-sm font-bold text-white sm:col-span-2">{editing?"Update coach":"Add coach"}</button></form>{message&&<p className="mt-3 text-sm text-slate-600">{message}</p>}</Card>}
     {loading?<Empty>Loading coaches…</Empty>:error?<Empty>{error}</Empty>:<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">{(data||[]).map(c=><Card key={c._id}><div className="flex items-start justify-between"><Badge tone={c.status==="Active"?"lime":"slate"}>{c.status}</Badge><Users className="text-rscc-blue"/></div><h2 className="mt-4 text-xl font-black">{c.name}</h2><p className="mt-1 text-sm text-slate-500">{c.specialty}</p><p className="mt-3 text-sm">{c.email||"No email"}<br/>{c.phone||"No phone"}</p>{c.user?.email&&<p className="mt-3 rounded-lg bg-blue-50 p-2 text-xs font-bold text-rscc-blue">Account: {c.user.email}</p>}{isAdmin&&<div className="mt-4 flex gap-2"><button onClick={()=>{setEditing(c._id);setForm({name:c.name||"",specialty:c.specialty||"",phone:c.phone||"",email:c.email||"",status:c.status||"Active"})}} className="rounded-lg border px-3 py-2 text-xs font-bold">Edit</button><button onClick={()=>remove(c._id)} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Delete</button>{c.user&&<button onClick={()=>revoke(c.user._id)} className="rounded-lg border px-3 py-2 text-xs font-bold">Remove access</button>}</div>}</Card>)}</div>}
@@ -363,22 +391,28 @@ export function Auth({ mode = "Login" }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true); setError("");
+    setLoading(true); setError(""); setMessage("");
     try {
       if (isRegister) {
         const response = await authService.register({
           name: form.name.trim(), email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(), password: form.password,
         });
-        localStorage.setItem("accessToken", response.data.accessToken);
-        localStorage.setItem("refreshToken", response.data.refreshToken || "");
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/dashboard", { replace: true });
+        if (response.data.pendingApproval) {
+          setMessage("Account created successfully. Your membership request has been sent to RSCC. An admin or coach must approve it before you can sign in.");
+          setForm({ name: "", email: "", phone: "", password: "" });
+        } else {
+          localStorage.setItem("accessToken", response.data.accessToken);
+          localStorage.setItem("refreshToken", response.data.refreshToken || "");
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+          navigate("/dashboard", { replace: true });
+        }
       } else {
         const { data } = await authService.login({ email: form.email.trim().toLowerCase(), password: form.password });
         localStorage.setItem("accessToken", data.accessToken);
@@ -402,6 +436,7 @@ export function Auth({ mode = "Login" }) {
           <label className="mt-4 block text-sm font-bold">Email<input required type="email" value={form.email} onChange={e => setForm({...form,email:e.target.value})} placeholder="you@example.com" className="mt-1.5 w-full rounded-xl border p-3"/></label>
           <label className="mt-4 block text-sm font-bold">Password<span className="relative mt-1.5 block"><input required minLength="6" type={showPassword?"text":"password"} value={form.password} onChange={e => setForm({...form,password:e.target.value})} placeholder="At least 6 characters" className="w-full rounded-xl border p-3 pr-11"/><button type="button" onClick={()=>setShowPassword(v=>!v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-500">{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button></span></label>
           {!isRegister && <div className="mt-3 text-right"><Link to="/forgot-password" className="text-sm font-bold text-rscc-blue">Forgot password?</Link></div>}
+          {message && <p className="mt-4 rounded-xl bg-green-50 p-3 text-sm font-semibold text-green-700">{message}</p>}
           {error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
           <button disabled={loading} className="mt-6 w-full rounded-xl bg-rscc-blue py-3.5 text-sm font-extrabold text-white disabled:opacity-60">{loading?"Please wait…":isRegister?"Create player account":"Sign in"}</button>
           <div className="mt-6 border-t pt-5 text-center text-sm text-slate-500">{isRegister?<>Already have an account? <Link className="font-bold text-rscc-blue" to="/login">Sign in</Link></>:<>New to RSCC? <Link className="font-bold text-rscc-blue" to="/register">Create account</Link></>}</div>

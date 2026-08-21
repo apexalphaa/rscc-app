@@ -24,6 +24,9 @@ export const authService = {
   forgotPassword: (payload) => api.post("/auth/forgot-password", payload),
   resetPassword: (payload) => api.post("/auth/reset-password", payload),
   academyUsers: () => api.get("/auth/users"),
+  pendingMembers: () => api.get("/auth/pending"),
+  approveMember: (id) => api.patch(`/auth/pending/${id}/approve`),
+  rejectMember: (id) => api.patch(`/auth/pending/${id}/reject`),
   setRole: (id, role) => api.patch(`/auth/users/${id}/role`, { role }),
 };
 

@@ -16,6 +16,9 @@ import {
     requestPasswordReset,
     resetPassword,
     listAcademyUsers,
+    listPendingMembers,
+    approveMember,
+    rejectMember,
     setUserRole,
 
 } from "../controllers/auth.controller.js";
@@ -47,6 +50,9 @@ router.put("/me", auth, updateCurrentUser);
 router.post("/forgot-password", requestPasswordReset);
 router.post("/reset-password", resetPassword);
 router.get("/users", auth, authorize("admin"), listAcademyUsers);
+router.get("/pending", auth, authorize("admin", "coach"), listPendingMembers);
+router.patch("/pending/:id/approve", auth, authorize("admin", "coach"), approveMember);
+router.patch("/pending/:id/reject", auth, authorize("admin", "coach"), rejectMember);
 router.patch("/users/:id/role", auth, authorize("admin"), setUserRole);
 
 export default router;
