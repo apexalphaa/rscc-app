@@ -29,7 +29,7 @@ export const sendFeeReminders = async () => {
       user: user._id, title, link: "/fees", createdAt: { $gte: dayStart }
     });
     if (!exists) {
-      await Notification.create({ user: user._id, title, body, type: "system", link: "/fees" });
+      await Notification.create({ user: user._id, title, body, type: "fee", link: "/fees" });
     }
   }
 };

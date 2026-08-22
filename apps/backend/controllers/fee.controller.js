@@ -12,8 +12,8 @@ const maybeNotifyFee = async (userId, fee) => {
   const body = overdue
     ? `Your ₹${Number(fee.amount).toLocaleString("en-IN")} academy fee was due on ${due.toLocaleDateString("en-IN")}.`
     : `Your ₹${Number(fee.amount).toLocaleString("en-IN")} academy fee is due on ${due.toLocaleDateString("en-IN")}.`;
-  const exists = await Notification.findOne({ user: userId, type: "system", title, link: "/fees", createdAt: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) } });
-  if (!exists) await Notification.create({ user: userId, title, body, type: "system", link: "/fees" });
+  const exists = await Notification.findOne({ user: userId, type: "fee", title, link: "/fees", createdAt: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) } });
+  if (!exists) await Notification.create({ user: userId, title, body, type: "fee", link: "/fees" });
 };
 
 export const listFees = async (req,res) => {
@@ -40,7 +40,7 @@ export const createFee = async (req,res) => {
           user: player.user,
           title: "New fee assigned",
           body: `₹${Number(fee.amount).toLocaleString("en-IN")} academy fee is due on ${new Date(fee.dueDate).toLocaleDateString("en-IN")}.`,
-          type: "system",
+          type: "fee",
           link: "/fees",
         });
       } catch (notificationError) {
@@ -88,7 +88,7 @@ export const listMyFees = async (req, res) => {
           const link = `/fees`;
           const exists = await Notification.findOne({
             user: req.user._id,
-            type: "system",
+            type: "fee",
             link,
             title,
             createdAt: { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) },
@@ -98,7 +98,7 @@ export const listMyFees = async (req, res) => {
               user: req.user._id,
               title,
               body,
-              type: "system",
+              type: "fee",
               link,
             });
           }

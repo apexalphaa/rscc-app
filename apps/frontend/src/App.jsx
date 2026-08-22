@@ -47,7 +47,7 @@ export default function App() {
       <Route path="/dashboard" element={guard(<Dashboard />, MEMBER)} />
 
       <Route path="/players" element={guard(<Players />, ADMIN_COACH)} />
-      <Route path="/players/:id" element={guard(<PlayerProfile />, MEMBER)} />
+      <Route path="/players/:id" element={guard(<PlayerProfile />, ADMIN_COACH)} />
 
       <Route path="/coaches" element={guard(<Coaches />, ADMIN_COACH)} />
       <Route path="/attendance" element={guard(<Attendance />, ADMIN_COACH)} />

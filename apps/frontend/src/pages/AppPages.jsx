@@ -171,6 +171,7 @@ export function Players() {
                     <span><small className="block text-slate-400">Jersey</small><b>#{p.jerseyNumber || "—"}</b></span>
                     <span><small className="block text-slate-400">Gender</small><b>{p.gender || "—"}</b></span>
                     <span><small className="block text-slate-400">Batting</small><b>{p.battingStyle || "—"}</b></span>
+                    <span><small className="block text-slate-400">Bowling</small><b>{p.bowlingStyle || "—"}</b></span>
                     <span><small className="block text-slate-400">Parent</small><b>{p.parentName || "—"}</b></span>
                     <span><small className="block text-slate-400">Parent phone</small><b>{p.parentPhone || "—"}</b></span>
                   </div>
@@ -223,7 +224,7 @@ export function PlayerProfile() {
         <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-2xl bg-blue-50 text-xl font-black text-rscc-blue">
           {player.user?.avatar ? <img src={player.user.avatar} alt="" className="h-full w-full object-cover"/> : playerName(player).slice(0,2).toUpperCase()}
         </div>
-        <div><h2 className="text-xl font-black">{playerName(player)}</h2><p className="mt-1 text-sm text-slate-500">{player.role || "Player"} · #{player.jerseyNumber || "—"}</p></div>
+        <div><h2 className="text-xl font-black">{playerName(player)}</h2><p className="mt-1 text-sm text-slate-500">{player.role || "Player"} · {player.playerId || "ID pending"} · #{player.jerseyNumber || "—"}</p></div>
       </div>
       <div className="mt-7 grid grid-cols-2 gap-5 text-sm sm:grid-cols-4">{[["Age", player.age], ["Category", player.category], ["Batting", player.battingStyle], ["Bowling", player.bowlingStyle], ["Runs", player.career?.runs || 0], ["Wickets", player.career?.wickets || 0]].map(([label, value]) => <span key={label}><small className="block text-slate-400">{label}</small><b>{value || "—"}</b></span>)}</div>
     </Card>

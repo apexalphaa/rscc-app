@@ -18,6 +18,7 @@ const playerSchema = new mongoose.Schema(
     playerId: {
       type: String,
       unique: true,
+      sparse: true,
     },
 
     fullName: {

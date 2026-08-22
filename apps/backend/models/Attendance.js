@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema(
   {
-    sessionDate: { type: String, required: true, index: true },
+    sessionDate: { type: String, required: true },
     sessionName: { type: String, default: "Training session" },
     entries: [{
       player: { type: mongoose.Schema.Types.ObjectId, ref: "Player", required: true },

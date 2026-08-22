@@ -90,6 +90,24 @@ const userSchema = new mongoose.Schema(
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
 
+    // Player information submitted during registration is kept here until an
+    // administrator or coach approves the membership. A Player document is
+    // created only after approval.
+    pendingPlayerProfile: {
+      fullName: { type: String, default: "" },
+      dateOfBirth: { type: Date, default: null },
+      age: { type: Number, default: null },
+      gender: { type: String, enum: ["Male", "Female"], default: "Male" },
+      battingStyle: { type: String, default: "" },
+      bowlingStyle: { type: String, default: "" },
+      role: { type: String, enum: ["Batsman", "Bowler", "All Rounder", "Wicket Keeper"], default: "Batsman" },
+      jerseyNumber: { type: Number, default: null },
+      category: { type: String, enum: ["U12", "U14", "U16", "U19", "Senior"], default: "U12" },
+      parentName: { type: String, default: "" },
+      parentPhone: { type: String, default: "" },
+      address: { type: String, default: "" },
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

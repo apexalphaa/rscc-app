@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.post("/", auth, authorize("admin", "coach"), createPlayer);
 router.get("/", auth, getPlayers);
-router.get("/:id", auth, getPlayerById);
+router.get("/:id", auth, authorize("admin", "coach"), getPlayerById);
 router.put("/:id", auth, authorize("admin", "coach"), updatePlayer);
 router.delete("/:id", auth, authorize("admin"), deletePlayer);
 

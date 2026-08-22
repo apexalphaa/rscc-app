@@ -1,4 +1,5 @@
 import Player from "../models/Player.js";
+import generatePlayerId from "../utils/generatePlayerId.js";
 
 export const createPlayer = async (req, res) => {
   try {
@@ -6,7 +7,13 @@ export const createPlayer = async (req, res) => {
     if (!fullName?.trim()) {
       return res.status(400).json({ success: false, message: "Player name is required" });
     }
-    const player = await Player.create({ fullName: fullName.trim(), ...details });
+    const player = await Player.create({
+      fullName: fullName.trim(),
+      ...details,
+      playerId: details.playerId || await generatePlayerId(),
+      academyStatus: details.academyStatus || "Active",
+      createdBy: req.user._id,
+    });
     return res.status(201).json({ success: true, player });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

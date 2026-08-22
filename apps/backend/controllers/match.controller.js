@@ -128,6 +128,8 @@ export const updateMatchStatus = async (req, res) => {
       });
     }
 
+    await notifyMatchChange(match, `Match status updated to ${match.status}.`);
+
     return res.status(200).json({
       success: true,
       message: "Status Updated",
