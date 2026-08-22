@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import PublicCoaches from "./pages/PublicCoaches";
 import {
   Announcements, Attendance, Auth, Calendar, Coaches, Dashboard, Equipment,
   Events, Fees, Forgot, FutureModule, Landing, MatchDetails, Matches,
@@ -38,6 +39,7 @@ export default function App() {
       {/* Public / guest experience */}
       <Route path="/" element={<Landing />} />
       <Route path="/about" element={<Landing />} />
+      <Route path="/public-coaches" element={<PublicCoaches />} />
       <Route path="/login" element={<Auth />} />
       <Route path="/register" element={<Auth mode="Create account" />} />
       <Route path="/forgot-password" element={<Forgot />} />

@@ -1,31 +1,8 @@
 const coaches = [
-  {
-    id: 1,
-    name: "Rajesh Sharma",
-    role: "Head Coach",
-    specialization: "Batting",
-    experience: "12 Years",
-    batch: "U16",
-    phone: "+91 9876543210",
-  },
-  {
-    id: 2,
-    name: "Vikas Singh",
-    role: "Assistant Coach",
-    specialization: "Bowling",
-    experience: "8 Years",
-    batch: "U19",
-    phone: "+91 9876543211",
-  },
-  {
-    id: 3,
-    name: "Amit Kumar",
-    role: "Fitness Coach",
-    specialization: "Fitness",
-    experience: "6 Years",
-    batch: "All",
-    phone: "+91 9876543212",
-  },
+  { id: 1, name: "Head & Batting Coach", role: "Head Coach", specialization: "Batting & technique", experience: "Academy coaching", batch: "All" },
+  { id: 2, name: "Bowling Coach", role: "Bowling Coach", specialization: "Pace & spin", experience: "Academy coaching", batch: "All" },
+  { id: 3, name: "Fitness Coach", role: "Fitness & Strength", specialization: "Conditioning", experience: "Academy support", batch: "All" },
+  { id: 4, name: "Physio & Recovery", role: "Physio", specialization: "Recovery & injury prevention", experience: "Academy support", batch: "All" },
+  { id: 5, name: "Performance Analyst", role: "Performance Analyst", specialization: "Data & match analysis", experience: "Academy support", batch: "All" },
 ];
-
 export default coaches;
